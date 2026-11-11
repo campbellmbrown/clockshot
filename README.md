@@ -1,5 +1,7 @@
 # ClockShot
 
+[![Build Status](https://github.com/campbellmbrown/clockshot/actions/workflows/ci.yml/badge.svg)](https://github.com/campbellmbrown/clockshot/actions/workflows/ci.yml)
+
 A personal time tracker for Windows that keeps everything on your own computer.
 
 - Tracks the application and window you're using
