@@ -15,12 +15,5 @@ Built with C#, .NET 10 and Avalonia.
 ## Status
 
 Work in progress.
-
-## Build and run
-
-Needs the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
-
-```shell
-dotnet build
-dotnet run --project src/ClockShot.App
-```
+There are no releases yet.
+To build and run it, see [CONTRIBUTING.md](CONTRIBUTING.md).
