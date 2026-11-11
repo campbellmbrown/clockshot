@@ -14,9 +14,15 @@ public sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            StartDesktop(desktop);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void StartDesktop(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var services = CompositionRoot.Build();
+        desktop.MainWindow = MainWindow.Create(services);
     }
 }
