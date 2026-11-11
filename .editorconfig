@@ -13,8 +13,8 @@ insert_final_newline = true
 indent_style = space
 indent_size = 2
 
-# Other XML-like and JSON files
-[*.{json,csproj,props,axaml}]
+# Other XML-like, JSON and YAML files
+[*.{json,csproj,props,axaml,yml,yaml}]
 indent_size = 2
 
 [*.rst]

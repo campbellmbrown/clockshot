@@ -10,7 +10,7 @@ A personal time tracker for Windows that keeps everything on your own computer.
 - Lets you tag stretches of time to clients, projects, and tasks
 - Turns tagged time into timesheets
 
-Built with C#, .NET 10 and Avalonia.
+Built with C#, .NET 10, and Avalonia.
 
 ## Status
 
