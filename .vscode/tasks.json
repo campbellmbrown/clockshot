@@ -8,6 +8,14 @@
       "args": ["build", "${workspaceFolder}/src/ClockShot.App/ClockShot.App.csproj", "/property:GenerateFullPaths=true", "/consoleloggerparameters:NoSummary"],
       "group": "build",
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "format",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["format", "${workspaceFolder}/ClockShot.slnx"],
+      "group": "build",
+      "problemMatcher": "$msCompile"
     }
   ]
 }
