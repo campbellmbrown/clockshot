@@ -10,4 +10,5 @@ public static class Icons
 {
     // ---- App ----
     public const string Exit = "door-open";
+    public const string OpenFolder = "folder-open";
 }

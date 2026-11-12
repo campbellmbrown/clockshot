@@ -17,10 +17,12 @@ internal static class CompositionRoot
         var services = new ServiceCollection();
 
         // Infrastructure
+        services.AddSingleton(paths);
         services.AddLogging(logging => logging.AddSerilog(LogFiles.Create(paths.Logs), dispose: true));
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
+        services.AddSingleton<IShell, SystemShell>();
 
         // View models
         services.AddSingleton<MainWindowViewModel>();

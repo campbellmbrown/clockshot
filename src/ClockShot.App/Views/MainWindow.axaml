@@ -2,14 +2,19 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ClockShot.App.ViewModels"
         xmlns:controls="using:ClockShot.App.Controls"
+        xmlns:core="using:ClockShot.Core"
         x:Class="ClockShot.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="ClockShot"
+        Title="{x:Static core:AppInfo.Name}"
         Width="1400" Height="850" MinWidth="900" MinHeight="600">
   <DockPanel LastChildFill="False">
     <Menu DockPanel.Dock="Top" AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
         <MenuItem Header="E_xit" Command="{Binding ExitCommand}" AutomationProperties.AutomationId="ExitMenuItem" controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}">
+        </MenuItem>
+      </MenuItem>
+      <MenuItem Header="_Help" AutomationProperties.AutomationId="HelpMenu">
+        <MenuItem Header="Open _log folder" Command="{Binding OpenLogFolderCommand}" AutomationProperties.AutomationId="OpenLogFolderMenuItem" controls:MenuIcon.Kind="{x:Static controls:Icons.OpenFolder}">
         </MenuItem>
       </MenuItem>
     </Menu>
