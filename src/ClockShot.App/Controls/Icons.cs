@@ -9,6 +9,8 @@ namespace ClockShot.App.Controls;
 public static class Icons
 {
     // ---- App ----
+    public const string App = "clock";
     public const string Exit = "door-open";
+    public const string About = "info";
     public const string OpenFolder = "folder-open";
 }

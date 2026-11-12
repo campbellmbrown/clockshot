@@ -6,17 +6,28 @@
         x:Class="ClockShot.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static core:AppInfo.Name}"
-        Width="1400" Height="850" MinWidth="900" MinHeight="600"
+        Width="1400"
+        Height="850"
+        MinWidth="900"
+        MinHeight="600"
         Icon="{x:Static controls:AppIcon.Normal}">
   <DockPanel LastChildFill="False">
     <Menu DockPanel.Dock="Top" AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
-        <MenuItem Header="E_xit" Command="{Binding ExitCommand}" AutomationProperties.AutomationId="ExitMenuItem" controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}">
-        </MenuItem>
+        <MenuItem Header="E_xit"
+                  Command="{Binding ExitCommand}"
+                  AutomationProperties.AutomationId="ExitMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}" />
       </MenuItem>
       <MenuItem Header="_Help" AutomationProperties.AutomationId="HelpMenu">
-        <MenuItem Header="Open _log folder" Command="{Binding OpenLogFolderCommand}" AutomationProperties.AutomationId="OpenLogFolderMenuItem" controls:MenuIcon.Kind="{x:Static controls:Icons.OpenFolder}">
-        </MenuItem>
+        <MenuItem Header="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='_About {0}'}"
+                  Command="{Binding ShowAboutCommand}"
+                  AutomationProperties.AutomationId="AboutMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.About}" />
+        <MenuItem Header="Open _log folder"
+                  Command="{Binding OpenLogFolderCommand}"
+                  AutomationProperties.AutomationId="OpenLogFolderMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.OpenFolder}" />
       </MenuItem>
     </Menu>
   </DockPanel>

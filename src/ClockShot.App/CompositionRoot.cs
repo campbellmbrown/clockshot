@@ -25,6 +25,8 @@ internal static class CompositionRoot
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
         services.AddSingleton<IShell, SystemShell>();
+        services.AddSingleton<MainWindowHost>();
+        services.AddSingleton<IDialogService, DialogService>();
 
         // View models
         services.AddSingleton<MainWindowViewModel>();

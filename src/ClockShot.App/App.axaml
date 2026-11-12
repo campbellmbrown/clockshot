@@ -1,8 +1,18 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ClockShot.App.ViewModels"
+             xmlns:views="using:ClockShot.App.Views"
              x:Class="ClockShot.App.App"
              RequestedThemeVariant="Dark">
+  <!-- Explicit view-model to view mapping: no reflection-based view locator. -->
+  <Application.DataTemplates>
+    <DataTemplate DataType="vm:AboutViewModel">
+      <views:AboutView />
+    </DataTemplate>
+  </Application.DataTemplates>
+
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://ClockShot/Styles/Typography.axaml" />
   </Application.Styles>
 </Application>

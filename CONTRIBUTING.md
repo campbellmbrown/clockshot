@@ -48,6 +48,7 @@ This keeps dev runs away from the data of the copy you use every day.
   Don't leave an alias behind for the old name.
 - Update the docs in the same commit as the change they describe.
 - When you copy files from another project into the repo, such as icons, add that project's licence file next to them.
+- When you add a package or a third-party asset, credit it in the About dialog, in [AboutViewModel.cs](src/ClockShot.App/ViewModels/AboutViewModel.cs).
 
 ## Code style
 
@@ -75,6 +76,8 @@ They aren't hard rules and can be broken when there's a good reason.
   For example, fields come before constructors, and public members come before private ones.
 - Keep members private unless another class needs them.
 - Declare variables in the smallest scope that needs them.
+- In XAML, put each attribute on its own line when an element has more than two.
+  Always do this for the root element.
 - Aim for methods that are easy to unit test.
   If one is hard to test, consider changing the method.
 
