@@ -236,15 +236,6 @@ dotnet_diagnostic.S3267.severity = none
 # S6640: Using unsafe code blocks is security-sensitive
 # Off because only the Platform project allows unsafe code, for Win32 interop.
 dotnet_diagnostic.S6640.severity = none
-# S6966: Awaitable method should be used
-# Off because Microsoft.Data.Sqlite's async methods run synchronously, so awaiting them gains nothing.
-# Cancelling a load with Cancel is fine, because nothing slow is registered on its token.
-dotnet_diagnostic.S6966.severity = none
-# S8949: Pass the cancellation token to methods that accept one
-# Off because background loops watch their stop token themselves.
-# Passing it to Task.Run as well would cancel a loop stopped before it starts.
-# DisposeAsync would then throw when it waits for that loop.
-dotnet_diagnostic.S8949.severity = none
 
 ###############################
 # .NET Code Style Rules     #

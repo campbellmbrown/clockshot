@@ -84,6 +84,8 @@ public sealed class SingleInstance : IDisposable
     {
         // Read the token now, because _stopping.Token throws once Dispose has run.
         var stopping = _stopping.Token;
+
+        // Nothing awaits this task, so cancelling it before it starts is harmless.
         _ = Task.Run(async () =>
         {
             while (!stopping.IsCancellationRequested)
@@ -101,7 +103,7 @@ public sealed class SingleInstance : IDisposable
                     // A copy disconnected early. Wait for the next one.
                 }
             }
-        });
+        }, stopping);
     }
 
     public void Dispose()

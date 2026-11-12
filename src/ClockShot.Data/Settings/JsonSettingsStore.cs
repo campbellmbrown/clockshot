@@ -21,6 +21,7 @@ public sealed class JsonSettingsStore : ISettingsStore
     };
 
     private readonly IFileSystem _fileSystem;
+    private readonly string _folder;
     private readonly string _filePath;
     private readonly ILogger<JsonSettingsStore> _logger;
     private readonly Lock _saveLock = new();
@@ -29,6 +30,7 @@ public sealed class JsonSettingsStore : ISettingsStore
     public JsonSettingsStore(IFileSystem fileSystem, DataPaths paths, ILogger<JsonSettingsStore> logger)
     {
         _fileSystem = fileSystem;
+        _folder = paths.Root;
         _filePath = paths.Settings;
         _logger = logger;
         _current = Load();
@@ -43,8 +45,7 @@ public sealed class JsonSettingsStore : ISettingsStore
         settings = settings.Normalized();
         lock (_saveLock)
         {
-            var folder = _fileSystem.Path.GetDirectoryName(_fileSystem.Path.GetFullPath(_filePath))!;
-            _fileSystem.Directory.CreateDirectory(folder);
+            _fileSystem.Directory.CreateDirectory(_folder);
             var temporaryPath = _filePath + ".tmp";
             _fileSystem.File.WriteAllText(temporaryPath, JsonSerializer.Serialize(settings, JsonOptions));
             _fileSystem.File.Move(temporaryPath, _filePath, overwrite: true);
