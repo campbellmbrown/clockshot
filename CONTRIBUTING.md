@@ -8,23 +8,26 @@ This page explains how to build ClockShot and what a good change looks like.
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Optional: VS Code with the [recommended extensions](.vscode/extensions.json)
 
-## Build, run, and format
+## Build, run, test, and format
 
 ```shell
 dotnet build                          # warnings are errors
 dotnet run --project src/ClockShot.App
+dotnet test                           # runs every test
 dotnet format                         # fixes code style, naming, and layout
 dotnet format --verify-no-changes     # fails if anything needs fixing
 ```
 
 The build checks compiler and code analysis warnings.
 `dotnet format` checks code style, naming, and layout against the rules in [.editorconfig](.editorconfig).
-[CI](.github/workflows/ci.yml) runs the build and the format check on every push and pull request.
+[CI](.github/workflows/ci.yml) runs the build, all the tests, and the format check on every push and pull request.
 The same commands are available as [VS Code tasks](.vscode/tasks.json).
 
 ## How changes are made
 
 - Follow TDD, YAGNI, SOLID, DRY, and KISS.
+- Split each test into steps marked `// Arrange`, `// Act`, and `// Assert`.
+  Leave out a step the test doesn't need.
   - Win32 calls and XAML layout can't be test-driven.
     Check them by running the app.
   - Only add an interface for a second implementation or a test fake, such as the clock, database, OS, or dialogs.

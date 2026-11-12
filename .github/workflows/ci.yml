@@ -24,5 +24,8 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
 
+      - name: Test
+        run: dotnet test --no-build
+
       - name: Check formatting
         run: dotnet format --no-restore --verify-no-changes

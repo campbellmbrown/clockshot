@@ -16,6 +16,14 @@
       "args": ["format", "${workspaceFolder}/ClockShot.slnx"],
       "group": "build",
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "test",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["test", "--solution", "${workspaceFolder}/ClockShot.slnx"],
+      "group": "test",
+      "problemMatcher": "$msCompile"
     }
   ]
 }

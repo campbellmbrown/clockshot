@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ClockShot.App.ViewModels"
+        xmlns:controls="using:ClockShot.App.Controls"
         x:Class="ClockShot.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="ClockShot"
@@ -8,7 +9,7 @@
   <DockPanel LastChildFill="False">
     <Menu DockPanel.Dock="Top" AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
-        <MenuItem Header="E_xit" Command="{Binding ExitCommand}" AutomationProperties.AutomationId="ExitMenuItem">
+        <MenuItem Header="E_xit" Command="{Binding ExitCommand}" AutomationProperties.AutomationId="ExitMenuItem" controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}">
         </MenuItem>
       </MenuItem>
     </Menu>

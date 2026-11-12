@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Plain tests for the app project: no UI, no Avalonia platform. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <ProjectReference Include="..\..\src\ClockShot.App\ClockShot.App.csproj" />
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+</Project>
