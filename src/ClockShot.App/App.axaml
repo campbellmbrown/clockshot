@@ -6,6 +6,9 @@
              RequestedThemeVariant="Dark">
   <!-- Explicit view-model to view mapping: no reflection-based view locator. -->
   <Application.DataTemplates>
+    <DataTemplate DataType="vm:SettingsViewModel">
+      <views:SettingsView />
+    </DataTemplate>
     <DataTemplate DataType="vm:AboutViewModel">
       <views:AboutView />
     </DataTemplate>

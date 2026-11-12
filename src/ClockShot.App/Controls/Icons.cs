@@ -13,4 +13,7 @@ public static class Icons
     public const string Exit = "door-open";
     public const string About = "info";
     public const string OpenFolder = "folder-open";
+
+    // ---- Pages ----
+    public const string Settings = "settings";
 }

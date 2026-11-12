@@ -48,6 +48,9 @@ public sealed partial class App(StartupOptions options, SingleInstance? instance
 
         // Launching ClockShot again while it runs shows this copy's window instead.
         instance?.ListenForLaunches(() => Dispatcher.UIThread.Post(() => BringToFront(window)));
+
+        // The window can be hidden to the tray, so only an explicit Exit ends the app.
+        desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
     }
 
     private static void LogUnhandledExceptions(ILogger<App> logger)

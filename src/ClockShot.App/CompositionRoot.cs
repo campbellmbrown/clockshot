@@ -1,6 +1,10 @@
+using System.IO.Abstractions;
+
 using ClockShot.App.Logging;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
+using ClockShot.Core.Settings;
+using ClockShot.Data.Settings;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +24,10 @@ internal static class CompositionRoot
 
         // Infrastructure
         services.AddSingleton(paths);
+        services.AddSingleton(paths.Data);
         services.AddLogging(logging => logging.AddSerilog(LogFiles.Create(paths.Logs), dispose: true));
+        services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<ISettingsStore, JsonSettingsStore>();
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
@@ -31,6 +38,7 @@ internal static class CompositionRoot
         // View models
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconViewModel>();
+        services.AddSingleton<SettingsViewModel>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
     }

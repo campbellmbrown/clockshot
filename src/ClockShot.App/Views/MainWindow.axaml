@@ -11,7 +11,7 @@
         MinWidth="900"
         MinHeight="600"
         Icon="{x:Static controls:AppIcon.Normal}">
-  <DockPanel LastChildFill="False">
+  <DockPanel>
     <Menu DockPanel.Dock="Top" AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
         <MenuItem Header="E_xit"
@@ -30,5 +30,19 @@
                   controls:MenuIcon.Kind="{x:Static controls:Icons.OpenFolder}" />
       </MenuItem>
     </Menu>
+
+    <TabControl ItemsSource="{Binding Pages}" AutomationProperties.AutomationId="MainTabs">
+      <TabControl.ItemTemplate>
+        <DataTemplate DataType="vm:PageViewModel">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <controls:Icon Kind="{Binding IconKind}"
+                           Width="20"
+                           Height="20"
+                           VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+          </StackPanel>
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+    </TabControl>
   </DockPanel>
 </Window>

@@ -1,4 +1,5 @@
 using ClockShot.Core;
+using ClockShot.Data;
 
 namespace ClockShot.App;
 
@@ -14,6 +15,8 @@ public sealed record AppPaths(string Root)
     /// </summary>
     public static AppPaths Default { get; } =
         new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppInfo.Name));
+
+    public DataPaths Data { get; } = new(Root);
 
     public string Logs => Path.Combine(Root, "logs");
 }

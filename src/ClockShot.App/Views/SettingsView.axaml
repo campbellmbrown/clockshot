@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ClockShot.App.ViewModels"
+             xmlns:core="using:ClockShot.Core"
+             x:Class="ClockShot.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="StackPanel.section">
+      <Setter Property="Spacing" Value="2" />
+      <Setter Property="Margin" Value="0,0,0,24" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Margin="24,16"
+                MaxWidth="760"
+                HorizontalAlignment="Left">
+      <TextBlock Classes="secondary"
+                 Text="Changes are saved straight away."
+                 Margin="0,0,0,16" />
+
+      <!-- General -->
+      <StackPanel Classes="section">
+        <TextBlock Classes="h2"
+                   Text="General"
+                   Margin="0,0,0,6" />
+        <CheckBox Content="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Closing the window keeps {0} running in the tray'}" IsChecked="{Binding CloseToTray}" />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

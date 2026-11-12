@@ -15,6 +15,7 @@ Built with C#, .NET 10, and Avalonia.
 ## Data folder
 
 ClockShot keeps everything it stores in one folder, `%LOCALAPPDATA%\ClockShot`.
+The Settings tab saves its changes to `settings.json` there.
 Help > Open log folder opens the logs inside it.
 
 ## Status

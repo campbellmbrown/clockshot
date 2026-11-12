@@ -12,6 +12,7 @@ public sealed class AppPathsTests
         var paths = new AppPaths(root);
 
         // Assert
+        Assert.Equal(root, paths.Data.Root);
         Assert.Equal(Path.Combine(root, "logs"), paths.Logs);
     }
 

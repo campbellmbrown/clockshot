@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
+    <ProjectReference Include="..\ClockShot.Data\ClockShot.Data.csproj" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
