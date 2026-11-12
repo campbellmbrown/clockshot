@@ -11,8 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace ClockShot.App;
 
-public sealed partial class App : Application
+public sealed partial class App(StartupOptions options) : Application
 {
+    /// <summary>
+    /// Avalonia's runtime XAML loader needs a public constructor without parameters.
+    /// </summary>
+    public App() : this(StartupOptions.None) { }
+
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
@@ -25,9 +30,9 @@ public sealed partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static void StartDesktop(IClassicDesktopStyleApplicationLifetime desktop)
+    private void StartDesktop(IClassicDesktopStyleApplicationLifetime desktop)
     {
-        var services = CompositionRoot.Build(AppPaths.Default);
+        var services = CompositionRoot.Build(options.Paths);
         var logger = services.GetRequiredService<ILogger<App>>();
         LogUnhandledExceptions(logger);
         Avalonia.Logging.Logger.Sink = new AvaloniaLogSink(services.GetRequiredService<ILoggerFactory>().CreateLogger("Avalonia"));

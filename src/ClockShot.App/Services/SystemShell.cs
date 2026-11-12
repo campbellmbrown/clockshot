@@ -3,7 +3,8 @@ using System.Diagnostics;
 namespace ClockShot.App.Services;
 
 /// <summary>
-/// Lets the operating system pick the program, which works on Windows, macOS and Linux.
+/// Lets the operating system pick the program.
+/// This works on Windows, macOS and Linux.
 /// </summary>
 internal sealed class SystemShell : IShell
 {

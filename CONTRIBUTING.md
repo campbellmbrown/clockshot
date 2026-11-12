@@ -8,20 +8,28 @@ This page explains how to build ClockShot and what a good change looks like.
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - Optional: VS Code with the [recommended extensions](.vscode/extensions.json)
 
-## Build, run, test, and format
+## Build, test, and format
 
 ```shell
 dotnet build                          # warnings are errors
-dotnet run --project src/ClockShot.App
 dotnet test                           # runs every test
 dotnet format                         # fixes code style, naming, and layout
 dotnet format --verify-no-changes     # fails if anything needs fixing
 ```
 
-The build checks compiler and code analysis warnings.
-`dotnet format` checks code style, naming, and layout against the rules in [.editorconfig](.editorconfig).
-[CI](.github/workflows/ci.yml) runs the build, all the tests, and the format check on every push and pull request.
-The same commands are available as [VS Code tasks](.vscode/tasks.json).
+- The build checks compiler and code analysis warnings.
+- `dotnet format` checks code style, naming, and layout against the rules in [.editorconfig](.editorconfig).
+- [CI](.github/workflows/ci.yml) runs the build, all the tests, and the format check on every push and pull request.
+- The same commands are available as [VS Code tasks](.vscode/tasks.json).
+
+## Run the app
+
+```shell
+dotnet run --project src/ClockShot.App
+```
+
+Running from the repo keeps the app's data in `%LOCALAPPDATA%\ClockShot-dev`, set by [launchSettings.json](src/ClockShot.App/Properties/launchSettings.json).
+This keeps dev runs away from the data of the copy you use every day.
 
 ## How changes are made
 

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ClockShot": {
+      "commandName": "Project",
+      "commandLineArgs": "--data-folder %LOCALAPPDATA%/ClockShot-dev"
+    }
+  }
+}

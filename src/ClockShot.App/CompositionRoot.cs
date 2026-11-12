@@ -8,7 +8,9 @@ using Serilog;
 
 namespace ClockShot.App;
 
-/// <summary>The one place where concrete types are chosen and wired together.</summary>
+/// <summary>
+/// The one place where concrete types are chosen and wired together.
+/// </summary>
 internal static class CompositionRoot
 {
     /// <param name="paths">Where the data and logs live.</param>
