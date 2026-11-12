@@ -2,8 +2,11 @@
   <Folder Name="/src/">
     <Project Path="src/ClockShot.App/ClockShot.App.csproj" />
     <Project Path="src/ClockShot.Core/ClockShot.Core.csproj" />
+    <Project Path="src/ClockShot.Data/ClockShot.Data.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ClockShot.App.Tests/ClockShot.App.Tests.csproj" />
+    <Project Path="tests/ClockShot.Core.Tests/ClockShot.Core.Tests.csproj" />
+    <Project Path="tests/ClockShot.Data.Tests/ClockShot.Data.Tests.csproj" />
   </Folder>
 </Solution>

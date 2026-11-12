@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The settings file. -->
+  <ItemGroup>
+    <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

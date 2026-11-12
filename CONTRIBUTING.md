@@ -34,14 +34,6 @@ This keeps dev runs away from the data of the copy you use every day.
 ## How changes are made
 
 - Follow TDD, YAGNI, SOLID, DRY, and KISS.
-- Split each test into steps marked `// Arrange`, `// Act`, and `// Assert`.
-  Leave out a step the test doesn't need.
-  - Win32 calls and XAML layout can't be test-driven.
-    Check them by running the app.
-  - Only add an interface for a second implementation or a test fake, such as the clock, database, OS, or dialogs.
-- Keep unit tests fast.
-  Don't make them wait on real time with delays or timeouts.
-  Pass in a `TimeProvider` and use a fake one in the test, or pass the timeout in.
 - Keep each commit to one change, such as a button, a setting, or a class with its tests.
 - Remove code that a change leaves unused in the same commit.
 - When you rename something, update every use.
@@ -49,6 +41,23 @@ This keeps dev runs away from the data of the copy you use every day.
 - Update the docs in the same commit as the change they describe.
 - When you copy files from another project into the repo, such as icons, add that project's licence file next to them.
 - When you add a package or a third-party asset, credit it in the About dialog, in [AboutViewModel.cs](src/ClockShot.App/ViewModels/AboutViewModel.cs).
+
+## Unit tests
+
+- Split each test into steps marked `// Arrange`, `// Act`, and `// Assert`.
+  Leave out a step the test doesn't need.
+- Keep unit tests fast.
+  Don't make them wait on real time with delays or timeouts.
+  Pass in a `TimeProvider` and use a fake one in the test, or pass the timeout in.
+- Don't use the real file system in unit tests.
+  Code that reads or writes files takes an `IFileSystem`, and its tests use a `MockFileSystem`.
+  The exception is code whose files another library opens, such as a SQLite database.
+- Only add an interface for a second implementation or a test fake, such as the clock, database, OS, or dialogs.
+- Aim for methods that are easy to unit test.
+  If one is hard to test, consider changing the method.
+- Win32 calls and XAML layout can't be test-driven.
+  Check them by running the app.
+- Don't use real people, companies, or products in tests or sample data.
 
 ## Code style
 
@@ -78,8 +87,6 @@ They aren't hard rules and can be broken when there's a good reason.
 - Declare variables in the smallest scope that needs them.
 - In XAML, put each attribute on its own line when an element has more than two.
   Always do this for the root element.
-- Aim for methods that are easy to unit test.
-  If one is hard to test, consider changing the method.
 
 ## Writing
 

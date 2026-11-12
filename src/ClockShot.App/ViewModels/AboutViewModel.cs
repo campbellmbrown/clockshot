@@ -22,5 +22,6 @@ public sealed class AboutViewModel() : DialogViewModel($"About {AppInfo.Name}")
         "Lucide icons (ISC)",
         "Microsoft.Extensions (MIT)",
         "Serilog (Apache-2.0)",
+        "System.IO.Abstractions (MIT)",
     ];
 }

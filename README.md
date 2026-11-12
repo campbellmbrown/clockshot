@@ -12,6 +12,11 @@ A personal time tracker for Windows that keeps everything on your own computer.
 
 Built with C#, .NET 10, and Avalonia.
 
+## Data folder
+
+ClockShot keeps everything it stores in one folder, `%LOCALAPPDATA%\ClockShot`.
+Help > Open log folder opens the logs inside it.
+
 ## Status
 
 Work in progress.
