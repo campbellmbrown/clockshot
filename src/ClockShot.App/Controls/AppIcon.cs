@@ -4,7 +4,7 @@ using Avalonia.Platform;
 namespace ClockShot.App.Controls;
 
 /// <summary>
-/// The app's icon for windows, from the files in Assets/AppIcon.
+/// The app's icon for windows and the tray, from the files in Assets/AppIcon.
 /// </summary>
 public static class AppIcon
 {

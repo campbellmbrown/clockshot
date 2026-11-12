@@ -28,6 +28,7 @@ internal static class CompositionRoot
 
         // View models
         services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<TrayIconViewModel>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });
     }

@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
 using ClockShot.App.Logging;
+using ClockShot.App.ViewModels;
 using ClockShot.App.Views;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +41,10 @@ public sealed partial class App(StartupOptions options, SingleInstance? instance
 
         var window = MainWindow.Create(services);
         desktop.MainWindow = window;
+
+        var tray = services.GetRequiredService<TrayIconViewModel>();
+        tray.ShowWindowRequested += () => BringToFront(window);
+        TrayIconView.Show(this, tray);
 
         // Launching ClockShot again while it runs shows this copy's window instead.
         instance?.ListenForLaunches(() => Dispatcher.UIThread.Post(() => BringToFront(window)));
