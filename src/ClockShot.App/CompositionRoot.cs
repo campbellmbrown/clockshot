@@ -1,3 +1,4 @@
+using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,9 @@ internal static class CompositionRoot
     public static ServiceProvider Build()
     {
         var services = new ServiceCollection();
+
+        // App services
+        services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
 
         // View models
         services.AddSingleton<MainWindowViewModel>();
