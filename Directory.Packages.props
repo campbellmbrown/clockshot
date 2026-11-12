@@ -17,6 +17,7 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="System.IO.Abstractions" Version="23.0.0" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="23.0.0" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.36.0.15337" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>
 </Project>

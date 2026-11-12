@@ -17,7 +17,8 @@ dotnet format                         # fixes code style, naming, and layout
 dotnet format --verify-no-changes     # fails if anything needs fixing
 ```
 
-- The build checks compiler and code analysis warnings.
+- The build checks compiler warnings, the SDK's code analysis, and [Sonar's rules](https://rules.sonarsource.com/csharp/).
+  Rules that don't fit this app are turned off in [.editorconfig](.editorconfig), each with its reason.
 - `dotnet format` checks code style, naming, and layout against the rules in [.editorconfig](.editorconfig).
 - [CI](.github/workflows/ci.yml) runs the build, all the tests, and the format check on every push and pull request.
 - The same commands are available as [VS Code tasks](.vscode/tasks.json).
