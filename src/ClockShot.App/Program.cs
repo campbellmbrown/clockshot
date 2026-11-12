@@ -23,6 +23,12 @@ internal static class Program
             return BadArgumentsExitCode;
         }
 
+        using var instance = new SingleInstance(options.Paths.Root);
+        if (!instance.IsFirst)
+        {
+            return 0;
+        }
+
         return BuildAvaloniaApp(options).StartWithClassicDesktopLifetime(args);
     }
 
