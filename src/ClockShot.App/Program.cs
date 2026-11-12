@@ -26,17 +26,18 @@ internal static class Program
         using var instance = new SingleInstance(options.Paths.Root);
         if (!instance.IsFirst)
         {
+            instance.AskRunningCopyToShow();
             return 0;
         }
 
-        return BuildAvaloniaApp(options).StartWithClassicDesktopLifetime(args);
+        return BuildAvaloniaApp(options, instance).StartWithClassicDesktopLifetime(args);
     }
 
     // Used by the XAML previewer.
-    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(StartupOptions.None);
+    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(StartupOptions.None, null);
 
-    private static AppBuilder BuildAvaloniaApp(StartupOptions options) =>
-        AppBuilder.Configure(() => new App(options))
+    private static AppBuilder BuildAvaloniaApp(StartupOptions options, SingleInstance? instance) =>
+        AppBuilder.Configure(() => new App(options, instance))
             .UsePlatformDetect()
             .WithInterFont();
 }

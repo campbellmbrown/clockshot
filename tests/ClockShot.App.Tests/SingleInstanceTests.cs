@@ -4,6 +4,11 @@ namespace ClockShot.App.Tests;
 
 public sealed class SingleInstanceTests
 {
+    /// <summary>
+    /// Only a limit for a broken listener. The first copy is normally asked within milliseconds.
+    /// </summary>
+    private static readonly TimeSpan ShowWait = TimeSpan.FromSeconds(10);
+
     private readonly string _folder = Path.Combine(Path.GetTempPath(), $"{AppInfo.FilePrefix}-tests", Guid.NewGuid().ToString("N"));
 
     [Fact]
@@ -95,5 +100,37 @@ public sealed class SingleInstanceTests
         Assert.Null(error);
         using var next = new SingleInstance(_folder);
         Assert.True(next.IsFirst);
+    }
+
+    [Fact]
+    public void ASecondCopyAsksTheFirstToShowItsWindow()
+    {
+        // Arrange
+        using var shown = new ManualResetEventSlim();
+        using var first = new SingleInstance(_folder);
+        first.ListenForLaunches(shown.Set);
+        using var second = new SingleInstance(_folder);
+
+        // Act
+        second.AskRunningCopyToShow();
+
+        // Assert
+        Assert.True(shown.Wait(ShowWait, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public void AskingGivesUpQuietlyWhenTheFirstCopyIsNotListening()
+    {
+        // Arrange
+        using var first = new SingleInstance(_folder);
+
+        // The first copy isn't listening, so waiting for an answer would only slow the test down.
+        using var second = new SingleInstance(_folder, connectTimeout: TimeSpan.Zero);
+
+        // Act
+        var error = Record.Exception(second.AskRunningCopyToShow);
+
+        // Assert
+        Assert.Null(error);
     }
 }

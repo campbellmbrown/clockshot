@@ -39,6 +39,9 @@ This keeps dev runs away from the data of the copy you use every day.
   - Win32 calls and XAML layout can't be test-driven.
     Check them by running the app.
   - Only add an interface for a second implementation or a test fake, such as the clock, database, OS, or dialogs.
+- Keep unit tests fast.
+  Don't make them wait on real time with delays or timeouts.
+  Pass in a `TimeProvider` and use a fake one in the test, or pass the timeout in.
 - Keep each commit to one change, such as a button, a setting, or a class with its tests.
 - Remove code that a change leaves unused in the same commit.
 - When you rename something, update every use.
@@ -59,6 +62,8 @@ They aren't hard rules and can be broken when there's a good reason.
 - Avoid boolean parameters that choose behaviour.
   Two methods with clear names usually read better.
   If a boolean is the right fit, pass it as a named argument, such as `Load(includeArchived: true)`.
+- Name arguments whose values don't explain themselves, such as literal numbers or strings.
+  Put each on its own line when there are several.
 - Name boolean properties as affirmative phrases, such as `IsPaused`, `HasScreenshot`, or `CanUndo`.
 - Prefer clear names to short ones.
   Avoid abbreviations.

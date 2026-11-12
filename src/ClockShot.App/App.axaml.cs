@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -11,12 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ClockShot.App;
 
-public sealed partial class App(StartupOptions options) : Application
+public sealed partial class App(StartupOptions options, SingleInstance? instance) : Application
 {
     /// <summary>
     /// Avalonia's runtime XAML loader needs a public constructor without parameters.
     /// </summary>
-    public App() : this(StartupOptions.None) { }
+    public App() : this(StartupOptions.None, null) { }
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -37,7 +38,11 @@ public sealed partial class App(StartupOptions options) : Application
         LogUnhandledExceptions(logger);
         Avalonia.Logging.Logger.Sink = new AvaloniaLogSink(services.GetRequiredService<ILoggerFactory>().CreateLogger("Avalonia"));
 
-        desktop.MainWindow = MainWindow.Create(services);
+        var window = MainWindow.Create(services);
+        desktop.MainWindow = window;
+
+        // Launching ClockShot again while it runs shows this copy's window instead.
+        instance?.ListenForLaunches(() => Dispatcher.UIThread.Post(() => BringToFront(window)));
     }
 
     private static void LogUnhandledExceptions(ILogger<App> logger)
@@ -50,5 +55,16 @@ public sealed partial class App(StartupOptions options) : Application
             logger.LogError(e.Exception, "Something failed. The app carries on.");
             e.Handled = true;
         };
+    }
+
+    private static void BringToFront(Window window)
+    {
+        window.Show();
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        window.Activate();
     }
 }
