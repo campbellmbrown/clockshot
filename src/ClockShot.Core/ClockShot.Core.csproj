@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain model and pure logic. No UI, database or OS dependencies. -->
+</Project>
