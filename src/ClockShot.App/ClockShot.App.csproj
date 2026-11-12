@@ -3,9 +3,10 @@
     <AssemblyName>ClockShot</AssemblyName>
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\AppIcon\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" Exclude="Assets\Icons\LICENSE" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\Icons\LICENSE;Assets\AppIcon\*.svg;Assets\AppIcon\README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
