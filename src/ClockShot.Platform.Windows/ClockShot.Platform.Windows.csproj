@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Win32 interop: foreground window, idle time, session lock, window capture. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ClockShot.Platform.Windows.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
+  </ItemGroup>
+</Project>

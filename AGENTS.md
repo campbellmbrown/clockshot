@@ -9,6 +9,7 @@ Everything in it applies to you too.
 - [src/ClockShot.App](src/ClockShot.App) is the Avalonia desktop app.
 - [src/ClockShot.Core](src/ClockShot.Core) holds the domain model and pure logic, with no UI, database, or OS code.
 - [src/ClockShot.Data](src/ClockShot.Data) stores data on disk.
+- [src/ClockShot.Platform.Windows](src/ClockShot.Platform.Windows) reads what Windows is doing.
 - [tests](tests) has a test project for each project it tests.
 
 ## Working with the user
