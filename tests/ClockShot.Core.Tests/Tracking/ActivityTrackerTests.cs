@@ -9,6 +9,8 @@ public sealed class ActivityTrackerTests
     private static readonly ForegroundWindow Editor = new("Editor.exe", @"C:\Editor.exe", "Editor", "DESIGN.md");
     private static readonly ForegroundWindow Browser = new("Browser.exe", @"C:\Browser.exe", "Browser", "Inbox");
 
+    private static readonly TimeSpan AwayAfter = TimeSpan.FromMinutes(5);
+
     private readonly ActivityTracker _tracker = new();
 
     [Fact]
@@ -85,6 +87,52 @@ public sealed class ActivityTrackerTests
     }
 
     [Fact]
+    public void GoingAwayIsDatedFromLastInput()
+    {
+        // Arrange
+        Sample(0, Editor);
+        for (var second = 1; second < 400; second++)
+        {
+            Sample(second, Editor, idleSeconds: Math.Max(0, second - 100));
+        }
+
+        // Act
+        // At 400 s the user has been idle for 300 s, which is 5 minutes. They're away from their last input at 100 s.
+        var changes = Sample(400, Editor, idleSeconds: 300);
+
+        // Assert
+        Assert.Equal(
+            [
+                new ActivityEnded(At(100)),
+                new StateEnded(At(100)),
+                new StateStarted(At(100), ComputerState.Away),
+                new SegmentsExtended(At(400)),
+            ],
+            changes);
+        Assert.Null(_tracker.CurrentWindow);
+    }
+
+    [Fact]
+    public void ComingBackFromAwayStartsActiveAtLastInput()
+    {
+        // Arrange
+        Sample(0, Editor, idleSeconds: 600);
+
+        // Act
+        var changes = Sample(5, Browser, idleSeconds: 1);
+
+        // Assert
+        Assert.Equal(
+            [
+                new StateEnded(At(4)),
+                new StateStarted(At(4), ComputerState.Active),
+                new ActivityStarted(At(5), Browser),
+                new SegmentsExtended(At(5)),
+            ],
+            changes);
+    }
+
+    [Fact]
     public void NoForegroundWindowEndsActivityButStaysActive()
     {
         // Arrange
@@ -143,6 +191,9 @@ public sealed class ActivityTrackerTests
 
     private static DateTime At(int seconds) => Start.AddSeconds(seconds);
 
-    private IReadOnlyList<TrackingChange> Sample(int seconds, ForegroundWindow? window) =>
-        _tracker.Process(new TrackingSample(At(seconds), window));
+    private IReadOnlyList<TrackingChange> Sample(int seconds, ForegroundWindow? window, int idleSeconds = 0)
+    {
+        var sample = new TrackingSample(At(seconds), window, TimeSpan.FromSeconds(idleSeconds));
+        return _tracker.Process(sample, AwayAfter);
+    }
 }

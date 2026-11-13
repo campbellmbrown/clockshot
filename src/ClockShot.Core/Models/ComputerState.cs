@@ -9,4 +9,5 @@ namespace ClockShot.Core.Models;
 public enum ComputerState
 {
     Active = 0,
+    Away = 1,
 }

@@ -5,4 +5,5 @@ namespace ClockShot.Core.Tracking;
 /// </summary>
 /// <param name="TimeUtc">When the reading was taken.</param>
 /// <param name="Window">The foreground window, or null when no window has focus.</param>
-public sealed record TrackingSample(DateTime TimeUtc, ForegroundWindow? Window);
+/// <param name="IdleTime">The time since the last keyboard or mouse input.</param>
+public sealed record TrackingSample(DateTime TimeUtc, ForegroundWindow? Window, TimeSpan IdleTime);

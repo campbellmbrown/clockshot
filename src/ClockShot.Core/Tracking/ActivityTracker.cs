@@ -6,12 +6,24 @@ namespace ClockShot.Core.Tracking;
 /// Turns samples of what the computer is doing into segments.
 /// A segment is a stretch of time with a start and an end.
 /// An activity segment says which application and window was in use.
-/// A computer-state segment says when the computer was active.
+/// A computer-state segment says whether the computer was active or away.
 /// </summary>
+/// <remarks>
+/// <list type="bullet">
+/// <item>Activity is only recorded while the computer is <see cref="ComputerState.Active"/>.</item>
+/// <item>Going away is dated from the last input, not from when the away limit was reached.
+/// The activity before it is trimmed back to the last input.</item>
+/// </list>
+/// </remarks>
 public sealed class ActivityTracker
 {
     private DateTime _activityStartUtc;
     private DateTime _stateStartUtc;
+
+    /// <summary>
+    /// The window of the open activity segment, or null when none is open.
+    /// </summary>
+    public ForegroundWindow? CurrentWindow { get; private set; }
 
     /// <summary>
     /// The state of the open computer-state segment, or null when none is open.
@@ -19,20 +31,20 @@ public sealed class ActivityTracker
     public ComputerState? CurrentState { get; private set; }
 
     /// <summary>
-    /// The window of the open activity segment, or null when none is open.
+    /// Works out what changed since the last sample.
     /// </summary>
-    private ForegroundWindow? CurrentWindow { get; set; }
-
-    public IReadOnlyList<TrackingChange> Process(TrackingSample sample)
+    /// <param name="awayAfter">No input for this long means the user is away.</param>
+    public IReadOnlyList<TrackingChange> Process(TrackingSample sample, TimeSpan awayAfter)
     {
         var changes = new List<TrackingChange>();
 
-        if (CurrentState is null)
+        var state = StateOf(sample, awayAfter);
+        if (state != CurrentState)
         {
-            ChangeState(ComputerState.Active, sample.TimeUtc, changes);
+            ChangeState(state, StateChangeTime(sample, state), changes);
         }
 
-        if (sample.Window?.IsSameActivityAs(CurrentWindow) != true)
+        if (state == ComputerState.Active && sample.Window?.IsSameActivityAs(CurrentWindow) != true)
         {
             EndActivity(sample.TimeUtc, changes);
             if (sample.Window is { } window)
@@ -55,8 +67,35 @@ public sealed class ActivityTracker
         return changes;
     }
 
+    private static ComputerState StateOf(TrackingSample sample, TimeSpan awayAfter) => sample switch
+    {
+        _ when sample.IdleTime >= awayAfter => ComputerState.Away,
+        _ => ComputerState.Active,
+    };
+
+    /// <summary>
+    /// Away starts at the last input. Coming back from away also dates from the last input, when the user
+    /// touched the mouse or keyboard again.
+    /// </summary>
+    private DateTime StateChangeTime(TrackingSample sample, ComputerState newState)
+    {
+        var lastInput = sample.TimeUtc - sample.IdleTime;
+        var time = newState == ComputerState.Away || CurrentState == ComputerState.Away ? lastInput : sample.TimeUtc;
+        return TimeMath.Max(time, TimeMath.Max(_stateStartUtc, _activityStartUtc));
+    }
+
     private void ChangeState(ComputerState state, DateTime timeUtc, List<TrackingChange> changes)
     {
+        if (state != ComputerState.Active)
+        {
+            EndActivity(timeUtc, changes);
+        }
+
+        if (CurrentState is not null)
+        {
+            changes.Add(new StateEnded(timeUtc));
+        }
+
         CurrentState = state;
         _stateStartUtc = timeUtc;
         changes.Add(new StateStarted(timeUtc, state));
