@@ -1,3 +1,5 @@
+using ClockShot.Core;
+
 namespace ClockShot.Data;
 
 /// <summary>
@@ -6,5 +8,6 @@ namespace ClockShot.Data;
 /// </summary>
 public sealed record DataPaths(string Root)
 {
+    public string Database => Path.Combine(Root, $"{AppInfo.FilePrefix}.db");
     public string Settings => Path.Combine(Root, "settings.json");
 }

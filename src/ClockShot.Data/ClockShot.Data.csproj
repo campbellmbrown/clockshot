@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- The settings file. -->
+  <!-- SQLite storage and the settings file. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\*.sql" LogicalName="Migrations.%(Filename)%(Extension)" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Dapper" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>

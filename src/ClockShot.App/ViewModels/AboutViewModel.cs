@@ -18,8 +18,10 @@ public sealed class AboutViewModel() : DialogViewModel($"About {AppInfo.Name}")
     [
         "Avalonia UI (MIT)",
         "CommunityToolkit.Mvvm (MIT)",
+        "Dapper (Apache-2.0)",
         "Inter font (OFL-1.1)",
         "Lucide icons (ISC)",
+        "Microsoft.Data.Sqlite (MIT)",
         "Microsoft.Extensions (MIT)",
         "Serilog (Apache-2.0)",
         "System.IO.Abstractions (MIT)",
