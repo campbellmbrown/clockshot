@@ -10,7 +10,8 @@ namespace ClockShot.Data.Tracking;
 
 /// <summary>
 /// Saves tracking changes to the database on a background task, so the sampling loop never waits on disk.
-/// It is the only writer of the tracking tables.
+/// It is the only writer of the tracking tables. The end time of the open segments is saved every
+/// <see cref="TrackingTimings.SaveInterval"/>, so a crash loses at most that much time.
 /// </summary>
 public sealed class TrackingWriter : ITrackingSink
 {

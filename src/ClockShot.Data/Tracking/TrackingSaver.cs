@@ -72,6 +72,11 @@ internal sealed class TrackingSaver(SqliteConnection connection, ILogger logger)
                 break;
             case SegmentsExtended extended:
                 _open = _open with { LatestEndUtc = extended.EndUtc };
+                if (extended.EndUtc - _open.SavedEndUtc >= TrackingTimings.SaveInterval)
+                {
+                    SaveOpenEnds(transaction);
+                }
+
                 break;
         }
     }
@@ -92,6 +97,8 @@ internal sealed class TrackingSaver(SqliteConnection connection, ILogger logger)
         {
             TrackingTables.SetStateEnd(connection, stateId, end, transaction);
         }
+
+        _open = _open with { SavedEndUtc = end };
     }
 
     private long ApplicationId(ForegroundWindow window, IDbTransaction transaction)
@@ -111,14 +118,17 @@ internal sealed class TrackingSaver(SqliteConnection connection, ILogger logger)
     /// <param name="ActivityId">The open activity record, or null when none is open.</param>
     /// <param name="StateId">The open computer-state record, or null when none is open.</param>
     /// <param name="LatestEndUtc">The latest time the open records are known to reach.</param>
+    /// <param name="SavedEndUtc">The end time last saved to the open records.</param>
     private readonly record struct OpenRecords(
         long? ActivityId,
         long? StateId,
-        DateTime? LatestEndUtc)
+        DateTime? LatestEndUtc,
+        DateTime SavedEndUtc)
     {
         public static OpenRecords None { get; } = new(
             ActivityId: null,
             StateId: null,
-            LatestEndUtc: null);
+            LatestEndUtc: null,
+            SavedEndUtc: DateTime.MinValue);
     }
 }
