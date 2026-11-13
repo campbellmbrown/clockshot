@@ -10,8 +10,9 @@ public sealed class ActivityTrackerTests
     private static readonly ForegroundWindow Browser = new("Browser.exe", @"C:\Browser.exe", "Browser", "Inbox");
 
     private static readonly TimeSpan AwayAfter = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan MaxSampleGap = TimeSpan.FromSeconds(10);
 
-    private readonly ActivityTracker _tracker = new();
+    private readonly ActivityTracker _tracker = new(MaxSampleGap);
 
     [Fact]
     public void FirstSampleStartsActiveStateAndActivity()
@@ -186,6 +187,28 @@ public sealed class ActivityTrackerTests
         // Assert
         Assert.Equal(
             [new StateEnded(At(10)), new StateStarted(At(10), ComputerState.Away), new SegmentsExtended(At(10))],
+            changes);
+    }
+
+    [Fact]
+    public void LongGapBetweenSamplesEndsEverythingAtLastSample()
+    {
+        // Arrange
+        Sample(0, Editor);
+        Sample(1, Editor);
+
+        // Act
+        var changes = Sample(3600, Editor);
+
+        // Assert
+        Assert.Equal(
+            [
+                new ActivityEnded(At(1)),
+                new StateEnded(At(1)),
+                new StateStarted(At(3600), ComputerState.Active),
+                new ActivityStarted(At(3600), Editor),
+                new SegmentsExtended(At(3600)),
+            ],
             changes);
     }
 

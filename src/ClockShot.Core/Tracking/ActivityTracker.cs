@@ -13,10 +13,16 @@ namespace ClockShot.Core.Tracking;
 /// <item>Activity is only recorded while the computer is <see cref="ComputerState.Active"/>.</item>
 /// <item>Going away is dated from the last input, not from when the away limit was reached.
 /// The activity before it is trimmed back to the last input.</item>
+/// <item>A gap between samples longer than <c>maxSampleGap</c> ends everything at the last sample.
+/// Sleep, hibernation or a hung process cause such gaps, and that time counts as not running.</item>
 /// </list>
 /// </remarks>
-public sealed class ActivityTracker
+/// <param name="maxSampleGap">
+/// A longer gap between samples means the computer was asleep or ClockShot wasn't sampling.
+/// </param>
+public sealed class ActivityTracker(TimeSpan maxSampleGap)
 {
+    private DateTime? _lastSampleUtc;
     private DateTime _activityStartUtc;
     private DateTime _stateStartUtc;
 
@@ -38,6 +44,11 @@ public sealed class ActivityTracker
     {
         var changes = new List<TrackingChange>();
 
+        if (_lastSampleUtc is { } last && sample.TimeUtc - last > maxSampleGap)
+        {
+            EndAll(last, changes);
+        }
+
         var state = StateOf(sample, awayAfter);
         if (state != CurrentState)
         {
@@ -54,6 +65,7 @@ public sealed class ActivityTracker
         }
 
         changes.Add(new SegmentsExtended(sample.TimeUtc));
+        _lastSampleUtc = sample.TimeUtc;
         return changes;
     }
 
