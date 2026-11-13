@@ -15,6 +15,7 @@ Everything in it applies to you too.
 ## Working with the user
 
 - If something is unclear, ask instead of assuming.
+- When you ask, give your recommendation and why.
 - If a request conflicts with the code, say so and ask how to proceed.
 - Don't undo the user's changes without asking.
 - Don't change anything beyond the task without asking first.
