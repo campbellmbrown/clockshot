@@ -51,5 +51,7 @@ Everything in it applies to you too.
   Leave it out when the name already says it.
 - Put `<summary>` tags on their own lines, even around one sentence.
   Keep other doc tags, such as `<param>` and `<exception>`, on one line unless the text doesn't fit.
-- Don't write "e.g." or usage examples, and don't escape markup such as `&lt;`.
+- Leave out examples unless one makes an unclear term or format clear.
+  Never name files or tools that aren't in this repo.
+- Don't escape markup such as `&lt;`.
 - Reread every comment you added before you report back.
