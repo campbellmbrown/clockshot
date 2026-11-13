@@ -21,6 +21,9 @@ internal static unsafe partial class NativeMethods
     [LibraryImport("user32.dll", EntryPoint = "GetWindowTextW")]
     public static partial int GetWindowText(nint window, char* buffer, int maxCount);
 
+    [LibraryImport("user32.dll", EntryPoint = "FindWindowExW", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial nint FindWindowEx(nint parent, nint childAfter, string? className, string? windowName);
+
     // ---- Input and session ----
 
     [LibraryImport("user32.dll")]
@@ -57,6 +60,9 @@ internal static unsafe partial class NativeMethods
         uint processId);
 
     public const uint ProcessQueryLimitedInformation = 0x1000;
+
+    // Asks QueryFullProcessImageName for a normal path, not a device path.
+    public const uint ProcessNameWin32 = 0;
 
     [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW")]
     [return: MarshalAs(UnmanagedType.Bool)]
