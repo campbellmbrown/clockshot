@@ -2,6 +2,7 @@
   <!-- SQLite storage and the settings file. -->
   <ItemGroup>
     <EmbeddedResource Include="Migrations\*.sql" LogicalName="Migrations.%(Filename)%(Extension)" />
+    <InternalsVisibleTo Include="ClockShot.Data.Tests" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />

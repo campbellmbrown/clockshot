@@ -6,6 +6,8 @@ namespace ClockShot.Data.Tests;
 
 /// <summary>
 /// A migrated database in memory for one test, gone once the test disposes it.
+/// Unlike in the database file, a read here waits while another connection is writing.
+/// Tests where reading and writing overlap use <see cref="TempDatabase"/>.
 /// </summary>
 public sealed class MemoryDatabase : IDisposable
 {

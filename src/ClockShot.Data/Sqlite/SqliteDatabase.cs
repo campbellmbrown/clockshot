@@ -28,11 +28,11 @@ public sealed class SqliteDatabase
     }
 
     /// <summary>
-    /// Opens the database that <paramref name="source"/> describes, such as one held in memory.
+    /// Uses the database that <paramref name="settings"/> describes, such as one held in memory.
     /// </summary>
-    public SqliteDatabase(SqliteConnectionStringBuilder source)
+    public SqliteDatabase(SqliteConnectionStringBuilder settings)
     {
-        _connectionString = new SqliteConnectionStringBuilder(source.ConnectionString)
+        _connectionString = new SqliteConnectionStringBuilder(settings.ConnectionString)
         {
             ForeignKeys = true,
             DefaultTimeout = BusyTimeoutSeconds,
