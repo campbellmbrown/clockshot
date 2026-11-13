@@ -6,7 +6,7 @@ namespace ClockShot.Core.Tracking;
 /// Turns samples of what the computer is doing into segments.
 /// A segment is a stretch of time with a start and an end.
 /// An activity segment says which application and window was in use.
-/// A computer-state segment says whether the computer was active or away.
+/// A computer-state segment says whether the computer was active, away or locked.
 /// </summary>
 /// <remarks>
 /// <list type="bullet">
@@ -69,18 +69,20 @@ public sealed class ActivityTracker
 
     private static ComputerState StateOf(TrackingSample sample, TimeSpan awayAfter) => sample switch
     {
+        { IsLocked: true } => ComputerState.Locked,
         _ when sample.IdleTime >= awayAfter => ComputerState.Away,
         _ => ComputerState.Active,
     };
 
     /// <summary>
     /// Away starts at the last input. Coming back from away also dates from the last input, when the user
-    /// touched the mouse or keyboard again.
+    /// touched the mouse or keyboard again. Locking and unlocking are dated at the sample.
     /// </summary>
     private DateTime StateChangeTime(TrackingSample sample, ComputerState newState)
     {
-        var lastInput = sample.TimeUtc - sample.IdleTime;
-        var time = newState == ComputerState.Away || CurrentState == ComputerState.Away ? lastInput : sample.TimeUtc;
+        var isLockChange = newState == ComputerState.Locked || CurrentState == ComputerState.Locked;
+        var isAwayChange = newState == ComputerState.Away || CurrentState == ComputerState.Away;
+        var time = isAwayChange && !isLockChange ? sample.TimeUtc - sample.IdleTime : sample.TimeUtc;
         return TimeMath.Max(time, TimeMath.Max(_stateStartUtc, _activityStartUtc));
     }
 

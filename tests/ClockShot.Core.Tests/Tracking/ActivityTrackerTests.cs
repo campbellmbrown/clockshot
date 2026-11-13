@@ -133,6 +133,63 @@ public sealed class ActivityTrackerTests
     }
 
     [Fact]
+    public void LockingEndsActivityAtLockTime()
+    {
+        // Arrange
+        Sample(0, Editor);
+
+        // Act
+        var changes = Sample(1, Editor, isLocked: true);
+
+        // Assert
+        Assert.Equal(
+            [
+                new ActivityEnded(At(1)),
+                new StateEnded(At(1)),
+                new StateStarted(At(1), ComputerState.Locked),
+                new SegmentsExtended(At(1)),
+            ],
+            changes);
+    }
+
+    [Fact]
+    public void LockingWhileAwayKeepsTheAwayTime()
+    {
+        // Arrange
+        // The user stops at 100 s, is away from 100 s, and the screen locks itself at 600 s.
+        for (var second = 0; second < 600; second++)
+        {
+            Sample(second, Editor, idleSeconds: Math.Max(0, second - 100));
+        }
+
+        // Act
+        var changes = Sample(600, Editor, idleSeconds: 500, isLocked: true);
+
+        // Assert
+        Assert.Equal(
+            [new StateEnded(At(600)), new StateStarted(At(600), ComputerState.Locked), new SegmentsExtended(At(600))],
+            changes);
+    }
+
+    [Fact]
+    public void UnlockingWithoutInputKeepsTheLockedTime()
+    {
+        // Arrange
+        for (var second = 0; second < 10; second++)
+        {
+            Sample(second, Editor, idleSeconds: 400 + second, isLocked: true);
+        }
+
+        // Act
+        var changes = Sample(10, Editor, idleSeconds: 410);
+
+        // Assert
+        Assert.Equal(
+            [new StateEnded(At(10)), new StateStarted(At(10), ComputerState.Away), new SegmentsExtended(At(10))],
+            changes);
+    }
+
+    [Fact]
     public void NoForegroundWindowEndsActivityButStaysActive()
     {
         // Arrange
@@ -191,9 +248,13 @@ public sealed class ActivityTrackerTests
 
     private static DateTime At(int seconds) => Start.AddSeconds(seconds);
 
-    private IReadOnlyList<TrackingChange> Sample(int seconds, ForegroundWindow? window, int idleSeconds = 0)
+    private IReadOnlyList<TrackingChange> Sample(
+        int seconds,
+        ForegroundWindow? window,
+        int idleSeconds = 0,
+        bool isLocked = false)
     {
-        var sample = new TrackingSample(At(seconds), window, TimeSpan.FromSeconds(idleSeconds));
+        var sample = new TrackingSample(At(seconds), window, TimeSpan.FromSeconds(idleSeconds), isLocked);
         return _tracker.Process(sample, AwayAfter);
     }
 }

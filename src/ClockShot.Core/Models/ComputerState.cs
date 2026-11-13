@@ -10,4 +10,5 @@ public enum ComputerState
 {
     Active = 0,
     Away = 1,
+    Locked = 2,
 }
