@@ -12,6 +12,12 @@ internal static class UnixTime
     public static DateTime FromMilliseconds(long milliseconds) =>
         DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).UtcDateTime;
 
+    /// <summary>
+    /// Query parameters <c>@Start</c> and <c>@End</c> for a range.
+    /// </summary>
+    public static object RangeParameters(TimeRange range) =>
+        new { Start = ToMilliseconds(range.Start), End = ToMilliseconds(range.End) };
+
     public static TimeRange ToRange(long startMilliseconds, long endMilliseconds) =>
         new(FromMilliseconds(startMilliseconds), FromMilliseconds(endMilliseconds));
 }

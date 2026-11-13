@@ -45,6 +45,7 @@ Everything in it applies to you too.
 - Use plain ASCII that's easy to type and search for, such as straight quotes.
   Write "...", "-" and ">" instead of typographic characters.
 - Don't start list items with a bold label.
+- Never name files or tools that aren't in this repo, in code and test data as well as comments.
 
 ## Code comments
 
@@ -54,6 +55,5 @@ Everything in it applies to you too.
 - Put `<summary>` tags on their own lines, even around one sentence.
   Keep other doc tags, such as `<param>` and `<exception>`, on one line unless the text doesn't fit.
 - Leave out examples unless one makes an unclear term or format clear.
-  Never name files or tools that aren't in this repo.
 - Don't escape markup such as `&lt;`.
 - Reread every comment you added before you report back.

@@ -6,7 +6,7 @@ namespace ClockShot.Core.Tests.Tracking;
 public sealed class ActivityTrackerTests
 {
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
-    private static readonly ForegroundWindow Editor = new("Editor.exe", @"C:\Editor.exe", "Editor", "DESIGN.md");
+    private static readonly ForegroundWindow Editor = new("Editor.exe", @"C:\Editor.exe", "Editor", "notes.txt");
     private static readonly ForegroundWindow Browser = new("Browser.exe", @"C:\Browser.exe", "Browser", "Inbox");
 
     private static readonly TimeSpan AwayAfter = TimeSpan.FromMinutes(5);
