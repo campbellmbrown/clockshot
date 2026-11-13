@@ -18,6 +18,7 @@ Everything in it applies to you too.
 - When you ask, give your recommendation and why.
 - If a request conflicts with the code, say so and ask how to proceed.
 - Don't undo the user's changes without asking.
+- Ask before launching the app, because it records what the user does.
 - Don't change anything beyond the task without asking first.
   When you report back, list every change the user didn't ask for.
 - Apply the guidelines in CONTRIBUTING.md with judgement.

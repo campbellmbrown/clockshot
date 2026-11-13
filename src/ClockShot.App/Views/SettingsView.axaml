@@ -2,9 +2,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ClockShot.App.ViewModels"
              xmlns:core="using:ClockShot.Core"
+             xmlns:settings="using:ClockShot.Core.Settings"
              x:Class="ClockShot.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
   <UserControl.Styles>
+    <!-- Each setting row is a Grid with its label in a fixed-width column, so the controls line up. -->
+    <Style Selector="Grid.setting">
+      <Setter Property="Margin" Value="0,4" />
+    </Style>
+    <Style Selector="Grid.setting > TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,0,16,0" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="Width" Value="150" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="FormatString" Value="0" />
+      <!-- Every number setting is whole, so a typed decimal is refused instead of being cut short. -->
+      <Setter Property="ParsingNumberStyle" Value="Integer" />
+    </Style>
     <Style Selector="StackPanel.section">
       <Setter Property="Spacing" Value="2" />
       <Setter Property="Margin" Value="0,0,0,24" />
@@ -25,6 +42,21 @@
                    Text="General"
                    Margin="0,0,0,6" />
         <CheckBox Content="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Closing the window keeps {0} running in the tray'}" IsChecked="{Binding CloseToTray}" />
+      </StackPanel>
+
+      <!-- Tracking -->
+      <StackPanel Classes="section">
+        <TextBlock Classes="h2"
+                   Text="Tracking"
+                   Margin="0,0,0,6" />
+        <Grid Classes="setting" ColumnDefinitions="280,*">
+          <TextBlock Text="Count as away after this many minutes without keyboard or mouse input" />
+          <NumericUpDown Grid.Column="1"
+                         Value="{Binding AwayAfterMinutes}"
+                         Minimum="{Binding Min, Source={x:Static settings:SettingLimits.AwayAfterMinutes}}"
+                         Maximum="{Binding Max, Source={x:Static settings:SettingLimits.AwayAfterMinutes}}"
+                         AutomationProperties.AutomationId="SettingAwayAfter" />
+        </Grid>
       </StackPanel>
     </StackPanel>
   </ScrollViewer>

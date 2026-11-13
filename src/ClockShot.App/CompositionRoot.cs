@@ -4,7 +4,12 @@ using ClockShot.App.Logging;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Tracking;
+using ClockShot.Data;
 using ClockShot.Data.Settings;
+using ClockShot.Data.Sqlite;
+using ClockShot.Data.Tracking;
+using ClockShot.Platform.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,9 +30,21 @@ internal static class CompositionRoot
         // Infrastructure
         services.AddSingleton(paths);
         services.AddSingleton(paths.Data);
+        services.AddSingleton(TimeProvider.System);
         services.AddLogging(logging => logging.AddSerilog(LogFiles.Create(paths.Logs), dispose: true));
+        services.AddSingleton(sp =>
+        {
+            var database = new SqliteDatabase(sp.GetRequiredService<DataPaths>().Database);
+            database.Migrate();
+            return database;
+        });
         services.AddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<ISettingsStore, JsonSettingsStore>();
+
+        // Tracking
+        services.AddSingleton<ISystemSampler, WindowsSystemSampler>();
+        services.AddSingleton<ITrackingSink, TrackingWriter>();
+        services.AddSingleton<TrackingLoop>();
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();

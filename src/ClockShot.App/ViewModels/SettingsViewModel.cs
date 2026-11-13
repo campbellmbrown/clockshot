@@ -22,11 +22,35 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     private void Update(Func<AppSettings, AppSettings> change) => _settings.Save(change(_settings.Current));
 
+    /// <summary>
+    /// Saves the value of a number box.
+    /// A cleared box changes nothing and shows the saved value again.
+    /// </summary>
+    private void UpdateNumber(decimal? value, Func<AppSettings, int, AppSettings> change)
+    {
+        if (value is { } number)
+        {
+            Update(s => change(s, (int)number));
+        }
+        else
+        {
+            OnPropertyChanged(string.Empty);
+        }
+    }
+
     // ---- General ----
 
     public bool CloseToTray
     {
         get => Current.General.CloseToTray;
         set => Update(s => s with { General = s.General with { CloseToTray = value } });
+    }
+
+    // ---- Tracking ----
+
+    public decimal? AwayAfterMinutes
+    {
+        get => Current.Tracking.AwayAfterMinutes;
+        set => UpdateNumber(value, (s, v) => s with { Tracking = s.Tracking with { AwayAfterMinutes = v } });
     }
 }

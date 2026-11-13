@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyName>ClockShot</AssemblyName>
     <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\AppIcon\app.ico</ApplicationIcon>
   </PropertyGroup>
@@ -11,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
     <ProjectReference Include="..\ClockShot.Data\ClockShot.Data.csproj" />
+    <ProjectReference Include="..\ClockShot.Platform.Windows\ClockShot.Platform.Windows.csproj" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />

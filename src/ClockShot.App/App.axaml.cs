@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using ClockShot.App.Logging;
 using ClockShot.App.ViewModels;
 using ClockShot.App.Views;
+using ClockShot.Core.Tracking;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,11 @@ public sealed partial class App(StartupOptions options, SingleInstance? instance
 
         var window = MainWindow.Create(services);
         desktop.MainWindow = window;
+        desktop.Exit += (_, _) =>
+            // Stops tracking and saves the open segments. Run off the UI thread so awaits inside can't deadlock on it.
+            Task.Run(() => services.DisposeAsync().AsTask()).GetAwaiter().GetResult();
+
+        services.GetRequiredService<TrackingLoop>().Start();
 
         var tray = services.GetRequiredService<TrayIconViewModel>();
         tray.ShowWindowRequested += () => BringToFront(window);

@@ -8,10 +8,13 @@ It needs no account and sends nothing over the internet.
 ## Status
 
 ClockShot is a work in progress.
-It doesn't track time yet, and there are no releases.
+It records your time, but can't show it to you yet, and there are no releases.
 
 ## Features
 
+- It checks which app and window you're using every second.
+- It notices when you're away from the keyboard and mouse, and when the screen is locked.
+  You choose in Settings how many minutes without input count as away.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.
@@ -27,6 +30,8 @@ A copy run from source keeps its data in `%LOCALAPPDATA%\ClockShot-dev`, away fr
 ClockShot keeps its data in `%LOCALAPPDATA%\ClockShot`.
 To use another folder, start it with `--data-folder <path>`.
 
+- `clockshot.db` holds what ClockShot has recorded.
+  It's saved at least every 15 seconds, so a crash loses very little.
 - `settings.json` holds your settings.
 - `logs\` holds a log file for each day, and keeps the newest 14.
   Help > Open log folder opens it.
