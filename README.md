@@ -2,24 +2,39 @@
 
 [![Build Status](https://github.com/campbellmbrown/clockshot/actions/workflows/ci.yml/badge.svg)](https://github.com/campbellmbrown/clockshot/actions/workflows/ci.yml)
 
-A personal time tracker for Windows that keeps everything on your own computer.
-
-- Tracks the application and window you're using
-- Takes periodic screenshots of the active window
-- Shows it all on a zoomable timeline
-- Lets you tag stretches of time to clients, projects, and tasks
-- Turns tagged time into timesheets
-
-Built with C#, .NET 10, and Avalonia.
-
-## Data folder
-
-ClockShot keeps everything it stores in one folder, `%LOCALAPPDATA%\ClockShot`.
-The Settings tab saves its changes to `settings.json` there.
-Help > Open log folder opens the logs inside it.
+ClockShot is a time tracker for Windows that keeps everything on your own computer.
+It needs no account and sends nothing over the internet.
 
 ## Status
 
-Work in progress.
-There are no releases yet.
-To build and run it, see [CONTRIBUTING.md](CONTRIBUTING.md).
+ClockShot is a work in progress.
+It doesn't track time yet, and there are no releases.
+
+## Features
+
+- It stays out of the way in the system tray.
+  Closing the window keeps it running there, unless you turn that off in Settings.
+- Everything it stores is in one folder that you can open, back up, or delete.
+- Starting it while it's already running brings the open window to the front.
+
+## Building from source
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for what you need and how to build and run it.
+A copy run from source keeps its data in `%LOCALAPPDATA%\ClockShot-dev`, away from the folder an installed copy uses.
+
+## Your data
+
+ClockShot keeps its data in `%LOCALAPPDATA%\ClockShot`.
+To use another folder, start it with `--data-folder <path>`.
+
+- `settings.json` holds your settings.
+- `logs\` holds a log file for each day, and keeps the newest 14.
+  Help > Open log folder opens it.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before you start.
+
+## Licence
+
+ClockShot is released under the [MIT License](LICENSE).
