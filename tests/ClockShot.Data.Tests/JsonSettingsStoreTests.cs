@@ -68,6 +68,22 @@ public sealed class JsonSettingsStoreTests
     }
 
     [Fact]
+    public void OutOfRangeValuesAreBroughtIntoRangeOnLoadAndSave()
+    {
+        // Arrange
+        _fileSystem.AddFile(SettingsPath, new MockFileData("""{ "Tracking": { "AwayAfterMinutes": 0 } }"""));
+
+        // Act
+        var store = CreateStore();
+        var loaded = store.Current.Tracking.AwayAfterMinutes;
+        store.Save(store.Current with { Tracking = store.Current.Tracking with { AwayAfterMinutes = 999 } });
+
+        // Assert
+        Assert.Equal(SettingLimits.AwayAfterMinutes.Min, loaded);
+        Assert.Equal(SettingLimits.AwayAfterMinutes.Max, store.Current.Tracking.AwayAfterMinutes);
+    }
+
+    [Fact]
     public void UnreadableFileIsSetAsideAndDefaultsUsed()
     {
         // Arrange

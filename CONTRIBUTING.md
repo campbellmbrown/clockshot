@@ -84,6 +84,8 @@ They aren't hard rules and can be broken when there's a good reason.
   Explain the value's source next to its definition.
 - Order members by kind and then by access, following StyleCop's [SA1201](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1201.md) and [SA1202](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1202.md).
   For example, fields come before constructors, and public members come before private ones.
+- Put each type in its own file, named after the type.
+  Small records that only make sense together, such as the kinds of one change, can share their base type's file.
 - Keep members private unless another class needs them.
 - Declare variables in the smallest scope that needs them.
 - In XAML, put each attribute on its own line when an element has more than two.

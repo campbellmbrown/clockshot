@@ -15,6 +15,7 @@ public sealed class AppSettingsTests
 
         // Assert
         Assert.Equal(defaults.General, normalized.General);
+        Assert.Equal(defaults.Tracking, normalized.Tracking);
     }
 
     [Fact]
@@ -28,5 +29,21 @@ public sealed class AppSettingsTests
 
         // Assert
         Assert.Equal(new GeneralSettings(), normalized.General);
+    }
+
+    [Fact]
+    public void NormalizedClampsEachNumberToItsLimits()
+    {
+        // Arrange
+        var settings = new AppSettings
+        {
+            Tracking = new TrackingSettings { AwayAfterMinutes = 0 },
+        };
+
+        // Act
+        var normalized = settings.Normalized();
+
+        // Assert
+        Assert.Equal(SettingLimits.AwayAfterMinutes.Min, normalized.Tracking.AwayAfterMinutes);
     }
 }
