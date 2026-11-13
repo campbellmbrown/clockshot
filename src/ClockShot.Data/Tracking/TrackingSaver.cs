@@ -10,28 +10,36 @@ namespace ClockShot.Data.Tracking;
 
 /// <summary>
 /// Saves batches of tracking changes and remembers which records are still open.
+/// A batch that fails to save is tried again with the next one, so a short database problem loses nothing.
 /// </summary>
 internal sealed class TrackingSaver(SqliteConnection connection, ILogger logger)
 {
+    // The tracker sends a batch about once a second, so this is about ten minutes of failures.
+    // Giving up stops the unsaved changes filling memory when the database never recovers.
+    public const int GiveUpAfterFailedSaves = 600;
+
+    private readonly List<TrackingChange> _unsaved = [];
     private readonly Dictionary<(string Process, string? Path), long> _applicationIds = [];
     private OpenRecords _open = OpenRecords.None;
+    private int _failedSaves;
+    private string? _lastError;
 
     public void Save(IReadOnlyList<TrackingChange> changes)
     {
-        using var transaction = connection.BeginTransaction();
-        foreach (var change in changes)
-        {
-            Apply(change, transaction);
-        }
-
-        transaction.Commit();
+        _unsaved.AddRange(changes);
+        SaveUnsaved();
     }
 
     /// <summary>
-    /// Saves the end time of the open records.
+    /// Tries the unsaved changes once more, then saves the end time of the open records.
     /// </summary>
     public void Finish()
     {
+        if (_unsaved.Count > 0)
+        {
+            SaveUnsaved();
+        }
+
         try
         {
             using var transaction = connection.BeginTransaction();
@@ -42,6 +50,66 @@ internal sealed class TrackingSaver(SqliteConnection connection, ILogger logger)
         {
             logger.LogError(ex, "Saving the end of the open tracking records failed");
         }
+    }
+
+    private void SaveUnsaved()
+    {
+        var lastSaved = _open;
+        try
+        {
+            using var transaction = connection.BeginTransaction();
+            foreach (var change in _unsaved)
+            {
+                Apply(change, transaction);
+            }
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            // Go back to what the database holds, so the next try starts from there.
+            _open = lastSaved;
+            _applicationIds.Clear();
+            OnFailedSave(ex);
+            return;
+        }
+
+        _unsaved.Clear();
+        if (_failedSaves > 0)
+        {
+            logger.LogInformation("Saving tracking data works again after {Attempts} failed attempts", _failedSaves);
+        }
+
+        _failedSaves = 0;
+        _lastError = null;
+    }
+
+    private void OnFailedSave(Exception ex)
+    {
+        _failedSaves++;
+
+        // Log each distinct failure once, not every second.
+        if (ex.Message != _lastError)
+        {
+            logger.LogError(ex, "Saving tracking data failed. It's tried again with the next changes.");
+            _lastError = ex.Message;
+        }
+
+        if (_failedSaves < GiveUpAfterFailedSaves)
+        {
+            return;
+        }
+
+        logger.LogError(
+            "Gave up saving {Count} tracking changes after {Attempts} failed attempts",
+            _unsaved.Count,
+            _failedSaves);
+
+        // The lost changes may have ended the open records, so later changes start new ones.
+        _unsaved.Clear();
+        _open = OpenRecords.None;
+        _failedSaves = 0;
+        _lastError = null;
     }
 
     private void Apply(TrackingChange change, IDbTransaction transaction)
