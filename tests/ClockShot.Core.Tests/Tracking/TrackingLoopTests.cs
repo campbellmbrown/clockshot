@@ -81,6 +81,20 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task StatusShowsTheStateAndWindow()
+    {
+        // Arrange
+        await StartAsync();
+
+        // Act
+        // Disposing waits for the loop, which publishes the status after it writes.
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.Equal(new TrackingStatus(IsPaused: false, ComputerState.Active, Editor), _loop.Status);
+    }
+
+    [Fact]
     public async Task StartingTheLoopStartsTheSink()
     {
         // Act
@@ -88,6 +102,115 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 
         // Assert
         Assert.True(_sink.IsStarted);
+    }
+
+    [Fact]
+    public void PausingShowsInTheStatusAtOnce()
+    {
+        // Arrange
+        var raised = 0;
+        _loop.StatusChanged += () => raised++;
+
+        // Act
+        _loop.Pause();
+
+        // Assert
+        Assert.Equal(TrackingStatus.Paused, _loop.Status);
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public void PausingTwiceRaisesStatusChangedOnce()
+    {
+        // Arrange
+        var raised = 0;
+        _loop.StatusChanged += () => raised++;
+        _loop.Pause();
+
+        // Act
+        _loop.Pause();
+
+        // Assert
+        Assert.Equal(1, raised);
+    }
+
+    [Fact]
+    public void ResumingShowsInTheStatusAtOnce()
+    {
+        // Arrange
+        _loop.Pause();
+
+        // Act
+        _loop.Resume();
+
+        // Assert
+        Assert.False(_loop.Status.IsPaused);
+    }
+
+    [Fact]
+    public void ResumingWhenNotPausedChangesNothing()
+    {
+        // Arrange
+        var raised = 0;
+        _loop.StatusChanged += () => raised++;
+
+        // Act
+        _loop.Resume();
+
+        // Assert
+        Assert.Equal(TrackingStatus.NotStarted, _loop.Status);
+        Assert.Equal(0, raised);
+    }
+
+    [Fact]
+    public async Task PausingBeforeStartRecordsNothing()
+    {
+        // Arrange
+        _loop.Pause();
+
+        // Act
+        _loop.Start();
+        await _loop.DisposeAsync();
+
+        // Assert
+        // The only write is the one disposing makes, with nothing open to end.
+        Assert.Empty(await NextWriteAsync());
+    }
+
+    [Fact]
+    public async Task PausingEndsTheOpenSegmentsAtTheNextTick()
+    {
+        // Arrange
+        await StartAsync();
+
+        // Act
+        _loop.Pause();
+        var changes = await TickAsync();
+
+        // Assert
+        Assert.Equal([new ActivityEnded(At(1)), new StateEnded(At(1))], changes);
+    }
+
+    [Fact]
+    public async Task ResumingStartsRecordingAgainAtTheNextTick()
+    {
+        // Arrange
+        await StartAsync();
+        _loop.Pause();
+        await TickAsync();
+
+        // Act
+        _loop.Resume();
+        var changes = await TickAsync();
+
+        // Assert
+        Assert.Equal(
+            [
+                new StateStarted(At(2), ComputerState.Active),
+                new ActivityStarted(At(2), Editor),
+                new SegmentsExtended(At(2)),
+            ],
+            changes);
     }
 
     [Fact]
