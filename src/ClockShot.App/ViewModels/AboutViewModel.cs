@@ -24,6 +24,7 @@ public sealed class AboutViewModel() : DialogViewModel($"About {AppInfo.Name}")
         "Microsoft.Data.Sqlite (MIT)",
         "Microsoft.Extensions (MIT)",
         "Serilog (Apache-2.0)",
+        "SkiaSharp (MIT)",
         "System.IO.Abstractions (MIT)",
     ];
 }

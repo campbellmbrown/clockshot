@@ -8,6 +8,7 @@
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="Dapper" />
+    <PackageReference Include="SkiaSharp" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
