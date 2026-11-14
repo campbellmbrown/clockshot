@@ -41,7 +41,9 @@
         <TextBlock Classes="h2"
                    Text="General"
                    Margin="0,0,0,6" />
-        <CheckBox Content="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Closing the window keeps {0} running in the tray'}" IsChecked="{Binding CloseToTray}" />
+        <CheckBox Content="Close to tray"
+                  ToolTip.Tip="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Closing the window keeps {0} running in the tray.'}"
+                  IsChecked="{Binding CloseToTray}" />
       </StackPanel>
 
       <!-- Tracking -->
@@ -49,8 +51,10 @@
         <TextBlock Classes="h2"
                    Text="Tracking"
                    Margin="0,0,0,6" />
-        <Grid Classes="setting" ColumnDefinitions="280,*">
-          <TextBlock Text="Count as away after this many minutes without keyboard or mouse input" />
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="Minutes without keyboard or mouse input before you count as away.">
+          <TextBlock Text="Away after (minutes)" />
           <NumericUpDown Grid.Column="1"
                          Value="{Binding AwayAfterMinutes}"
                          Minimum="{Binding Min, Source={x:Static settings:SettingLimits.AwayAfterMinutes}}"
