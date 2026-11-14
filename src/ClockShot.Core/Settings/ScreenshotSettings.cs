@@ -20,6 +20,17 @@ public sealed record ScreenshotSettings
     public int MinimumGapSeconds { get; init; } = 10;
 
     /// <summary>
+    /// Wider screenshots are scaled down to this width.
+    /// </summary>
+    public int MaxWidthPixels { get; init; } = 1920;
+
+    /// <summary>
+    /// WebP quality, from 10 for the smallest files to 100 for the best pictures.
+    /// At 100 the picture is saved without loss.
+    /// </summary>
+    public int Quality { get; init; } = 70;
+
+    /// <summary>
     /// Process names whose windows are never captured.
     /// </summary>
     public IReadOnlyList<string> ExcludedProcessNames { get; init; } = [];

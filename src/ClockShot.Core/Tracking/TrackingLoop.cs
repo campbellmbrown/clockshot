@@ -1,3 +1,4 @@
+using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 
 using Microsoft.Extensions.Logging;
@@ -6,11 +7,13 @@ namespace ClockShot.Core.Tracking;
 
 /// <summary>
 /// The background loop.
-/// Once a second it reads the system and records what changed.
+/// Once a second it reads the system, records what changed, and takes a screenshot when one is due.
 /// </summary>
 public sealed class TrackingLoop(
     ISystemSampler sampler,
+    IWindowCapturer capturer,
     ITrackingSink sink,
+    IScreenshotStore screenshots,
     ISettingsStore settings,
     TimeProvider time,
     ILogger<TrackingLoop> logger) : ITrackingController, IAsyncDisposable
@@ -23,6 +26,8 @@ public sealed class TrackingLoop(
     // Only the loop task uses these, and DisposeAsync once the loop has stopped, so they need no locking.
     // Pause and Resume run on the UI thread and must not read them.
     private readonly ActivityTracker _tracker = new(MaxSampleGap);
+    private readonly ScreenshotScheduler _scheduler = new();
+    private Task _pendingScreenshot = Task.CompletedTask;
     private string? _lastError;
 
     private readonly CancellationTokenSource _stopping = new();
@@ -86,6 +91,7 @@ public sealed class TrackingLoop(
 
         sink.Write(_tracker.Stop(Now()));
         await sink.CompleteAsync().ConfigureAwait(false);
+        await _pendingScreenshot.ConfigureAwait(false);
         _stopping.Dispose();
     }
 
@@ -128,6 +134,18 @@ public sealed class TrackingLoop(
             sink.Write(changes);
             PublishStatus();
 
+            // ShouldCapture comes first because it watches every sample for application switches.
+            // Capturing happens now, while the window is still in front.
+            if (_scheduler.ShouldCapture(sample, _tracker.CurrentState, current.Screenshots)
+                && _pendingScreenshot.IsCompleted
+                && sample.Window is { } window
+                && capturer.Capture(window.Handle) is { } image)
+            {
+                // Only a capture that worked counts, so one that failed is tried again at the next sample.
+                _scheduler.MarkCaptured(now);
+                SaveInBackground(image, now, current.Screenshots);
+            }
+
             _lastError = null;
         }
         catch (Exception ex)
@@ -140,6 +158,30 @@ public sealed class TrackingLoop(
 
             _lastError = ex.Message;
         }
+    }
+
+    /// <summary>
+    /// Encodes and saves the screenshot on another thread, because encoding is slow.
+    /// </summary>
+    private void SaveInBackground(CapturedImage image, DateTime nowUtc, ScreenshotSettings settings)
+    {
+        var encoding = new ScreenshotEncoding(settings.MaxWidthPixels, settings.Quality);
+        // No stop token, for the same reason as in Start.
+        _pendingScreenshot = Task.Run(async () =>
+        {
+            try
+            {
+                await screenshots.SaveAsync(image, nowUtc, encoding, _stopping.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Tracking is stopping, so this screenshot is dropped.
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Saving a screenshot failed");
+            }
+        }, CancellationToken.None);
     }
 
     /// <summary>

@@ -18,6 +18,9 @@ It records your time, but can't show it to you yet, and there are no releases.
 - You can pause tracking from the Tracking menu, the tray icon or the status bar.
   The window and tray icons change while it's paused.
 - The status bar shows whether you're active, away, locked or paused, and which window is being recorded.
+- While you're active, it takes a screenshot of the window you're using every minute, and shortly after you switch apps.
+  A screenshot copies the screen where the window is, so it also shows any window on top of it.
+  A screenshot identical to the one before is skipped.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.
@@ -36,6 +39,7 @@ To use another folder, start it with `--data-folder <path>`.
 - `clockshot.db` holds what ClockShot has recorded.
   It's saved at least every 15 seconds, so a crash loses very little.
 - `settings.json` holds your settings.
+- `screenshots\` holds the screenshots, in a folder for each day.
 - `logs\` holds a log file for each day, and keeps the newest 14.
   Help > Open log folder opens it.
 

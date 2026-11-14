@@ -3,9 +3,11 @@ using System.IO.Abstractions;
 using ClockShot.App.Logging;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
+using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Tracking;
 using ClockShot.Data;
+using ClockShot.Data.Screenshots;
 using ClockShot.Data.Settings;
 using ClockShot.Data.Sqlite;
 using ClockShot.Data.Tracking;
@@ -43,7 +45,9 @@ internal static class CompositionRoot
 
         // Tracking
         services.AddSingleton<ISystemSampler, WindowsSystemSampler>();
+        services.AddSingleton<IWindowCapturer, WindowsWindowCapturer>();
         services.AddSingleton<ITrackingSink, TrackingWriter>();
+        services.AddSingleton<IScreenshotStore, ScreenshotStore>();
         services.AddSingleton<TrackingLoop>();
         services.AddSingleton<ITrackingController>(sp => sp.GetRequiredService<TrackingLoop>());
 

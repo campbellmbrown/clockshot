@@ -1,7 +1,10 @@
+using System.Collections.Concurrent;
 using System.Threading.Channels;
 
 using ClockShot.Core.Models;
+using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Tests.Screenshots;
 using ClockShot.Core.Tests.Settings;
 using ClockShot.Core.Tracking;
 
@@ -28,7 +31,9 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 
     private readonly FakeTimeProvider _clock = new(StartTime);
     private readonly FakeSampler _sampler = new();
+    private readonly FakeCapturer _capturer = new();
     private readonly FakeSink _sink = new();
+    private readonly FakeScreenshotStore _screenshots = new();
     private readonly FakeSettingsStore _settings = new();
     private readonly TrackingLoop _loop;
 
@@ -36,7 +41,9 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     {
         _loop = new TrackingLoop(
             _sampler,
+            _capturer,
             _sink,
+            _screenshots,
             _settings,
             _clock,
             NullLogger<TrackingLoop>.Instance);
@@ -240,6 +247,56 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task TakesAScreenshotOfTheForegroundWindow()
+    {
+        // Arrange
+        await StartAsync();
+
+        // Act
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.Equal([Editor.Handle], _capturer.Handles);
+        Assert.Equal([StartTime], _screenshots.SavedTimes);
+    }
+
+    [Fact]
+    public async Task RetriesAFailedCaptureAtTheNextSample()
+    {
+        // Arrange
+        _capturer.FailuresLeft = 1;
+        await StartAsync();
+
+        // Act
+        await TickAsync();
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.Equal([At(1)], _screenshots.SavedTimes);
+    }
+
+    [Fact]
+    public async Task WaitsForAScreenshotToSaveBeforeTakingAnother()
+    {
+        // Arrange
+        var everySecond = new ScreenshotSettings { IntervalSeconds = 1, MinimumGapSeconds = 0 };
+        _settings.Save(new AppSettings { Screenshots = everySecond });
+        var saving = new TaskCompletionSource();
+        _screenshots.SaveFinishes = saving.Task;
+        await StartAsync();
+
+        // Act
+        await TickAsync();
+        // Waiting for the next tick makes sure the one before it has finished.
+        await TickAsync();
+        var captures = _capturer.Handles.Count;
+        saving.SetResult();
+
+        // Assert
+        Assert.Equal(1, captures);
+    }
+
+    [Fact]
     public async Task DisposingEndsTheOpenSegmentsAndCompletesTheSink()
     {
         // Arrange
@@ -276,6 +333,31 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         public TimeSpan IdleTime { get; set; }
 
         public TrackingSample Read(DateTime timeUtc) => new(timeUtc, Window, IdleTime, IsLocked: false);
+    }
+
+    private sealed class FakeCapturer : IWindowCapturer
+    {
+        public ConcurrentQueue<nint> Handles { get; } = new();
+
+        /// <summary>
+        /// How many captures return nothing first, as for a window that can't be captured.
+        /// </summary>
+        /// <remarks>
+        /// Only the loop's thread changes it once tracking starts, so a test sets it before starting.
+        /// </remarks>
+        public int FailuresLeft { get; set; }
+
+        public CapturedImage? Capture(nint windowHandle)
+        {
+            Handles.Enqueue(windowHandle);
+            if (FailuresLeft > 0)
+            {
+                FailuresLeft--;
+                return null;
+            }
+
+            return new CapturedImage(width: 1, height: 1, new byte[CapturedImage.BytesPerPixel]);
+        }
     }
 
     private sealed class FakeSink : ITrackingSink

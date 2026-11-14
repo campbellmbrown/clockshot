@@ -42,6 +42,23 @@ public sealed class JsonSettingsStoreTests
     }
 
     [Fact]
+    public void ExcludedAppsAreReadBack()
+    {
+        // Arrange
+        var store = CreateStore();
+        var changed = store.Current with
+        {
+            Screenshots = store.Current.Screenshots with { ExcludedProcessNames = ["Passwords.exe"] },
+        };
+
+        // Act
+        store.Save(changed);
+
+        // Assert
+        Assert.Equal(["Passwords.exe"], CreateStore().Current.Screenshots.ExcludedProcessNames);
+    }
+
+    [Fact]
     public void ValuesMissingFromFileGetDefaults()
     {
         // Arrange

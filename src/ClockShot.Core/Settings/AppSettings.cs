@@ -10,6 +10,7 @@ public sealed record AppSettings
 {
     public GeneralSettings General { get; init; } = new();
     public TrackingSettings Tracking { get; init; } = new();
+    public ScreenshotSettings Screenshots { get; init; } = new();
 
     /// <summary>
     /// A copy with every value inside its <see cref="SettingLimits"/> range and missing parts set to defaults.
@@ -19,12 +20,27 @@ public sealed record AppSettings
     {
         var general = General ?? new();
         var tracking = Tracking ?? new();
+        var screenshots = Screenshots ?? new();
+        var screenshotInterval = SettingLimits.ScreenshotIntervalSeconds.Clamp(screenshots.IntervalSeconds);
         return this with
         {
             General = general,
             Tracking = tracking with
             {
                 AwayAfterMinutes = SettingLimits.AwayAfterMinutes.Clamp(tracking.AwayAfterMinutes),
+            },
+            Screenshots = screenshots with
+            {
+                IntervalSeconds = screenshotInterval,
+
+                // A gap longer than the interval would silently replace it.
+                MinimumGapSeconds = Math.Min(
+                    SettingLimits.ScreenshotMinimumGapSeconds.Clamp(screenshots.MinimumGapSeconds),
+                    screenshotInterval),
+
+                MaxWidthPixels = SettingLimits.ScreenshotMaxWidthPixels.Clamp(screenshots.MaxWidthPixels),
+                Quality = SettingLimits.ScreenshotQuality.Clamp(screenshots.Quality),
+                ExcludedProcessNames = screenshots.ExcludedProcessNames ?? [],
             },
         };
     }

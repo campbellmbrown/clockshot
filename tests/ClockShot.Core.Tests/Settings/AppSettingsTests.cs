@@ -16,19 +16,47 @@ public sealed class AppSettingsTests
         // Assert
         Assert.Equal(defaults.General, normalized.General);
         Assert.Equal(defaults.Tracking, normalized.Tracking);
+        Assert.Equal(defaults.Screenshots, normalized.Screenshots);
     }
 
     [Fact]
     public void NormalizedReplacesMissingSectionsWithDefaults()
     {
         // Arrange
-        var settings = new AppSettings { General = null! };
+        var settings = new AppSettings { General = null!, Screenshots = null! };
 
         // Act
         var normalized = settings.Normalized();
 
         // Assert
         Assert.Equal(new GeneralSettings(), normalized.General);
+        Assert.Equal(new ScreenshotSettings(), normalized.Screenshots);
+    }
+
+    [Fact]
+    public void NormalizedReplacesAMissingExcludedAppListWithAnEmptyOne()
+    {
+        // Arrange
+        var settings = new AppSettings { Screenshots = new ScreenshotSettings { ExcludedProcessNames = null! } };
+
+        // Act
+        var normalized = settings.Normalized();
+
+        // Assert
+        Assert.Empty(normalized.Screenshots.ExcludedProcessNames);
+    }
+
+    [Fact]
+    public void NormalizedShortensAGapLongerThanTheInterval()
+    {
+        // Arrange
+        var settings = new AppSettings { Screenshots = new ScreenshotSettings { IntervalSeconds = 30, MinimumGapSeconds = 100 } };
+
+        // Act
+        var normalized = settings.Normalized();
+
+        // Assert
+        Assert.Equal(30, normalized.Screenshots.MinimumGapSeconds);
     }
 
     [Fact]
@@ -38,6 +66,13 @@ public sealed class AppSettingsTests
         var settings = new AppSettings
         {
             Tracking = new TrackingSettings { AwayAfterMinutes = 0 },
+            Screenshots = new ScreenshotSettings
+            {
+                IntervalSeconds = 1,
+                MinimumGapSeconds = 0,
+                MaxWidthPixels = 99_999,
+                Quality = 0,
+            },
         };
 
         // Act
@@ -45,5 +80,9 @@ public sealed class AppSettingsTests
 
         // Assert
         Assert.Equal(SettingLimits.AwayAfterMinutes.Min, normalized.Tracking.AwayAfterMinutes);
+        Assert.Equal(SettingLimits.ScreenshotIntervalSeconds.Min, normalized.Screenshots.IntervalSeconds);
+        Assert.Equal(SettingLimits.ScreenshotMinimumGapSeconds.Min, normalized.Screenshots.MinimumGapSeconds);
+        Assert.Equal(SettingLimits.ScreenshotMaxWidthPixels.Max, normalized.Screenshots.MaxWidthPixels);
+        Assert.Equal(SettingLimits.ScreenshotQuality.Min, normalized.Screenshots.Quality);
     }
 }

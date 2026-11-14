@@ -15,6 +15,7 @@ namespace ClockShot.Data.Screenshots;
 /// </summary>
 /// <param name="time">Gives the local time zone for folder and file names.</param>
 public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDatabase database, TimeProvider time)
+    : IScreenshotStore
 {
     private const string FileExtension = ".webp";
     private const string TemporaryExtension = ".tmp";
