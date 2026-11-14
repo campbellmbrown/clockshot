@@ -7,8 +7,10 @@ namespace ClockShot.App.ViewModels;
 /// <summary>
 /// The tray icon and its menu.
 /// </summary>
-public sealed partial class TrayIconViewModel(IAppLifetime lifetime) : ViewModelBase
+public sealed partial class TrayIconViewModel(TrackingStatusViewModel tracking, IAppLifetime lifetime) : ViewModelBase
 {
+    public TrackingStatusViewModel Tracking { get; } = tracking;
+
     /// <summary>
     /// Raised when the user asks to see the main window.
     /// The view layer shows it, so view models don't need to know about windows.

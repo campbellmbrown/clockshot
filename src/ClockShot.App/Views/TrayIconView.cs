@@ -16,19 +16,29 @@ public static class TrayIconView
 {
     public static void Show(Application app, TrayIconViewModel tray)
     {
+        var tracking = tray.Tracking;
+        var pauseItem = new NativeMenuItem { Command = tracking.TogglePausedCommand };
         var icon = new TrayIcon
         {
-            Icon = AppIcon.Normal,
-            ToolTipText = AppInfo.Name,
             Command = tray.ShowWindowCommand,
             Menu =
             [
                 Item($"Open {AppInfo.Name}", tray.ShowWindowCommand),
+                pauseItem,
                 new NativeMenuItemSeparator(),
                 Item("Exit", tray.ExitCommand),
             ],
         };
 
+        void ShowTrackingState()
+        {
+            icon.Icon = AppIcon.For(tracking.IsPaused);
+            icon.ToolTipText = tracking.StatusText;
+            pauseItem.Header = tracking.PauseCommandText;
+        }
+
+        ShowTrackingState();
+        tracking.PropertyChanged += (_, _) => ShowTrackingState();
         TrayIcon.SetIcons(app, [icon]);
     }
 

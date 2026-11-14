@@ -13,7 +13,7 @@ public sealed class TrackingLoop(
     ITrackingSink sink,
     ISettingsStore settings,
     TimeProvider time,
-    ILogger<TrackingLoop> logger) : IAsyncDisposable
+    ILogger<TrackingLoop> logger) : ITrackingController, IAsyncDisposable
 {
     private static readonly TimeSpan SampleInterval = TimeSpan.FromSeconds(1);
 

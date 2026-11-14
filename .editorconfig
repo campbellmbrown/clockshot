@@ -208,6 +208,9 @@ dotnet_diagnostic.CA1050.severity = warning
 dotnet_diagnostic.CA1507.severity = warning
 # CA1508: Avoid dead conditional code
 dotnet_diagnostic.CA1508.severity = warning
+# CA1716: Identifiers should not match keywords
+# Off because no code in another .NET language, such as Visual Basic, calls this app.
+dotnet_diagnostic.CA1716.severity = none
 # CA1806: Do not ignore method results
 dotnet_diagnostic.CA1806.severity = warning
 # CA1823: Avoid unused private fields

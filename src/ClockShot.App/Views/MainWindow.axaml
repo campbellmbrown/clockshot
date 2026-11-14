@@ -10,7 +10,7 @@
         Height="850"
         MinWidth="900"
         MinHeight="600"
-        Icon="{x:Static controls:AppIcon.Normal}">
+        Icon="{Binding Tracking.IsPaused, Converter={x:Static controls:AppIcon.FromIsPaused}}">
   <DockPanel>
     <Menu DockPanel.Dock="Top" AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
@@ -18,6 +18,12 @@
                   Command="{Binding ExitCommand}"
                   AutomationProperties.AutomationId="ExitMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}" />
+      </MenuItem>
+      <MenuItem Header="_Tracking" AutomationProperties.AutomationId="TrackingMenu">
+        <MenuItem Header="{Binding Tracking.PauseCommandText}"
+                  Command="{Binding Tracking.TogglePausedCommand}"
+                  AutomationProperties.AutomationId="TogglePausedMenuItem"
+                  controls:MenuIcon.Kind="{Binding Tracking.PauseCommandIconKind}" />
       </MenuItem>
       <MenuItem Header="_Help" AutomationProperties.AutomationId="HelpMenu">
         <MenuItem Header="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='_About {0}'}"

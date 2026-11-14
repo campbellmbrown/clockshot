@@ -15,6 +15,8 @@ It records your time, but can't show it to you yet, and there are no releases.
 - It checks which app and window you're using every second.
 - It notices when you're away from the keyboard and mouse, and when the screen is locked.
   You choose in Settings how many minutes without input count as away.
+- You can pause tracking from the Tracking menu or the tray icon.
+  The window and tray icons change while it's paused.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.

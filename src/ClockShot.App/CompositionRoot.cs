@@ -45,6 +45,7 @@ internal static class CompositionRoot
         services.AddSingleton<ISystemSampler, WindowsSystemSampler>();
         services.AddSingleton<ITrackingSink, TrackingWriter>();
         services.AddSingleton<TrackingLoop>();
+        services.AddSingleton<ITrackingController>(sp => sp.GetRequiredService<TrackingLoop>());
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
@@ -55,6 +56,7 @@ internal static class CompositionRoot
         // View models
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconViewModel>();
+        services.AddSingleton<TrackingStatusViewModel>();
         services.AddSingleton<SettingsViewModel>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });

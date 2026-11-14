@@ -15,12 +15,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(
         SettingsViewModel settingsPage,
+        TrackingStatusViewModel tracking,
         IAppLifetime lifetime,
         IShell shell,
         IDialogService dialogs,
         ISettingsStore settings,
         AppPaths paths)
     {
+        Tracking = tracking;
         Pages = [settingsPage];
         _lifetime = lifetime;
         _shell = shell;
@@ -28,6 +30,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _settings = settings;
         _paths = paths;
     }
+
+    public TrackingStatusViewModel Tracking { get; }
 
     /// <summary>
     /// The tabs, in display order.

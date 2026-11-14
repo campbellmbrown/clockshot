@@ -16,4 +16,8 @@ public static class Icons
 
     // ---- Pages ----
     public const string Settings = "settings";
+
+    // ---- Tracking ----
+    public const string PauseTracking = "circle-pause";
+    public const string ResumeTracking = "circle-play";
 }
