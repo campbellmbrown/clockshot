@@ -10,4 +10,5 @@ public sealed record DataPaths(string Root)
 {
     public string Database => Path.Combine(Root, $"{AppInfo.FilePrefix}.db");
     public string Settings => Path.Combine(Root, "settings.json");
+    public string Screenshots => Path.Combine(Root, "screenshots");
 }

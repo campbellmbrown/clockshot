@@ -68,7 +68,7 @@ public sealed class SqliteDatabase
         }
     }
 
-    private static IEnumerable<(long Version, string Sql)> Migrations()
+    internal static IEnumerable<(long Version, string Sql)> Migrations()
     {
         var assembly = Assembly.GetExecutingAssembly();
         return assembly.GetManifestResourceNames()

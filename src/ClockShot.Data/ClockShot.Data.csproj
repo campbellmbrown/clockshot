@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- SQLite storage and the settings file. -->
+  <!-- SQLite storage, the screenshot file store and the settings file. -->
   <ItemGroup>
     <EmbeddedResource Include="Migrations\*.sql" LogicalName="Migrations.%(Filename)%(Extension)" />
     <InternalsVisibleTo Include="ClockShot.Data.Tests" />

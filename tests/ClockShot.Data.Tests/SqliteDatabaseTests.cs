@@ -1,3 +1,5 @@
+using ClockShot.Data.Sqlite;
+
 using Dapper;
 
 using Microsoft.Data.Sqlite;
@@ -22,6 +24,7 @@ public sealed class SqliteDatabaseTests
                 "activity_segment",
                 "application",
                 "computer_state_segment",
+                "screenshot",
             ],
             tables);
     }
@@ -39,6 +42,17 @@ public sealed class SqliteDatabaseTests
 
         // Assert
         Assert.Equal(version, connection.ExecuteScalar<long>("PRAGMA user_version;"));
+    }
+
+    [Fact]
+    public void EachMigrationHasItsOwnNumber()
+    {
+        // Act
+        var versions = SqliteDatabase.Migrations().Select(migration => migration.Version).ToList();
+
+        // Assert
+        Assert.NotEmpty(versions);
+        Assert.Distinct(versions);
     }
 
     [Fact]
