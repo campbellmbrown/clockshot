@@ -6,11 +6,19 @@ namespace ClockShot.Core.Screenshots;
 
 /// <summary>
 /// Decides when to take a screenshot.
-/// It takes one every <see cref="ScreenshotSettings.IntervalSeconds"/> while active.
+/// It takes one every <see cref="ScreenshotSettings.IntervalSeconds"/> while active, and shortly after switching application.
+/// Screenshots are never closer together than <see cref="ScreenshotSettings.MinimumGapSeconds"/>.
 /// </summary>
 public sealed class ScreenshotScheduler
 {
+    /// <summary>
+    /// Wait this long after an application switch, so the new window has finished drawing.
+    /// </summary>
+    private static readonly TimeSpan SwitchSettleDelay = TimeSpan.FromSeconds(2);
+
     private DateTime? _lastCaptureUtc;
+    private DateTime? _appSwitchUtc;
+    private ForegroundWindow? _lastWindow;
 
     /// <summary>
     /// Call once per sample.
@@ -20,6 +28,13 @@ public sealed class ScreenshotScheduler
     {
         var nowUtc = sample.TimeUtc;
         var window = sample.Window;
+
+        if (window is not null && !window.IsSameApplicationAs(_lastWindow))
+        {
+            _appSwitchUtc = nowUtc;
+        }
+
+        _lastWindow = window;
 
         if (!settings.Enabled || state != ComputerState.Active || window is null)
         {
@@ -33,11 +48,29 @@ public sealed class ScreenshotScheduler
         }
 
         var sinceLast = nowUtc - lastCapture;
-        return sinceLast >= TimeSpan.FromSeconds(settings.IntervalSeconds);
+        if (sinceLast < TimeSpan.FromSeconds(settings.MinimumGapSeconds))
+        {
+            return false;
+        }
+
+        if (sinceLast >= TimeSpan.FromSeconds(settings.IntervalSeconds))
+        {
+            return true;
+        }
+
+        return settings.CaptureOnAppSwitch
+            && _appSwitchUtc is { } switchedAt
+            && nowUtc - switchedAt >= SwitchSettleDelay;
     }
 
     /// <summary>
     /// Call after a screenshot was taken.
     /// </summary>
-    public void MarkCaptured(DateTime nowUtc) => _lastCaptureUtc = nowUtc;
+    public void MarkCaptured(DateTime nowUtc)
+    {
+        _lastCaptureUtc = nowUtc;
+
+        // Any app switch so far is in this screenshot, so it needs no capture of its own.
+        _appSwitchUtc = null;
+    }
 }

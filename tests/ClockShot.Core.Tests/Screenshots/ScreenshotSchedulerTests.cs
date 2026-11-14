@@ -9,7 +9,8 @@ public sealed class ScreenshotSchedulerTests
 {
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
     private static readonly ForegroundWindow Editor = new("Editor.exe", null, "Editor", "a.cs");
-    private static readonly ScreenshotSettings Defaults = new() { IntervalSeconds = 30 };
+    private static readonly ForegroundWindow Browser = new("Browser.exe", null, "Browser", "Inbox");
+    private static readonly ScreenshotSettings Defaults = new() { IntervalSeconds = 30, MinimumGapSeconds = 5 };
 
     private readonly ScreenshotScheduler _scheduler = new();
 
@@ -24,6 +25,52 @@ public sealed class ScreenshotSchedulerTests
     }
 
     [Fact]
+    public void CapturesShortlyAfterAppSwitch()
+    {
+        // Act
+        var captured = Run(from: 0, until: 50, second => second < 10 ? Editor : Browser);
+
+        // Assert
+        Assert.Equal([0, 12, 42], captured);
+    }
+
+    [Fact]
+    public void NoCaptureAfterAppSwitchWhenTurnedOff()
+    {
+        // Arrange
+        var settings = Defaults with { CaptureOnAppSwitch = false };
+        Check(seconds: 0, Editor, settings);
+        _scheduler.MarkCaptured(Start);
+        Check(seconds: 10, Browser, settings);
+
+        // Act
+        var captures = Check(seconds: 12, Browser, settings);
+
+        // Assert
+        Assert.False(captures);
+    }
+
+    [Fact]
+    public void TitleChangeInSameAppIsNotASwitch()
+    {
+        // Act
+        var captured = Run(from: 0, until: 40, second => second < 10 ? Editor : Editor with { Title = "b.cs" });
+
+        // Assert
+        Assert.Equal([0, 30], captured);
+    }
+
+    [Fact]
+    public void RespectsMinimumGapAfterSwitch()
+    {
+        // Act
+        var captured = Run(from: 0, until: 40, second => second < 2 ? Editor : Browser);
+
+        // Assert
+        Assert.Equal([0, 5, 35], captured);
+    }
+
+    [Fact]
     public void CapturesAtOnceWhenTheClockGoesBackThenEveryInterval()
     {
         // Arrange
@@ -34,6 +81,19 @@ public sealed class ScreenshotSchedulerTests
 
         // Assert
         Assert.Equal([-3600, -3570, -3540], captured);
+    }
+
+    [Fact]
+    public void AnAppSwitchBeforeTheClockGoesBackIsNotCapturedAgain()
+    {
+        // Arrange
+        Run(from: 0, until: 15, second => second < 10 ? Editor : Browser);
+
+        // Act
+        var captured = Run(from: -5, until: 20, _ => Browser);
+
+        // Assert
+        Assert.Equal([-5], captured);
     }
 
     [Theory]
