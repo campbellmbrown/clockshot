@@ -57,6 +57,7 @@ internal static class CompositionRoot
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconViewModel>();
         services.AddSingleton<TrackingStatusViewModel>();
+        services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<SettingsViewModel>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });

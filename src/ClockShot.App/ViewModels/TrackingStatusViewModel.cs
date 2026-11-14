@@ -8,7 +8,7 @@ namespace ClockShot.App.ViewModels;
 
 /// <summary>
 /// Whether tracking is running, and the command that pauses or resumes it.
-/// The menu and the tray icon share it.
+/// The menu, the tray icon and the status bar share it.
 /// </summary>
 public sealed partial class TrackingStatusViewModel : ViewModelBase
 {
@@ -19,6 +19,7 @@ public sealed partial class TrackingStatusViewModel : ViewModelBase
         _tracking = tracking;
         _tracking.StatusChanged += () => OnUiThread(() =>
         {
+            OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(IsPaused));
             OnPropertyChanged(nameof(PauseCommandText));
             OnPropertyChanged(nameof(PauseCommandIconKind));
@@ -26,7 +27,9 @@ public sealed partial class TrackingStatusViewModel : ViewModelBase
         });
     }
 
-    public bool IsPaused => _tracking.Status.IsPaused;
+    public TrackingStatus Status => _tracking.Status;
+
+    public bool IsPaused => Status.IsPaused;
 
     public string PauseCommandText => IsPaused ? "Resume tracking" : "Pause tracking";
 

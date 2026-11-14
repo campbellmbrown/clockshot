@@ -14,6 +14,14 @@
     </DataTemplate>
   </Application.DataTemplates>
 
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://ClockShot/Themes/Colors.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://ClockShot/Styles/Typography.axaml" />

@@ -16,6 +16,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(
         SettingsViewModel settingsPage,
         TrackingStatusViewModel tracking,
+        StatusBarViewModel statusBar,
         IAppLifetime lifetime,
         IShell shell,
         IDialogService dialogs,
@@ -23,6 +24,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AppPaths paths)
     {
         Tracking = tracking;
+        StatusBar = statusBar;
         Pages = [settingsPage];
         _lifetime = lifetime;
         _shell = shell;
@@ -32,6 +34,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     public TrackingStatusViewModel Tracking { get; }
+    public StatusBarViewModel StatusBar { get; }
 
     /// <summary>
     /// The tabs, in display order.

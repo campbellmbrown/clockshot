@@ -37,6 +37,39 @@
       </MenuItem>
     </Menu>
 
+    <!-- Shows the tracking state and the window being recorded. -->
+    <Border DockPanel.Dock="Bottom"
+            Background="{DynamicResource PanelBackground}"
+            BorderBrush="{DynamicResource Divider}"
+            BorderThickness="0,1,0,0"
+            Padding="6,2"
+            AutomationProperties.AutomationId="StatusBar">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+        <Button Command="{Binding StatusBar.Tracking.TogglePausedCommand}"
+                ToolTip.Tip="{Binding StatusBar.Tracking.PauseCommandText}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="6,2"
+                AutomationProperties.AutomationId="StatusBarState">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Ellipse Width="8"
+                     Height="8"
+                     Fill="{Binding StatusBar.State, Converter={x:Static controls:StatusBarBrushes.FromState}}"
+                     VerticalAlignment="Center" />
+            <TextBlock Text="{Binding StatusBar.StateText}"
+                       Classes="small"
+                       VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <TextBlock Grid.Column="1"
+                   Classes="secondary small"
+                   Text="{Binding StatusBar.WindowText}"
+                   TextTrimming="CharacterEllipsis"
+                   VerticalAlignment="Center"
+                   AutomationProperties.AutomationId="StatusBarWindow" />
+      </Grid>
+    </Border>
+
     <TabControl ItemsSource="{Binding Pages}" AutomationProperties.AutomationId="MainTabs">
       <TabControl.ItemTemplate>
         <DataTemplate DataType="vm:PageViewModel">
