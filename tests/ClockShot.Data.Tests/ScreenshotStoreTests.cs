@@ -44,7 +44,7 @@ public sealed class ScreenshotStoreTests : IDisposable
         var saved = await _store.SaveAsync(Image(blue: 10), Taken, Encoding, Cancellation);
 
         // Assert
-        Assert.Equal("2026/11/10/113005_120.webp", saved.ImagePath);
+        Assert.Equal("2026/11/10/113005_120.webp", saved!.ImagePath);
         Assert.True(_files.File.Exists(_store.FullPath(saved.ImagePath)));
     }
 
@@ -55,7 +55,7 @@ public sealed class ScreenshotStoreTests : IDisposable
         var saved = await _store.SaveAsync(Image(blue: 10), Taken, Encoding, Cancellation);
 
         // Assert
-        var dayFolder = _files.Path.GetDirectoryName(_store.FullPath(saved.ImagePath))!;
+        var dayFolder = _files.Path.GetDirectoryName(_store.FullPath(saved!.ImagePath))!;
         Assert.Equal(["113005_120.webp"], _files.Directory.EnumerateFiles(dayFolder).Select(_files.Path.GetFileName));
     }
 
@@ -66,7 +66,7 @@ public sealed class ScreenshotStoreTests : IDisposable
         var saved = await _store.SaveAsync(Image(blue: 10), Taken, Encoding with { MaxWidthPixels = 50 }, Cancellation);
 
         // Assert
-        Assert.Equal((50, 50), (saved.Width, saved.Height));
+        Assert.Equal((50, 50), (saved!.Width, saved.Height));
         using var connection = _data.Database.Open();
         var aroundTaken = new TimeRange(Taken.AddMinutes(-1), Taken.AddMinutes(1));
         Assert.Equal(saved, Assert.Single(ScreenshotTable.GetTakenIn(connection, aroundTaken)));
@@ -77,7 +77,7 @@ public sealed class ScreenshotStoreTests : IDisposable
     {
         // Arrange
         var first = await _store.SaveAsync(Image(blue: 10), Taken, Encoding, Cancellation);
-        var firstBytes = await _files.File.ReadAllBytesAsync(_store.FullPath(first.ImagePath), Cancellation);
+        var firstBytes = await _files.File.ReadAllBytesAsync(_store.FullPath(first!.ImagePath), Cancellation);
 
         // Act
         var thrown = await Record.ExceptionAsync(() => _store.SaveAsync(Image(blue: 99), Taken, Encoding, Cancellation));
@@ -116,6 +116,47 @@ public sealed class ScreenshotStoreTests : IDisposable
         using var connection = _data.Database.Open();
         var aroundTaken = new TimeRange(Taken.AddMinutes(-1), Taken.AddMinutes(1));
         Assert.Equal(saved, Assert.Single(ScreenshotTable.GetTakenIn(connection, aroundTaken)));
+    }
+
+    [Fact]
+    public async Task SkipsAnImageIdenticalToThePreviousOne()
+    {
+        // Arrange
+        await _store.SaveAsync(Image(blue: 10), Taken, Encoding, Cancellation);
+
+        // Act
+        var saved = await _store.SaveAsync(Image(blue: 10), Taken.AddSeconds(60), Encoding, Cancellation);
+
+        // Assert
+        Assert.Null(saved);
+        Assert.Single(_files.Directory.EnumerateFiles(Paths.Screenshots, "*", SearchOption.AllDirectories));
+    }
+
+    [Fact]
+    public async Task SavesAnImageThatDiffersFromThePreviousOne()
+    {
+        // Arrange
+        await _store.SaveAsync(Image(blue: 10), Taken, Encoding, Cancellation);
+
+        // Act
+        var saved = await _store.SaveAsync(Image(blue: 99), Taken.AddSeconds(60), Encoding, Cancellation);
+
+        // Assert
+        Assert.NotNull(saved);
+    }
+
+    [Fact]
+    public async Task SavesAnImageWhoseEarlierSaveFailed()
+    {
+        // Arrange
+        await _store.SaveAsync(Image(blue: 10), Taken, Encoding, Cancellation);
+        await Record.ExceptionAsync(() => _store.SaveAsync(Image(blue: 99), Taken, Encoding, Cancellation));
+
+        // Act
+        var saved = await _store.SaveAsync(Image(blue: 99), Taken.AddSeconds(60), Encoding, Cancellation);
+
+        // Assert
+        Assert.NotNull(saved);
     }
 
     private static CapturedImage Image(byte blue) => TestImages.Gradient(width: 100, height: 100, blue);

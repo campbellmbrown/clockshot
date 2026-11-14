@@ -26,5 +26,6 @@ public sealed class AboutViewModel() : DialogViewModel($"About {AppInfo.Name}")
         "Serilog (Apache-2.0)",
         "SkiaSharp (MIT)",
         "System.IO.Abstractions (MIT)",
+        "System.IO.Hashing (MIT)",
     ];
 }

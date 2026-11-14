@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO.Abstractions;
+using System.IO.Hashing;
 
 using ClockShot.Core.Models;
 using ClockShot.Core.Screenshots;
@@ -9,6 +10,8 @@ namespace ClockShot.Data.Screenshots;
 
 /// <summary>
 /// Saves screenshots as WebP files in day folders named by local time, and indexes them in the database.
+/// Saving isn't thread-safe.
+/// The tracking loop saves one screenshot at a time.
 /// </summary>
 /// <param name="time">Gives the local time zone for folder and file names.</param>
 public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDatabase database, TimeProvider time)
@@ -17,12 +20,20 @@ public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDa
     private const string TemporaryExtension = ".tmp";
     private const string RelativePathFormat = "yyyy'/'MM'/'dd'/'HHmmss'_'fff";
 
-    public async Task<Screenshot> SaveAsync(
+    private ulong? _previousHash;
+
+    public async Task<Screenshot?> SaveAsync(
         CapturedImage image,
         DateTime takenUtc,
         ScreenshotEncoding encoding,
         CancellationToken cancellationToken = default)
     {
+        var hash = XxHash3.HashToUInt64(image.Pixels);
+        if (hash == _previousHash)
+        {
+            return null;
+        }
+
         var encoded = WebpEncoder.Encode(image, encoding);
         var relativePath = RelativePathFor(takenUtc, time.LocalTimeZone);
         var fullPath = FullPath(relativePath);
@@ -32,6 +43,9 @@ public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDa
         {
             using var connection = database.Open();
             var id = ScreenshotTable.Insert(connection, takenUtc, relativePath, encoded.Width, encoded.Height);
+
+            // Remembered only once saved, so a failed save doesn't make the next identical capture look like a duplicate.
+            _previousHash = hash;
             return new Screenshot(id, takenUtc, relativePath, encoded.Width, encoded.Height);
         }
         catch
