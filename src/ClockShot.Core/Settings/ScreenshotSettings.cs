@@ -18,4 +18,9 @@ public sealed record ScreenshotSettings
     /// Never take screenshots closer together than this.
     /// </summary>
     public int MinimumGapSeconds { get; init; } = 10;
+
+    /// <summary>
+    /// Process names whose windows are never captured.
+    /// </summary>
+    public IReadOnlyList<string> ExcludedProcessNames { get; init; } = [];
 }

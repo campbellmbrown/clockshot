@@ -120,6 +120,26 @@ public sealed class ScreenshotSchedulerTests
     }
 
     [Fact]
+    public void NeverCapturesExcludedApps()
+    {
+        // Act
+        var captures = Check(seconds: 0, Editor, Defaults with { ExcludedProcessNames = ["editor.EXE"] });
+
+        // Assert
+        Assert.False(captures);
+    }
+
+    [Fact]
+    public void CapturesAppsThatAreNotExcluded()
+    {
+        // Act
+        var captures = Check(seconds: 0, Browser, Defaults with { ExcludedProcessNames = ["Editor.exe"] });
+
+        // Assert
+        Assert.True(captures);
+    }
+
+    [Fact]
     public void NeverCapturesWithoutWindow()
     {
         // Act

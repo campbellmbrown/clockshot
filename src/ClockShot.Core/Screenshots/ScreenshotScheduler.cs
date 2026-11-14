@@ -36,7 +36,7 @@ public sealed class ScreenshotScheduler
 
         _lastWindow = window;
 
-        if (!settings.Enabled || state != ComputerState.Active || window is null)
+        if (!settings.Enabled || state != ComputerState.Active || window is null || IsExcluded(window, settings))
         {
             return false;
         }
@@ -73,4 +73,7 @@ public sealed class ScreenshotScheduler
         // Any app switch so far is in this screenshot, so it needs no capture of its own.
         _appSwitchUtc = null;
     }
+
+    private static bool IsExcluded(ForegroundWindow window, ScreenshotSettings settings) =>
+        settings.ExcludedProcessNames.Contains(window.ProcessName, StringComparer.OrdinalIgnoreCase);
 }
