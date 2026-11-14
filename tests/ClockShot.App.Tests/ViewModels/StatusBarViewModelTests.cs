@@ -7,6 +7,7 @@ namespace ClockShot.App.Tests.ViewModels;
 public sealed class StatusBarViewModelTests
 {
     private static readonly ForegroundWindow Editor = new(
+        Handle: 1,
         ProcessName: "Editor.exe",
         ExecutablePath: null,
         DisplayName: "Editor",

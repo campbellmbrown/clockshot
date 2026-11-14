@@ -17,7 +17,14 @@ namespace ClockShot.Core.Tests.Tracking;
 public sealed class TrackingLoopTests : IAsyncDisposable
 {
     private static readonly DateTime StartTime = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
-    private static readonly ForegroundWindow Editor = new("Editor.exe", null, "Editor", "a.cs");
+    private const nint AnotherHandle = 99;
+
+    private static readonly ForegroundWindow Editor = new(
+        Handle: 1,
+        ProcessName: "Editor.exe",
+        ExecutablePath: null,
+        DisplayName: "Editor",
+        Title: "a.cs");
 
     private readonly FakeTimeProvider _clock = new(StartTime);
     private readonly FakeSampler _sampler = new();
@@ -102,6 +109,25 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 
         // Assert
         Assert.True(_sink.IsStarted);
+    }
+
+    [Fact]
+    public async Task ANewHandleForTheSameWindowLeavesTheStatusAlone()
+    {
+        // Arrange
+        await StartAsync();
+        // Waiting for the next tick makes sure the first one has published its status.
+        await TickAsync();
+        var raised = 0;
+        _loop.StatusChanged += () => raised++;
+        _sampler.Window = Editor with { Handle = AnotherHandle };
+
+        // Act
+        await TickAsync();
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.Equal(0, raised);
     }
 
     [Fact]

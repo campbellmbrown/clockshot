@@ -13,9 +13,27 @@ namespace ClockShot.Data.Tests;
 public sealed class TrackingSaverTests : IDisposable
 {
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
-    private static readonly ForegroundWindow Editor = new("Editor.exe", @"C:\Editor.exe", "Editor", "notes.txt");
-    private static readonly ForegroundWindow Browser = new("Browser.exe", @"C:\Browser.exe", "Browser", "Inbox");
-    private static readonly ForegroundWindow Chat = new("TeamChat.exe", @"C:\TeamChat.exe", "Team Chat", "General");
+    private static readonly ForegroundWindow Editor = new(
+        Handle: 1,
+        ProcessName: "Editor.exe",
+        ExecutablePath: @"C:\Editor.exe",
+        DisplayName: "Editor",
+        Title: "notes.txt");
+
+    private static readonly ForegroundWindow Browser = new(
+        Handle: 2,
+        ProcessName: "Browser.exe",
+        ExecutablePath: @"C:\Browser.exe",
+        DisplayName: "Browser",
+        Title: "Inbox");
+
+    private static readonly ForegroundWindow Chat = new(
+        Handle: 3,
+        ProcessName: "TeamChat.exe",
+        ExecutablePath: @"C:\TeamChat.exe",
+        DisplayName: "Team Chat",
+        Title: "General");
+
     private static readonly TimeRange WholeDay = new(Start.Date, Start.Date.AddDays(1));
     // These tests never go away, so any idle time is still active.
     private static readonly TimeSpan NeverAway = TimeSpan.MaxValue;

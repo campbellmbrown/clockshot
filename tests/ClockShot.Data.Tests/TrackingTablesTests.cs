@@ -8,7 +8,13 @@ namespace ClockShot.Data.Tests;
 
 public sealed class TrackingTablesTests : IDisposable
 {
-    private static readonly ForegroundWindow Editor = new("Editor.exe", @"C:\Editor.exe", "Editor", "notes.txt");
+    private static readonly ForegroundWindow Editor = new(
+        Handle: 1,
+        ProcessName: "Editor.exe",
+        ExecutablePath: @"C:\Editor.exe",
+        DisplayName: "Editor",
+        Title: "notes.txt");
+
     private static readonly TimeRange WholeDay = new(At(0), At(24));
 
     private readonly MemoryDatabase _data = new();

@@ -3,11 +3,13 @@ namespace ClockShot.Core.Tracking;
 /// <summary>
 /// The window the user is working in, as read from the OS.
 /// </summary>
+/// <param name="Handle">The OS window handle, used only for capturing a screenshot. It isn't stored.</param>
 /// <param name="ProcessName">The executable's file name, such as "Editor.exe".</param>
 /// <param name="ExecutablePath">The full path to the executable, when the OS allows reading it.</param>
 /// <param name="DisplayName">The application's friendly name, such as "Editor".</param>
 /// <param name="Title">The window's title.</param>
 public sealed record ForegroundWindow(
+    nint Handle,
     string ProcessName,
     string? ExecutablePath,
     string DisplayName,

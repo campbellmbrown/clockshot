@@ -69,7 +69,7 @@ public sealed unsafe class WindowsSystemSampler : ISystemSampler
 
         var processName = executablePath is null ? UnknownProcessName : Path.GetFileName(executablePath);
         var displayName = DisplayName(executablePath, processName);
-        return new ForegroundWindow(processName, executablePath, displayName, title);
+        return new ForegroundWindow(window, processName, executablePath, displayName, title);
     }
 
     private static bool IsStoreAppHost(string executablePath) =>

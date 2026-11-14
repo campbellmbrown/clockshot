@@ -6,8 +6,21 @@ namespace ClockShot.Core.Tests.Tracking;
 public sealed class ActivityTrackerTests
 {
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
-    private static readonly ForegroundWindow Editor = new("Editor.exe", @"C:\Editor.exe", "Editor", "notes.txt");
-    private static readonly ForegroundWindow Browser = new("Browser.exe", @"C:\Browser.exe", "Browser", "Inbox");
+    private const nint AnotherHandle = 99;
+
+    private static readonly ForegroundWindow Editor = new(
+        Handle: 1,
+        ProcessName: "Editor.exe",
+        ExecutablePath: @"C:\Editor.exe",
+        DisplayName: "Editor",
+        Title: "notes.txt");
+
+    private static readonly ForegroundWindow Browser = new(
+        Handle: 2,
+        ProcessName: "Browser.exe",
+        ExecutablePath: @"C:\Browser.exe",
+        DisplayName: "Browser",
+        Title: "Inbox");
 
     private static readonly TimeSpan AwayAfter = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan MaxSampleGap = TimeSpan.FromSeconds(10);
@@ -37,7 +50,7 @@ public sealed class ActivityTrackerTests
         Sample(0, Editor);
 
         // Act
-        var changes = Sample(1, Editor);
+        var changes = Sample(1, Editor with { Handle = AnotherHandle });
 
         // Assert
         Assert.Equal([new SegmentsExtended(At(1))], changes);

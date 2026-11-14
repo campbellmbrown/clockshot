@@ -8,8 +8,20 @@ namespace ClockShot.Core.Tests.Screenshots;
 public sealed class ScreenshotSchedulerTests
 {
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
-    private static readonly ForegroundWindow Editor = new("Editor.exe", null, "Editor", "a.cs");
-    private static readonly ForegroundWindow Browser = new("Browser.exe", null, "Browser", "Inbox");
+    private static readonly ForegroundWindow Editor = new(
+        Handle: 1,
+        ProcessName: "Editor.exe",
+        ExecutablePath: null,
+        DisplayName: "Editor",
+        Title: "a.cs");
+
+    private static readonly ForegroundWindow Browser = new(
+        Handle: 2,
+        ProcessName: "Browser.exe",
+        ExecutablePath: null,
+        DisplayName: "Browser",
+        Title: "Inbox");
+
     private static readonly ScreenshotSettings Defaults = new() { IntervalSeconds = 30, MinimumGapSeconds = 5 };
 
     private readonly ScreenshotScheduler _scheduler = new();
