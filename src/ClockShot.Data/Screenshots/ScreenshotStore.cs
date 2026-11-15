@@ -6,12 +6,15 @@ using ClockShot.Core.Models;
 using ClockShot.Core.Screenshots;
 using ClockShot.Data.Sqlite;
 
+using Microsoft.Data.Sqlite;
+
 namespace ClockShot.Data.Screenshots;
 
 /// <summary>
 /// Saves screenshots as WebP files in day folders named by local time, and indexes them in the database.
 /// Saving isn't thread-safe.
 /// The tracking loop saves one screenshot at a time.
+/// Deleting can run while a screenshot is saving, because they share no fields and each opens its own connection.
 /// </summary>
 /// <param name="time">Gives the local time zone for folder and file names.</param>
 public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDatabase database, TimeProvider time)
@@ -57,6 +60,11 @@ public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDa
         }
     }
 
+    // Microsoft.Data.Sqlite and file deletes are synchronous.
+    // Running them on another thread keeps the caller responsive.
+    public Task<int> DeleteTakenBeforeAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default) =>
+        Task.Run(() => DeleteTakenBefore(cutoffUtc, cancellationToken), cancellationToken);
+
     public string FullPath(string imagePath) =>
         files.Path.Combine(paths.Screenshots, imagePath.Replace('/', files.Path.DirectorySeparatorChar));
 
@@ -88,6 +96,110 @@ public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDa
         {
             files.File.Delete(temporaryPath);
             throw;
+        }
+    }
+
+    private int DeleteTakenBefore(DateTime cutoffUtc, CancellationToken cancellationToken)
+    {
+        var failures = new List<Exception>();
+        var leftoverFolders = DeleteLeftoverTemporaryFiles(cutoffUtc, failures);
+
+        using var connection = database.Open();
+        var deleted = new List<Screenshot>();
+        foreach (var screenshot in ScreenshotTable.GetTakenBefore(connection, cutoffUtc))
+        {
+            // Stopping here leaves rows whose files are gone. The next run deletes them and their folders.
+            cancellationToken.ThrowIfCancellationRequested();
+            if (TryDelete(FullPath(screenshot.ImagePath), failures))
+            {
+                deleted.Add(screenshot);
+            }
+        }
+
+        DeleteRows(connection, deleted);
+        var deletedFolders = deleted.Select(s => files.Path.GetDirectoryName(FullPath(s.ImagePath))!);
+        DeleteEmptyFolders(deletedFolders.Concat(leftoverFolders).Distinct());
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(
+                $"Old screenshots deleted: {deleted.Count}. Files that couldn't be deleted: {failures.Count}.",
+                failures);
+        }
+
+        return deleted.Count;
+    }
+
+    /// <summary>
+    /// Deletes a file, or records why it can't, such as when a viewer has it open.
+    /// A file that's already gone counts as deleted, even when its folder is gone too.
+    /// </summary>
+    private bool TryDelete(string path, List<Exception> failures)
+    {
+        try
+        {
+            files.File.Delete(path);
+            return true;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Someone deleted the folder by hand, which took the file with it.
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            failures.Add(ex);
+            return false;
+        }
+    }
+
+    private static void DeleteRows(SqliteConnection connection, List<Screenshot> screenshots)
+    {
+        if (screenshots.Count == 0)
+        {
+            return;
+        }
+
+        using var transaction = connection.BeginTransaction();
+        ScreenshotTable.Delete(connection, screenshots.Select(s => s.Id), transaction);
+        transaction.Commit();
+    }
+
+    /// <summary>
+    /// Deletes temporary files that a crash left between writing a screenshot and renaming it.
+    /// A file written before the cutoff can't still be in use, because the cutoff is at least a day ago.
+    /// </summary>
+    /// <returns>The folders of the files that were deleted.</returns>
+    private List<string> DeleteLeftoverTemporaryFiles(DateTime cutoffUtc, List<Exception> failures)
+    {
+        if (!files.Directory.Exists(paths.Screenshots))
+        {
+            return [];
+        }
+
+        var leftovers = files.DirectoryInfo.New(paths.Screenshots)
+            .EnumerateFiles("*" + TemporaryExtension, SearchOption.AllDirectories)
+            .Where(file => file.LastWriteTimeUtc < cutoffUtc)
+            .ToList();
+        return [.. leftovers.Where(file => TryDelete(file.FullName, failures)).Select(file => file.DirectoryName!)];
+    }
+
+    /// <summary>
+    /// Removes day, month and year folders left empty after a cleanup.
+    /// </summary>
+    private void DeleteEmptyFolders(IEnumerable<string> dayFolders)
+    {
+        var root = files.Path.GetFullPath(paths.Screenshots);
+        foreach (var dayFolder in dayFolders)
+        {
+            var folder = dayFolder;
+            while (folder is not null
+                && files.Path.GetFullPath(folder) != root
+                && files.Directory.Exists(folder)
+                && !files.Directory.EnumerateFileSystemEntries(folder).Any())
+            {
+                files.Directory.Delete(folder);
+                folder = files.Path.GetDirectoryName(folder);
+            }
         }
     }
 }

@@ -40,6 +40,7 @@ public sealed record AppSettings
 
                 MaxWidthPixels = SettingLimits.ScreenshotMaxWidthPixels.Clamp(screenshots.MaxWidthPixels),
                 Quality = SettingLimits.ScreenshotQuality.Clamp(screenshots.Quality),
+                KeepForDays = SettingLimits.KeepScreenshotsForDays.Clamp(screenshots.KeepForDays),
                 ExcludedProcessNames = screenshots.ExcludedProcessNames ?? [],
             },
         };

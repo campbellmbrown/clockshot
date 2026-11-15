@@ -72,6 +72,7 @@ public sealed class AppSettingsTests
                 MinimumGapSeconds = 0,
                 MaxWidthPixels = 99_999,
                 Quality = 0,
+                KeepForDays = 0,
             },
         };
 
@@ -84,5 +85,6 @@ public sealed class AppSettingsTests
         Assert.Equal(SettingLimits.ScreenshotMinimumGapSeconds.Min, normalized.Screenshots.MinimumGapSeconds);
         Assert.Equal(SettingLimits.ScreenshotMaxWidthPixels.Max, normalized.Screenshots.MaxWidthPixels);
         Assert.Equal(SettingLimits.ScreenshotQuality.Min, normalized.Screenshots.Quality);
+        Assert.Equal(SettingLimits.KeepScreenshotsForDays.Min, normalized.Screenshots.KeepForDays);
     }
 }

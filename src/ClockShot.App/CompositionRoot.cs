@@ -49,6 +49,7 @@ internal static class CompositionRoot
         services.AddSingleton<ITrackingSink, TrackingWriter>();
         services.AddSingleton<IScreenshotStore, ScreenshotStore>();
         services.AddSingleton<TrackingLoop>();
+        services.AddSingleton<ScreenshotCleanup>();
         services.AddSingleton<ITrackingController>(sp => sp.GetRequiredService<TrackingLoop>());
 
         // App services

@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using ClockShot.App.Logging;
 using ClockShot.App.ViewModels;
 using ClockShot.App.Views;
+using ClockShot.Core.Screenshots;
 using ClockShot.Core.Tracking;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +48,7 @@ public sealed partial class App(StartupOptions options, SingleInstance? instance
             Task.Run(() => services.DisposeAsync().AsTask()).GetAwaiter().GetResult();
 
         services.GetRequiredService<TrackingLoop>().Start();
+        services.GetRequiredService<ScreenshotCleanup>().Start();
 
         var tray = services.GetRequiredService<TrayIconViewModel>();
         tray.ShowWindowRequested += () => BringToFront(window);

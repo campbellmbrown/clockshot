@@ -31,6 +31,11 @@ public sealed record ScreenshotSettings
     public int Quality { get; init; } = 70;
 
     /// <summary>
+    /// Screenshots older than this many days are deleted.
+    /// </summary>
+    public int KeepForDays { get; init; } = 30;
+
+    /// <summary>
     /// Process names whose windows are never captured.
     /// </summary>
     public IReadOnlyList<string> ExcludedProcessNames { get; init; } = [];

@@ -22,4 +22,8 @@ public static class SettingLimits
 
     // WebP quality goes up to 100. Below 10 the text in a screenshot can't be read.
     public static IntRange ScreenshotQuality { get; } = new(10, 100);
+
+    // At least a day, so the cleanup never deletes a screenshot file that's still being written.
+    // Ten years is longer than anyone keeps them.
+    public static IntRange KeepScreenshotsForDays { get; } = new(1, 3650);
 }

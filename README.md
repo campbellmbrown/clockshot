@@ -21,6 +21,8 @@ It records your time, but can't show it to you yet, and there are no releases.
 - While you're active, it takes a screenshot of the window you're using every minute, and shortly after you switch apps.
   A screenshot copies the screen where the window is, so it also shows any window on top of it.
   A screenshot identical to the one before is skipped.
+  Screenshots are kept for 30 days, then deleted.
+  The minute between screenshots and the 30 days are defaults that you can change in `settings.json`.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.

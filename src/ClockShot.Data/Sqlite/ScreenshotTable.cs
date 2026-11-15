@@ -27,6 +27,15 @@ internal static class ScreenshotTable
             SelectScreenshots + " WHERE taken_utc >= @Start AND taken_utc < @End ORDER BY taken_utc",
             UnixTime.RangeParameters(range));
 
+    public static IReadOnlyList<Screenshot> GetTakenBefore(IDbConnection connection, DateTime cutoffUtc) =>
+        Query(
+            connection,
+            SelectScreenshots + " WHERE taken_utc < @Cutoff ORDER BY taken_utc",
+            new { Cutoff = UnixTime.ToMilliseconds(cutoffUtc) });
+
+    public static void Delete(IDbConnection connection, IEnumerable<long> ids, IDbTransaction transaction) =>
+        connection.Execute("DELETE FROM screenshot WHERE id = @Id", ids.Select(id => new { Id = id }), transaction);
+
     /// <summary>
     /// Runs <see cref="SelectScreenshots"/> with a condition, so the columns match the tuple below.
     /// </summary>

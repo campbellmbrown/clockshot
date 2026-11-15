@@ -159,5 +159,169 @@ public sealed class ScreenshotStoreTests : IDisposable
         Assert.NotNull(saved);
     }
 
+    [Fact]
+    public async Task DeletesOldScreenshotsAndTheFoldersTheyLeaveEmpty()
+    {
+        // Arrange
+        await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+
+        // Act
+        var deleted = await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        Assert.Equal(1, deleted);
+        Assert.Empty(_files.Directory.EnumerateFileSystemEntries(Paths.Screenshots));
+    }
+
+    [Fact]
+    public async Task KeepsAMonthFolderThatStillHasScreenshots()
+    {
+        // Arrange
+        var old = await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-9), Encoding, Cancellation);
+        await _store.SaveAsync(Image(blue: 2), Taken, Encoding, Cancellation);
+        var oldDayFolder = _files.Path.GetDirectoryName(_store.FullPath(old!.ImagePath))!;
+
+        // Act
+        await _store.DeleteTakenBeforeAsync(Taken.AddDays(-5), Cancellation);
+
+        // Assert
+        Assert.False(_files.Directory.Exists(oldDayFolder));
+        Assert.True(_files.Directory.Exists(_files.Path.GetDirectoryName(oldDayFolder)));
+    }
+
+    [Fact]
+    public async Task KeepsRecentScreenshotsWhenDeletingOldOnes()
+    {
+        // Arrange
+        await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+        var recent = await _store.SaveAsync(Image(blue: 2), Taken, Encoding, Cancellation);
+
+        // Act
+        await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        Assert.True(_files.File.Exists(_store.FullPath(recent!.ImagePath)));
+    }
+
+    [Fact]
+    public async Task DeletesTheRowsOfOldScreenshots()
+    {
+        // Arrange
+        await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+
+        // Act
+        await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        using var connection = _data.Database.Open();
+        Assert.Empty(ScreenshotTable.GetTakenBefore(connection, Taken));
+    }
+
+    [Fact]
+    public async Task DeletesTheRowAndFoldersOfAScreenshotWhoseFileIsAlreadyGone()
+    {
+        // Arrange
+        var gone = await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+        _files.File.Delete(_store.FullPath(gone!.ImagePath));
+
+        // Act
+        var deleted = await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        Assert.Equal(1, deleted);
+        Assert.Empty(_files.Directory.EnumerateFileSystemEntries(Paths.Screenshots));
+        using var connection = _data.Database.Open();
+        Assert.Empty(ScreenshotTable.GetTakenBefore(connection, Taken));
+    }
+
+    [Fact]
+    public async Task DeletesTheRowOfAScreenshotWhoseFolderWasDeletedByHand()
+    {
+        // Arrange
+        var gone = await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+        _files.Directory.Delete(_files.Path.GetDirectoryName(_store.FullPath(gone!.ImagePath))!, recursive: true);
+
+        // Act
+        var deleted = await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        Assert.Equal(1, deleted);
+        using var connection = _data.Database.Open();
+        Assert.Empty(ScreenshotTable.GetTakenBefore(connection, Taken));
+    }
+
+    [Fact]
+    public async Task SkipsAFileItCannotDeleteAndDeletesTheRest()
+    {
+        // Arrange
+        var stuck = await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+        var other = await _store.SaveAsync(Image(blue: 2), Taken.AddDays(-39), Encoding, Cancellation);
+        _files.File.SetAttributes(_store.FullPath(stuck!.ImagePath), FileAttributes.ReadOnly);
+
+        // Act
+        var thrown = await Record.ExceptionAsync(() => _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation));
+
+        // Assert
+        Assert.IsType<AggregateException>(thrown);
+        Assert.False(_files.File.Exists(_store.FullPath(other!.ImagePath)));
+        using var connection = _data.Database.Open();
+        Assert.Equal([stuck], ScreenshotTable.GetTakenBefore(connection, Taken));
+    }
+
+    [Fact]
+    public async Task DeletesALeftoverTemporaryFileOlderThanTheCutoff()
+    {
+        // Arrange
+        var leftover = LeftoverTemporaryFile(writtenUtc: Taken.AddDays(-40));
+
+        // Act
+        await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        Assert.False(_files.File.Exists(leftover));
+        Assert.Empty(_files.Directory.EnumerateFileSystemEntries(Paths.Screenshots));
+    }
+
+    [Fact]
+    public async Task ATemporaryFileItCannotDeleteDoesNotStopTheCleanup()
+    {
+        // Arrange
+        var stuck = LeftoverTemporaryFile(writtenUtc: Taken.AddDays(-40));
+        _files.File.SetAttributes(stuck, FileAttributes.ReadOnly);
+        var old = await _store.SaveAsync(Image(blue: 1), Taken.AddDays(-40), Encoding, Cancellation);
+
+        // Act
+        var thrown = await Record.ExceptionAsync(() => _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation));
+
+        // Assert
+        Assert.IsType<AggregateException>(thrown);
+        Assert.False(_files.File.Exists(_store.FullPath(old!.ImagePath)));
+    }
+
+    [Fact]
+    public async Task KeepsATemporaryFileThatMayStillBeWritten()
+    {
+        // Arrange
+        var recent = LeftoverTemporaryFile(writtenUtc: Taken);
+
+        // Act
+        await _store.DeleteTakenBeforeAsync(Taken.AddDays(-30), Cancellation);
+
+        // Assert
+        Assert.True(_files.File.Exists(recent));
+    }
+
+    /// <summary>
+    /// A temporary file like one a crash leaves between writing a screenshot and renaming it.
+    /// </summary>
+    private string LeftoverTemporaryFile(DateTime writtenUtc)
+    {
+        var path = _store.FullPath("2026/10/01/090000_000.webp.tmp");
+        _files.Directory.CreateDirectory(_files.Path.GetDirectoryName(path)!);
+        _files.File.WriteAllBytes(path, [1]);
+        _files.File.SetLastWriteTimeUtc(path, writtenUtc);
+        return path;
+    }
+
     private static CapturedImage Image(byte blue) => TestImages.Gradient(width: 100, height: 100, blue);
 }
