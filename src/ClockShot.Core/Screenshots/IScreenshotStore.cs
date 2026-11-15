@@ -21,4 +21,9 @@ public interface IScreenshotStore
     /// <returns>How many screenshots were deleted.</returns>
     /// <exception cref="AggregateException">Some files couldn't be deleted. The rest were.</exception>
     Task<int> DeleteTakenBeforeAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// How much space the screenshot files take.
+    /// </summary>
+    Task<StorageUse> GetStorageUseAsync();
 }

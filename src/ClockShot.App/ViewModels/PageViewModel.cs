@@ -10,4 +10,13 @@ public abstract class PageViewModel(string title, string iconKind) : ViewModelBa
     public string Title { get; } = title;
 
     public string IconKind { get; } = iconKind;
+
+    /// <summary>
+    /// Called each time the tab is shown.
+    /// A page can override it to refresh what changed while it was hidden.
+    /// </summary>
+    public virtual void OnShown()
+    {
+        // Most pages keep themselves up to date.
+    }
 }

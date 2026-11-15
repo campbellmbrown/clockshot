@@ -57,6 +57,7 @@ internal static class CompositionRoot
         services.AddSingleton<IShell, SystemShell>();
         services.AddSingleton<MainWindowHost>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<BackgroundWork>();
 
         // View models
         services.AddSingleton<MainWindowViewModel>();

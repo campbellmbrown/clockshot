@@ -45,4 +45,6 @@ internal sealed class FakeScreenshotStore : IScreenshotStore
         await DeleteFinishes.WaitAsync(cancellationToken);
         return 0;
     }
+
+    public Task<StorageUse> GetStorageUseAsync() => throw new NotSupportedException();
 }

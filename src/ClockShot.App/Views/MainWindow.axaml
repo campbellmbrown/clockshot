@@ -70,7 +70,9 @@
       </Grid>
     </Border>
 
-    <TabControl ItemsSource="{Binding Pages}" AutomationProperties.AutomationId="MainTabs">
+    <TabControl ItemsSource="{Binding Pages}"
+                SelectedItem="{Binding SelectedPage}"
+                AutomationProperties.AutomationId="MainTabs">
       <TabControl.ItemTemplate>
         <DataTemplate DataType="vm:PageViewModel">
           <StackPanel Orientation="Horizontal" Spacing="8">

@@ -65,6 +65,19 @@ public sealed class ScreenshotStore(IFileSystem files, DataPaths paths, SqliteDa
     public Task<int> DeleteTakenBeforeAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default) =>
         Task.Run(() => DeleteTakenBefore(cutoffUtc, cancellationToken), cancellationToken);
 
+    public Task<StorageUse> GetStorageUseAsync() => Task.Run(() =>
+    {
+        if (!files.Directory.Exists(paths.Screenshots))
+        {
+            return new StorageUse(Bytes: 0, Files: 0);
+        }
+
+        var screenshots = files.DirectoryInfo.New(paths.Screenshots)
+            .EnumerateFiles("*" + FileExtension, SearchOption.AllDirectories)
+            .ToList();
+        return new StorageUse(screenshots.Sum(f => f.Length), screenshots.Count);
+    });
+
     public string FullPath(string imagePath) =>
         files.Path.Combine(paths.Screenshots, imagePath.Replace('/', files.Path.DirectorySeparatorChar));
 

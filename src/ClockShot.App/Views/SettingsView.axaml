@@ -155,6 +155,21 @@
                          Maximum="{Binding Max, Source={x:Static settings:SettingLimits.KeepScreenshotsForDays}}"
                          AutomationProperties.AutomationId="SettingKeepDays" />
         </Grid>
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="This is how much disk space the screenshots take up.">
+          <TextBlock Text="Space used" />
+          <StackPanel Grid.Column="1"
+                      Orientation="Horizontal"
+                      Spacing="12">
+            <TextBlock Text="{Binding StorageText}"
+                       VerticalAlignment="Center"
+                       AutomationProperties.AutomationId="SettingStorage" />
+            <Button Command="{Binding OpenScreenshotFolderCommand}">
+              <controls:IconText Kind="{x:Static controls:Icons.OpenFolder}" Text="Open folder" />
+            </Button>
+          </StackPanel>
+        </Grid>
       </StackPanel>
     </StackPanel>
   </ScrollViewer>

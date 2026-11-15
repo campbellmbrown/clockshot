@@ -1,7 +1,10 @@
 using System.Collections.ObjectModel;
 
 using ClockShot.App.Controls;
+using ClockShot.App.Services;
+using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
+using ClockShot.Data;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,17 +19,32 @@ namespace ClockShot.App.ViewModels;
 public sealed partial class SettingsViewModel : PageViewModel
 {
     private readonly ISettingsStore _settings;
+    private readonly IScreenshotStore _screenshots;
+    private readonly IShell _shell;
+    private readonly DataPaths _paths;
+    private readonly BackgroundWork _background;
 
-    public SettingsViewModel(ISettingsStore settings)
+    public SettingsViewModel(
+        ISettingsStore settings,
+        IScreenshotStore screenshots,
+        IShell shell,
+        DataPaths paths,
+        BackgroundWork background)
         : base("Settings", Icons.Settings)
     {
         _settings = settings;
+        _screenshots = screenshots;
+        _shell = shell;
+        _paths = paths;
+        _background = background;
         ExcludedApps = [.. settings.Current.Screenshots.ExcludedProcessNames];
 
         // Saving doesn't notify the bindings, so the page refreshes after every change.
         // That updates rows that depend on another setting, and shows changes made in other places.
         settings.Changed += _ => OnUiThread(() => OnPropertyChanged(string.Empty));
     }
+
+    public override void OnShown() => _background.Run(CountStorageAsync);
 
     private AppSettings Current => _settings.Current;
 
@@ -132,4 +150,21 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     private void SaveExcludedApps() =>
         Update(s => s with { Screenshots = s.Screenshots with { ExcludedProcessNames = [.. ExcludedApps] } });
+
+    /// <summary>
+    /// How much space the screenshots use, and how many there are.
+    /// It's counted again each time the tab is shown.
+    /// Screenshots are saved and deleted all the time.
+    /// </summary>
+    [ObservableProperty]
+    public partial string StorageText { get; private set; } = "";
+
+    [RelayCommand]
+    private void OpenScreenshotFolder() => _shell.OpenFolder(_paths.Screenshots);
+
+    private async Task CountStorageAsync()
+    {
+        var storage = await _screenshots.GetStorageUseAsync();
+        StorageText = storage.Text;
+    }
 }

@@ -311,6 +311,33 @@ public sealed class ScreenshotStoreTests : IDisposable
         Assert.True(_files.File.Exists(recent));
     }
 
+    [Fact]
+    public async Task UsesNoSpaceBeforeTheFirstScreenshot()
+    {
+        // Act
+        var use = await _store.GetStorageUseAsync();
+
+        // Assert
+        Assert.Equal(new StorageUse(Bytes: 0, Files: 0), use);
+    }
+
+    [Fact]
+    public async Task CountsOnlyTheScreenshotFiles()
+    {
+        // Arrange
+        var today = await _store.SaveAsync(Image(blue: 1), Taken, Encoding, Cancellation);
+        var yesterday = await _store.SaveAsync(Image(blue: 2), Taken.AddDays(-1), Encoding, Cancellation);
+        LeftoverTemporaryFile(writtenUtc: Taken);
+
+        // Act
+        var use = await _store.GetStorageUseAsync();
+
+        // Assert
+        var size = _files.FileInfo.New(_store.FullPath(today!.ImagePath)).Length
+            + _files.FileInfo.New(_store.FullPath(yesterday!.ImagePath)).Length;
+        Assert.Equal(new StorageUse(size, Files: 2), use);
+    }
+
     /// <summary>
     /// A temporary file like one a crash leaves between writing a screenshot and renaming it.
     /// </summary>
