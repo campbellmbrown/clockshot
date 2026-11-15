@@ -48,14 +48,14 @@ public sealed class JsonSettingsStoreTests
         var store = CreateStore();
         var changed = store.Current with
         {
-            Screenshots = store.Current.Screenshots with { ExcludedProcessNames = ["Passwords.exe"] },
+            Screenshots = store.Current.Screenshots with { ExcludedProcessNames = ["PasswordManager.exe"] },
         };
 
         // Act
         store.Save(changed);
 
         // Assert
-        Assert.Equal(["Passwords.exe"], CreateStore().Current.Screenshots.ExcludedProcessNames);
+        Assert.Equal(["PasswordManager.exe"], CreateStore().Current.Screenshots.ExcludedProcessNames);
     }
 
     [Fact]

@@ -37,6 +37,7 @@ public sealed record ScreenshotSettings
 
     /// <summary>
     /// Process names whose windows are never captured.
+    /// A name matches with or without its extension.
     /// </summary>
     public IReadOnlyList<string> ExcludedProcessNames { get; init; } = [];
 }

@@ -41,8 +41,24 @@ public sealed record AppSettings
                 MaxWidthPixels = SettingLimits.ScreenshotMaxWidthPixels.Clamp(screenshots.MaxWidthPixels),
                 Quality = SettingLimits.ScreenshotQuality.Clamp(screenshots.Quality),
                 KeepForDays = SettingLimits.KeepScreenshotsForDays.Clamp(screenshots.KeepForDays),
-                ExcludedProcessNames = screenshots.ExcludedProcessNames ?? [],
+                ExcludedProcessNames = Cleaned(screenshots.ExcludedProcessNames),
             },
         };
+    }
+
+    /// <summary>
+    /// Trims the names and drops blank ones, which a hand-edited settings file can have.
+    /// A list that's already clean is returned as it is, so settings that are already normal stay equal.
+    /// </summary>
+    private static IReadOnlyList<string> Cleaned(IReadOnlyList<string>? names)
+    {
+        if (names is null)
+        {
+            return [];
+        }
+
+        return names.All(name => !string.IsNullOrWhiteSpace(name) && name == name.Trim())
+            ? names
+            : [.. names.Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name.Trim())];
     }
 }

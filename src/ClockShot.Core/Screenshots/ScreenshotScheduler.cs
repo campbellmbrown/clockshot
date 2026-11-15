@@ -74,6 +74,14 @@ public sealed class ScreenshotScheduler
         _appSwitchUtc = null;
     }
 
-    private static bool IsExcluded(ForegroundWindow window, ScreenshotSettings settings) =>
-        settings.ExcludedProcessNames.Contains(window.ProcessName, StringComparer.OrdinalIgnoreCase);
+    /// <summary>
+    /// True when the window's process is excluded, by its name with or without the extension.
+    /// </summary>
+    private static bool IsExcluded(ForegroundWindow window, ScreenshotSettings settings)
+    {
+        var nameWithoutExtension = Path.GetFileNameWithoutExtension(window.ProcessName);
+        return settings.ExcludedProcessNames.Any(excluded =>
+            string.Equals(excluded, window.ProcessName, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(excluded, nameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+    }
 }

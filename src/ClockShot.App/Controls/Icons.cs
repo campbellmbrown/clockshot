@@ -20,4 +20,8 @@ public static class Icons
     // ---- Tracking ----
     public const string PauseTracking = "circle-pause";
     public const string ResumeTracking = "circle-play";
+
+    // ---- Common actions ----
+    public const string Add = "plus";
+    public const string Remove = "x";
 }

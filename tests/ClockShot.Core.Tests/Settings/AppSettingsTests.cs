@@ -47,6 +47,22 @@ public sealed class AppSettingsTests
     }
 
     [Fact]
+    public void NormalizedTrimsExcludedAppsAndDropsBlankOnes()
+    {
+        // Arrange
+        var settings = new AppSettings
+        {
+            Screenshots = new ScreenshotSettings { ExcludedProcessNames = [" Editor.exe ", "", null!, "  "] },
+        };
+
+        // Act
+        var normalized = settings.Normalized();
+
+        // Assert
+        Assert.Equal(["Editor.exe"], normalized.Screenshots.ExcludedProcessNames);
+    }
+
+    [Fact]
     public void NormalizedShortensAGapLongerThanTheInterval()
     {
         // Arrange

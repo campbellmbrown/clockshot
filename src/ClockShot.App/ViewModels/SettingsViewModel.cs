@@ -1,5 +1,10 @@
+using System.Collections.ObjectModel;
+
 using ClockShot.App.Controls;
 using ClockShot.Core.Settings;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ClockShot.App.ViewModels;
 
@@ -16,6 +21,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         : base("Settings", Icons.Settings)
     {
         _settings = settings;
+        ExcludedApps = [.. settings.Current.Screenshots.ExcludedProcessNames];
 
         // Saving doesn't notify the bindings, so the page refreshes after every change.
         // That updates rows that depend on another setting, and shows changes made in other places.
@@ -95,4 +101,35 @@ public sealed partial class SettingsViewModel : PageViewModel
         get => Current.Screenshots.KeepForDays;
         set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { KeepForDays = v } });
     }
+
+    /// <summary>
+    /// The process names of apps that are never captured.
+    /// </summary>
+    public ObservableCollection<string> ExcludedApps { get; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddExcludedAppCommand))]
+    public partial string? NewExcludedApp { get; set; }
+
+    [RelayCommand(CanExecute = nameof(CanAddExcludedApp))]
+    private void AddExcludedApp()
+    {
+        ExcludedApps.Add(NewExcludedApp!.Trim());
+        NewExcludedApp = null;
+        SaveExcludedApps();
+    }
+
+    private bool CanAddExcludedApp() =>
+        !string.IsNullOrWhiteSpace(NewExcludedApp)
+        && !ExcludedApps.Contains(NewExcludedApp.Trim(), StringComparer.OrdinalIgnoreCase);
+
+    [RelayCommand]
+    private void RemoveExcludedApp(string name)
+    {
+        ExcludedApps.Remove(name);
+        SaveExcludedApps();
+    }
+
+    private void SaveExcludedApps() =>
+        Update(s => s with { Screenshots = s.Screenshots with { ExcludedProcessNames = [.. ExcludedApps] } });
 }

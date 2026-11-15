@@ -20,11 +20,13 @@ It records your time, but can't show it to you yet, and there are no releases.
 - The status bar shows whether you're active, away, locked or paused, and which window is being recorded.
 - While you're active, it takes a screenshot of the window you're using every minute, and shortly after you switch apps.
   A screenshot copies the screen where the window is, so it also shows any window on top of it.
+  That includes a window from an excluded app.
   A screenshot identical to the one before is skipped.
   Screenshots are kept for 30 days, then deleted.
   In Settings you can turn screenshots off, change how often they're taken, and stop the one after an app switch.
   You can also choose there how long they're kept.
   Their maximum width and quality are settings too, and they change how much space screenshots take.
+  You can also list apps that are never captured, such as a password manager.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.

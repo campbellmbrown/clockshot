@@ -3,6 +3,7 @@
              xmlns:vm="using:ClockShot.App.ViewModels"
              xmlns:core="using:ClockShot.Core"
              xmlns:settings="using:ClockShot.Core.Settings"
+             xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
   <UserControl.Styles>
@@ -106,6 +107,41 @@
                            Minimum="{Binding Min, Source={x:Static settings:SettingLimits.ScreenshotQuality}}"
                            Maximum="{Binding Max, Source={x:Static settings:SettingLimits.ScreenshotQuality}}"
                            Increment="5" />
+          </Grid>
+          <Grid Classes="setting"
+                ColumnDefinitions="280,*"
+                ToolTip.Tip="Never take screenshots of these apps.">
+            <TextBlock Text="Excluded apps" />
+            <StackPanel Grid.Column="1" Spacing="6">
+              <ItemsControl ItemsSource="{Binding ExcludedApps}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="6"
+                                Margin="0,0,0,4">
+                      <TextBlock Text="{Binding}"
+                                 VerticalAlignment="Center"
+                                 MinWidth="200" />
+                      <Button ToolTip.Tip="Remove"
+                              AutomationProperties.Name="{Binding StringFormat='Remove {0}'}"
+                              Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RemoveExcludedAppCommand}"
+                              CommandParameter="{Binding}">
+                        <controls:Icon Kind="{x:Static controls:Icons.Remove}" />
+                      </Button>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <AutoCompleteBox Width="220"
+                                 Text="{Binding NewExcludedApp}"
+                                 PlaceholderText="PasswordManager.exe"
+                                 AutomationProperties.AutomationId="SettingNewExcludedApp" />
+                <Button Command="{Binding AddExcludedAppCommand}" AutomationProperties.AutomationId="SettingAddExcludedApp">
+                  <controls:IconText Kind="{x:Static controls:Icons.Add}" Text="Add" />
+                </Button>
+              </StackPanel>
+            </StackPanel>
           </Grid>
         </StackPanel>
         <!-- Old screenshots are still deleted while taking them is off, so this row stays usable. -->

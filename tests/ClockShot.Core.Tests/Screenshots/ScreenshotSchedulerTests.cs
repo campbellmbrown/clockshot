@@ -131,11 +131,13 @@ public sealed class ScreenshotSchedulerTests
         Assert.False(captures);
     }
 
-    [Fact]
-    public void NeverCapturesExcludedApps()
+    [Theory]
+    [InlineData("editor.EXE")]
+    [InlineData("Editor")]
+    public void NeverCapturesExcludedApps(string excludedName)
     {
         // Act
-        var captures = Check(seconds: 0, Editor, Defaults with { ExcludedProcessNames = ["editor.EXE"] });
+        var captures = Check(seconds: 0, Editor, Defaults with { ExcludedProcessNames = [excludedName] });
 
         // Assert
         Assert.False(captures);
