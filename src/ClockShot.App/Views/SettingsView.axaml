@@ -86,6 +86,27 @@
           <CheckBox Content="On app switch"
                     ToolTip.Tip="Also take a screenshot shortly after you switch to another app."
                     IsChecked="{Binding CaptureOnAppSwitch}" />
+          <Grid Classes="setting"
+                ColumnDefinitions="280,*"
+                ToolTip.Tip="Wider screenshots are scaled down to this width.">
+            <TextBlock Text="Max width (pixels)" />
+            <!-- Steps of 160 land on common screen widths, such as 1280, 1920, 2560 and 3840. -->
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding ScreenshotMaxWidthPixels}"
+                           Minimum="{Binding Min, Source={x:Static settings:SettingLimits.ScreenshotMaxWidthPixels}}"
+                           Maximum="{Binding Max, Source={x:Static settings:SettingLimits.ScreenshotMaxWidthPixels}}"
+                           Increment="160" />
+          </Grid>
+          <Grid Classes="setting"
+                ColumnDefinitions="280,*"
+                ToolTip.Tip="Lower values make smaller files. At 100 the picture is saved without loss.">
+            <TextBlock Text="Quality" />
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding ScreenshotQuality}"
+                           Minimum="{Binding Min, Source={x:Static settings:SettingLimits.ScreenshotQuality}}"
+                           Maximum="{Binding Max, Source={x:Static settings:SettingLimits.ScreenshotQuality}}"
+                           Increment="5" />
+          </Grid>
         </StackPanel>
       </StackPanel>
     </StackPanel>

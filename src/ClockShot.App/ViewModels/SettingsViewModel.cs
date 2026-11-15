@@ -77,4 +77,16 @@ public sealed partial class SettingsViewModel : PageViewModel
         get => Current.Screenshots.CaptureOnAppSwitch;
         set => Update(s => s with { Screenshots = s.Screenshots with { CaptureOnAppSwitch = value } });
     }
+
+    public decimal? ScreenshotMaxWidthPixels
+    {
+        get => Current.Screenshots.MaxWidthPixels;
+        set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { MaxWidthPixels = v } });
+    }
+
+    public decimal? ScreenshotQuality
+    {
+        get => Current.Screenshots.Quality;
+        set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { Quality = v } });
+    }
 }
