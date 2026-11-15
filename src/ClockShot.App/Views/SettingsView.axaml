@@ -62,6 +62,32 @@
                          AutomationProperties.AutomationId="SettingAwayAfter" />
         </Grid>
       </StackPanel>
+
+      <!-- Screenshots -->
+      <StackPanel Classes="section">
+        <TextBlock Classes="h2"
+                   Text="Screenshots"
+                   Margin="0,0,0,6" />
+        <CheckBox Content="Screenshots"
+                  ToolTip.Tip="Take screenshots of the window you're using."
+                  IsChecked="{Binding ScreenshotsEnabled}"
+                  AutomationProperties.AutomationId="SettingScreenshotsEnabled" />
+        <StackPanel IsEnabled="{Binding ScreenshotsEnabled}" Spacing="2">
+          <Grid Classes="setting"
+                ColumnDefinitions="280,*"
+                ToolTip.Tip="Seconds between screenshots.">
+            <TextBlock Text="Interval (seconds)" />
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding ScreenshotIntervalSeconds}"
+                           Minimum="{Binding Min, Source={x:Static settings:SettingLimits.ScreenshotIntervalSeconds}}"
+                           Maximum="{Binding Max, Source={x:Static settings:SettingLimits.ScreenshotIntervalSeconds}}"
+                           Increment="10" />
+          </Grid>
+          <CheckBox Content="On app switch"
+                    ToolTip.Tip="Also take a screenshot shortly after you switch to another app."
+                    IsChecked="{Binding CaptureOnAppSwitch}" />
+        </StackPanel>
+      </StackPanel>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

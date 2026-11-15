@@ -22,7 +22,8 @@ It records your time, but can't show it to you yet, and there are no releases.
   A screenshot copies the screen where the window is, so it also shows any window on top of it.
   A screenshot identical to the one before is skipped.
   Screenshots are kept for 30 days, then deleted.
-  The minute between screenshots and the 30 days are defaults that you can change in `settings.json`.
+  In Settings you can turn screenshots off, change how often they're taken, and stop the one after an app switch.
+  The 30 days is a default that you can change in `settings.json`.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.

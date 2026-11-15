@@ -16,6 +16,10 @@ public sealed partial class SettingsViewModel : PageViewModel
         : base("Settings", Icons.Settings)
     {
         _settings = settings;
+
+        // Saving doesn't notify the bindings, so the page refreshes after every change.
+        // That updates rows that depend on another setting, and shows changes made in other places.
+        settings.Changed += _ => OnUiThread(() => OnPropertyChanged(string.Empty));
     }
 
     private AppSettings Current => _settings.Current;
@@ -52,5 +56,25 @@ public sealed partial class SettingsViewModel : PageViewModel
     {
         get => Current.Tracking.AwayAfterMinutes;
         set => UpdateNumber(value, (s, v) => s with { Tracking = s.Tracking with { AwayAfterMinutes = v } });
+    }
+
+    // ---- Screenshots ----
+
+    public bool ScreenshotsEnabled
+    {
+        get => Current.Screenshots.Enabled;
+        set => Update(s => s with { Screenshots = s.Screenshots with { Enabled = value } });
+    }
+
+    public decimal? ScreenshotIntervalSeconds
+    {
+        get => Current.Screenshots.IntervalSeconds;
+        set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { IntervalSeconds = v } });
+    }
+
+    public bool CaptureOnAppSwitch
+    {
+        get => Current.Screenshots.CaptureOnAppSwitch;
+        set => Update(s => s with { Screenshots = s.Screenshots with { CaptureOnAppSwitch = value } });
     }
 }
