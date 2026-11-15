@@ -108,6 +108,17 @@
                            Increment="5" />
           </Grid>
         </StackPanel>
+        <!-- Old screenshots are still deleted while taking them is off, so this row stays usable. -->
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="Screenshots older than this many days are deleted within the hour. They can't be recovered.">
+          <TextBlock Text="Keep (days)" />
+          <NumericUpDown Grid.Column="1"
+                         Value="{Binding KeepScreenshotsForDays}"
+                         Minimum="{Binding Min, Source={x:Static settings:SettingLimits.KeepScreenshotsForDays}}"
+                         Maximum="{Binding Max, Source={x:Static settings:SettingLimits.KeepScreenshotsForDays}}"
+                         AutomationProperties.AutomationId="SettingKeepDays" />
+        </Grid>
       </StackPanel>
     </StackPanel>
   </ScrollViewer>

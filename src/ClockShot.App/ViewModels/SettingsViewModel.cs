@@ -89,4 +89,10 @@ public sealed partial class SettingsViewModel : PageViewModel
         get => Current.Screenshots.Quality;
         set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { Quality = v } });
     }
+
+    public decimal? KeepScreenshotsForDays
+    {
+        get => Current.Screenshots.KeepForDays;
+        set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { KeepForDays = v } });
+    }
 }

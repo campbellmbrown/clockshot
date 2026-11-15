@@ -23,8 +23,8 @@ It records your time, but can't show it to you yet, and there are no releases.
   A screenshot identical to the one before is skipped.
   Screenshots are kept for 30 days, then deleted.
   In Settings you can turn screenshots off, change how often they're taken, and stop the one after an app switch.
-  You can also choose their maximum width and quality there, which changes how much space they take.
-  The 30 days is a default that you can change in `settings.json`.
+  You can also choose there how long they're kept.
+  Their maximum width and quality are settings too, and they change how much space screenshots take.
 - It stays out of the way in the system tray.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.
