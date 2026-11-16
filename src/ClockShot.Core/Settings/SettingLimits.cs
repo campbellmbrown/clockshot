@@ -6,6 +6,9 @@ namespace ClockShot.Core.Settings;
 /// </summary>
 public static class SettingLimits
 {
+    // Any hour of the day.
+    public static IntRange DayStartHour { get; } = new(0, 23);
+
     // A longer limit than two hours would count most breaks as work.
     public static IntRange AwayAfterMinutes { get; } = new(1, 120);
 

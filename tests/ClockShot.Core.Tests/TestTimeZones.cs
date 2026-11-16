@@ -26,6 +26,16 @@ public static class TestTimeZones
         ]);
 
     /// <summary>
+    /// UTC+5:30, with no daylight saving.
+    /// Its hours start half way through UTC's, so a test can tell local times from UTC ones.
+    /// </summary>
+    public static readonly TimeZoneInfo HalfHourOffset = TimeZoneInfo.CreateCustomTimeZone(
+        id: "Test Half Hour Time",
+        baseUtcOffset: new TimeSpan(5, 30, 0),
+        displayName: "Test time (UTC+5:30)",
+        standardDisplayName: "Test Half Hour Time");
+
+    /// <summary>
     /// A clock change at the given hour on the last Sunday of the month.
     /// </summary>
     private static TimeZoneInfo.TransitionTime LastSundayOf(int month, int hour) =>

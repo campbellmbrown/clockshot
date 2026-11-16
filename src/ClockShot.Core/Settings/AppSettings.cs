@@ -24,7 +24,7 @@ public sealed record AppSettings
         var screenshotInterval = SettingLimits.ScreenshotIntervalSeconds.Clamp(screenshots.IntervalSeconds);
         return this with
         {
-            General = general,
+            General = general with { DayStartHour = SettingLimits.DayStartHour.Clamp(general.DayStartHour) },
             Tracking = tracking with
             {
                 AwayAfterMinutes = SettingLimits.AwayAfterMinutes.Clamp(tracking.AwayAfterMinutes),

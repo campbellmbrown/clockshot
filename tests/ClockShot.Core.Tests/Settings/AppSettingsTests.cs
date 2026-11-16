@@ -81,6 +81,7 @@ public sealed class AppSettingsTests
         // Arrange
         var settings = new AppSettings
         {
+            General = new GeneralSettings { DayStartHour = 24 },
             Tracking = new TrackingSettings { AwayAfterMinutes = 0 },
             Screenshots = new ScreenshotSettings
             {
@@ -96,6 +97,7 @@ public sealed class AppSettingsTests
         var normalized = settings.Normalized();
 
         // Assert
+        Assert.Equal(SettingLimits.DayStartHour.Max, normalized.General.DayStartHour);
         Assert.Equal(SettingLimits.AwayAfterMinutes.Min, normalized.Tracking.AwayAfterMinutes);
         Assert.Equal(SettingLimits.ScreenshotIntervalSeconds.Min, normalized.Screenshots.IntervalSeconds);
         Assert.Equal(SettingLimits.ScreenshotMinimumGapSeconds.Min, normalized.Screenshots.MinimumGapSeconds);
