@@ -32,6 +32,9 @@ It records your time, but can't show it to you yet, and there are no releases.
   Closing the window keeps it running there, unless you turn that off in Settings.
 - Everything it stores is in one folder that you can open, back up, or delete.
 - Starting it while it's already running brings the open window to the front.
+- Ctrl+1 shows the Timeline tab and Ctrl+4 shows Settings.
+  The View menu has both too.
+  Help > Keyboard shortcuts lists every key.
 
 ## Building from source
 

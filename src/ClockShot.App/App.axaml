@@ -17,6 +17,9 @@
     <DataTemplate DataType="vm:AboutViewModel">
       <views:AboutView />
     </DataTemplate>
+    <DataTemplate DataType="vm:KeyboardShortcutsViewModel">
+      <views:KeyboardShortcutsView />
+    </DataTemplate>
   </Application.DataTemplates>
 
   <Application.Resources>

@@ -12,6 +12,7 @@ public static class Icons
     public const string App = "clock";
     public const string Exit = "door-open";
     public const string About = "info";
+    public const string KeyboardShortcuts = "keyboard";
     public const string OpenFolder = "folder-open";
 
     // ---- Pages ----

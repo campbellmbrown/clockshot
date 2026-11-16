@@ -26,6 +26,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ISettingsStore settings,
         AppPaths paths)
     {
+        Timeline = timeline;
+        Settings = settingsPage;
         Tracking = tracking;
         StatusBar = statusBar;
         Pages = [timeline, settingsPage];
@@ -37,6 +39,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _paths = paths;
     }
 
+    public TimelineViewModel Timeline { get; }
+    public SettingsViewModel Settings { get; }
     public TrackingStatusViewModel Tracking { get; }
     public StatusBarViewModel StatusBar { get; }
 
@@ -56,7 +60,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     partial void OnSelectedPageChanged(PageViewModel value) => value.OnShown();
 
     [RelayCommand]
+    private void ShowPage(PageViewModel page) => SelectedPage = page;
+
+    [RelayCommand]
     private void OpenLogFolder() => _shell.OpenFolder(_paths.Logs);
+
+    [RelayCommand]
+    private Task ShowShortcuts() => _dialogs.ShowAsync(new KeyboardShortcutsViewModel());
 
     [RelayCommand]
     private Task ShowAbout() => _dialogs.ShowAsync(new AboutViewModel());

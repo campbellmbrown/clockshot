@@ -7,7 +7,7 @@
         Title="{Binding Title}"
         Icon="{x:Static controls:AppIcon.Normal}"
         SizeToContent="WidthAndHeight"
-        CanResize="False"
+        CanResize="{Binding CanResize}"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner">
   <!-- The view for the body comes from the data templates in App.axaml. -->

@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:ClockShot.App.ViewModels"
         xmlns:controls="using:ClockShot.App.Controls"
+        xmlns:input="using:ClockShot.App.Input"
         xmlns:core="using:ClockShot.Core"
         x:Class="ClockShot.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -12,12 +13,29 @@
         MinHeight="600"
         Icon="{Binding Tracking.IsPaused, Converter={x:Static controls:AppIcon.FromIsPaused}}">
   <DockPanel>
-    <Menu DockPanel.Dock="Top" AutomationProperties.AutomationId="MainMenu">
+    <!-- Keys come from Input/Shortcuts.cs. MenuShortcuts makes the window-wide ones work while the menu is closed. -->
+    <Menu x:Name="MainMenu"
+          DockPanel.Dock="Top"
+          AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
         <MenuItem Header="E_xit"
                   Command="{Binding ExitCommand}"
                   AutomationProperties.AutomationId="ExitMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}" />
+      </MenuItem>
+      <MenuItem Header="_View" AutomationProperties.AutomationId="ViewMenu">
+        <MenuItem Header="_Timeline"
+                  InputGesture="{x:Static input:Shortcuts.ShowTimeline}"
+                  Command="{Binding ShowPageCommand}"
+                  CommandParameter="{Binding Timeline}"
+                  AutomationProperties.AutomationId="TimelineMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Timeline}" />
+        <MenuItem Header="_Settings"
+                  InputGesture="{x:Static input:Shortcuts.ShowSettings}"
+                  Command="{Binding ShowPageCommand}"
+                  CommandParameter="{Binding Settings}"
+                  AutomationProperties.AutomationId="SettingsMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Settings}" />
       </MenuItem>
       <MenuItem Header="_Tracking" AutomationProperties.AutomationId="TrackingMenu">
         <MenuItem Header="{Binding Tracking.PauseCommandText}"
@@ -30,6 +48,10 @@
                   Command="{Binding ShowAboutCommand}"
                   AutomationProperties.AutomationId="AboutMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.About}" />
+        <MenuItem Header="_Keyboard shortcuts"
+                  Command="{Binding ShowShortcutsCommand}"
+                  AutomationProperties.AutomationId="ShortcutsMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.KeyboardShortcuts}" />
         <MenuItem Header="Open _log folder"
                   Command="{Binding OpenLogFolderCommand}"
                   AutomationProperties.AutomationId="OpenLogFolderMenuItem"

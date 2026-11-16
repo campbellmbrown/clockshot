@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 
+using ClockShot.App.Input;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
 
@@ -23,6 +24,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        MenuShortcuts.Bind(this, MainMenu);
     }
 
     /// <summary>
