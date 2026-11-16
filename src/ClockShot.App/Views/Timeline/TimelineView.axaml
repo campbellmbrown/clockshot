@@ -20,8 +20,8 @@
         </Button>
         <controls:DatePickerButton SelectedDate="{Binding SelectedDate}"
                                    DisplayDateEnd="{Binding LatestDate}"
-                                   DateFormat="dddd d MMMM yyyy"
-                                   MinWidth="230"
+                                   DateFormat="ddd d MMM yyyy"
+                                   Width="170"
                                    ToolTip.Tip="Choose a day"
                                    AutomationProperties.AutomationId="DayButton" />
         <Button Command="{Binding NextDayCommand}"
@@ -32,7 +32,7 @@
         <Button Command="{Binding GoToTodayCommand}"
                 ToolTip.Tip="Go to today"
                 AutomationProperties.AutomationId="TodayButton">
-          <controls:IconText Kind="{x:Static controls:Icons.Today}" Text="Today" />
+          <controls:Icon Kind="{x:Static controls:Icons.Today}" />
         </Button>
       </StackPanel>
     </WrapPanel>
