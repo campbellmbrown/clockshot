@@ -3,6 +3,7 @@ using System.IO.Abstractions;
 using ClockShot.App.Logging;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
+using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Tracking;
@@ -63,6 +64,7 @@ internal static class CompositionRoot
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconViewModel>();
         services.AddSingleton<TrackingStatusViewModel>();
+        services.AddSingleton<TimelineViewModel>();
         services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<SettingsViewModel>();
 

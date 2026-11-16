@@ -1,11 +1,16 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ClockShot.App.ViewModels"
+             xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
              xmlns:views="using:ClockShot.App.Views"
+             xmlns:timelineViews="using:ClockShot.App.Views.Timeline"
              x:Class="ClockShot.App.App"
              RequestedThemeVariant="Dark">
   <!-- Explicit view-model to view mapping: no reflection-based view locator. -->
   <Application.DataTemplates>
+    <DataTemplate DataType="timeline:TimelineViewModel">
+      <timelineViews:TimelineView />
+    </DataTemplate>
     <DataTemplate DataType="vm:SettingsViewModel">
       <views:SettingsView />
     </DataTemplate>

@@ -15,6 +15,7 @@ public static class Icons
     public const string OpenFolder = "folder-open";
 
     // ---- Pages ----
+    public const string Timeline = "chart-gantt";
     public const string Settings = "settings";
 
     // ---- Tracking ----

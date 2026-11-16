@@ -1,4 +1,5 @@
 using ClockShot.App.Services;
+using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Settings;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,6 +16,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly AppPaths _paths;
 
     public MainWindowViewModel(
+        TimelineViewModel timeline,
         SettingsViewModel settingsPage,
         TrackingStatusViewModel tracking,
         StatusBarViewModel statusBar,
@@ -26,8 +28,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         Tracking = tracking;
         StatusBar = statusBar;
-        Pages = [settingsPage];
-        SelectedPage = settingsPage;
+        Pages = [timeline, settingsPage];
+        SelectedPage = timeline;
         _lifetime = lifetime;
         _shell = shell;
         _dialogs = dialogs;
