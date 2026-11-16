@@ -26,4 +26,10 @@ public static class Icons
     // ---- Common actions ----
     public const string Add = "plus";
     public const string Remove = "x";
+
+    // ---- Days ----
+    public const string PreviousDay = "chevron-left";
+    public const string NextDay = "chevron-right";
+    public const string Today = "calendar-check";
+    public const string PickDate = "calendar";
 }

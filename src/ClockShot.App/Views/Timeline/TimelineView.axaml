@@ -1,5 +1,40 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+             xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.Timeline.TimelineView"
-             x:DataType="timeline:TimelineViewModel" />
+             x:DataType="timeline:TimelineViewModel">
+  <Grid Margin="12,8,6,12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <WrapPanel>
+      <StackPanel Orientation="Horizontal"
+                  Spacing="6"
+                  Margin="0,0,24,6">
+        <Button Command="{Binding PreviousDayCommand}"
+                ToolTip.Tip="Previous day"
+                AutomationProperties.AutomationId="PreviousDayButton">
+          <controls:Icon Kind="{x:Static controls:Icons.PreviousDay}" />
+        </Button>
+        <controls:DatePickerButton SelectedDate="{Binding SelectedDate}"
+                                   DisplayDateEnd="{Binding LatestDate}"
+                                   DateFormat="dddd d MMMM yyyy"
+                                   MinWidth="230"
+                                   ToolTip.Tip="Choose a day"
+                                   AutomationProperties.AutomationId="DayButton" />
+        <Button Command="{Binding NextDayCommand}"
+                ToolTip.Tip="Next day"
+                AutomationProperties.AutomationId="NextDayButton">
+          <controls:Icon Kind="{x:Static controls:Icons.NextDay}" />
+        </Button>
+        <Button Command="{Binding GoToTodayCommand}"
+                ToolTip.Tip="Go to today"
+                AutomationProperties.AutomationId="TodayButton">
+          <controls:IconText Kind="{x:Static controls:Icons.Today}" Text="Today" />
+        </Button>
+      </StackPanel>
+    </WrapPanel>
+  </Grid>
+</UserControl>

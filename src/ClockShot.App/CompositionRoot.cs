@@ -6,6 +6,7 @@ using ClockShot.App.ViewModels;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Timeline;
 using ClockShot.Core.Tracking;
 using ClockShot.Data;
 using ClockShot.Data.Screenshots;
@@ -59,6 +60,7 @@ internal static class CompositionRoot
         services.AddSingleton<MainWindowHost>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<BackgroundWork>();
+        services.AddSingleton<DayClock>();
 
         // View models
         services.AddSingleton<MainWindowViewModel>();
