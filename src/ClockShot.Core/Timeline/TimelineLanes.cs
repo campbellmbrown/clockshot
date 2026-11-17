@@ -26,7 +26,7 @@ public static class TimelineLanes
         List<TimelineBlock> blocks = [];
         foreach (var activity in records.Activities)
         {
-            // A window whose application wasn't loaded has no name or colour to show.
+            // A window whose application row is missing has no name or colour to show.
             if (records.Applications.TryGetValue(activity.ApplicationId, out var application))
             {
                 blocks.Add(new TimelineBlock(

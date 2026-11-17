@@ -64,7 +64,7 @@ public sealed class TimelineLanesTests
             FirstHour,
             Label: "Editor - notes.txt",
             new HexColor("#3E8E5E"),
-            Payload: new WindowBlock(Editor, "notes.txt"));
+            Payload: new WindowBlock(Editor, Title: "notes.txt"));
         Assert.Equal(expected, block);
     }
 
