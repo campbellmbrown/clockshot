@@ -25,4 +25,11 @@ public readonly record struct TimeRange
     public DateTime Start { get; }
     public DateTime End { get; }
     public TimeSpan Duration => End - Start;
+
+    public TimeRange? Intersect(TimeRange other)
+    {
+        var start = TimeMath.Max(Start, other.Start);
+        var end = TimeMath.Min(End, other.End);
+        return start < end ? new TimeRange(start, end) : null;
+    }
 }

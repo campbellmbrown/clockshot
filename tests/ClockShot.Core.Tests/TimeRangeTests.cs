@@ -28,4 +28,24 @@ public sealed class TimeRangeTests
         // Assert
         Assert.IsType<ArgumentException>(exception);
     }
+
+    [Fact]
+    public void IntersectReturnsTheSharedPart()
+    {
+        // Act
+        var shared = new TimeRange(At(9), At(10)).Intersect(new TimeRange(At(9, 30), At(11)));
+
+        // Assert
+        Assert.Equal(new TimeRange(At(9, 30), At(10)), shared);
+    }
+
+    [Fact]
+    public void TouchingRangesHaveNoIntersection()
+    {
+        // Act
+        var shared = new TimeRange(At(9), At(10)).Intersect(new TimeRange(At(10), At(11)));
+
+        // Assert
+        Assert.Null(shared);
+    }
 }

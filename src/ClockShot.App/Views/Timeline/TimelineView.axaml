@@ -7,6 +7,7 @@
   <Grid Margin="12,8,6,12">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <WrapPanel>
@@ -36,5 +37,11 @@
         </Button>
       </StackPanel>
     </WrapPanel>
+
+    <TextBlock Grid.Row="1"
+               Classes="secondary"
+               Text="{Binding SummaryText}"
+               Margin="0,0,0,8"
+               AutomationProperties.AutomationId="DaySummary" />
   </Grid>
 </UserControl>
