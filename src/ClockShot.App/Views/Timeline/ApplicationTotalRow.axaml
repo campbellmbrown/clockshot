@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+             xmlns:controls="using:ClockShot.App.Controls"
+             x:Class="ClockShot.App.Views.Timeline.ApplicationTotalRow"
+             x:DataType="timeline:ApplicationTotalViewModel">
+  <!-- One application in a list of times. Its bar shows its time as a share of the most-used application's time. -->
+  <Grid ColumnDefinitions="Auto,*,Auto"
+        RowDefinitions="Auto,Auto"
+        Margin="0,3"
+        ColumnSpacing="8">
+    <Border Width="10"
+            Height="10"
+            CornerRadius="2"
+            Background="{Binding ColorHex, Converter={x:Static controls:ThemeBrushes.FromHex}}"
+            VerticalAlignment="Center" />
+    <TextBlock Grid.Column="1"
+               Text="{Binding Name}"
+               TextTrimming="CharacterEllipsis" />
+    <TextBlock Grid.Column="2"
+               Classes="secondary"
+               Text="{Binding TimeText}" />
+    <ProgressBar Grid.Row="1"
+                 Grid.Column="1"
+                 Grid.ColumnSpan="2"
+                 Margin="0,3,0,0"
+                 Minimum="0"
+                 Maximum="1"
+                 Value="{Binding Fraction}"
+                 Foreground="{Binding ColorHex, Converter={x:Static controls:ThemeBrushes.FromHex}}"
+                 Height="4"
+                 MinHeight="4"
+                 Background="Transparent" />
+  </Grid>
+</UserControl>

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+             xmlns:views="using:ClockShot.App.Views.Timeline"
              xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.Timeline.TimelineView"
              x:DataType="timeline:TimelineViewModel">
@@ -8,6 +9,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
     <WrapPanel>
@@ -43,5 +45,28 @@
                Text="{Binding SummaryText}"
                Margin="0,0,0,8"
                AutomationProperties.AutomationId="DaySummary" />
+
+    <DockPanel Grid.Row="2" Margin="0,8,0,0">
+      <TextBlock DockPanel.Dock="Top"
+                 Classes="h3"
+                 Text="Applications on this day"
+                 Margin="0,0,0,6"
+                 IsVisible="{Binding HasDayApplications}" />
+      <ScrollViewer>
+        <!-- The list is left-aligned and at most 520 pixels wide, so rows stay readable on wide screens. -->
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="520" />
+          </Grid.ColumnDefinitions>
+          <ItemsControl ItemsSource="{Binding DayApplications}" AutomationProperties.AutomationId="DayApplications">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="timeline:ApplicationTotalViewModel">
+                <views:ApplicationTotalRow />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </ScrollViewer>
+    </DockPanel>
   </Grid>
 </UserControl>

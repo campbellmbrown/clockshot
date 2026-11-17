@@ -5,10 +5,49 @@ namespace ClockShot.Core.Tests.Timeline;
 
 public sealed class ActivitySummaryTests
 {
-    // The summary never reads ids, so every segment shares one.
+    // The summary never reads segment ids, so every segment shares one.
     private const long AnyId = 0;
 
+    private const long EditorId = 1;
+    private const long BrowserId = 2;
+
     private static readonly DateTime Nine = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
+
+    [Fact]
+    public void ByApplicationSumsOnlyTheOverlap()
+    {
+        // Arrange
+        ActivitySegment[] activities =
+        [
+            Activity(0, 30, EditorId),
+            Activity(30, 40, BrowserId),
+            Activity(40, 60, EditorId),
+        ];
+
+        // Act
+        var totals = ActivitySummary.ByApplication(activities, Minutes(10, 50));
+
+        // Assert
+        ApplicationTotal[] expected =
+        [
+            new(EditorId, TimeSpan.FromMinutes(30)),
+            new(BrowserId, TimeSpan.FromMinutes(10)),
+        ];
+        Assert.Equal(expected, totals);
+    }
+
+    [Fact]
+    public void ByApplicationPutsTheLongestFirst()
+    {
+        // Arrange
+        ActivitySegment[] activities = [Activity(0, 10, BrowserId), Activity(10, 40, EditorId)];
+
+        // Act
+        var totals = ActivitySummary.ByApplication(activities, Minutes(0, 60));
+
+        // Assert
+        Assert.Equal([EditorId, BrowserId], totals.Select(total => total.ApplicationId));
+    }
 
     [Fact]
     public void TimeInCountsOneState()
@@ -98,6 +137,9 @@ public sealed class ActivitySummaryTests
     }
 
     private static TimeRange Minutes(int from, int to) => new(Nine.AddMinutes(from), Nine.AddMinutes(to));
+
+    private static ActivitySegment Activity(int from, int to, long applicationId) =>
+        new(AnyId, Minutes(from, to), applicationId, WindowTitle: "");
 
     private static ComputerStateSegment State(int from, int to, ComputerState state) =>
         new(AnyId, Minutes(from, to), state);

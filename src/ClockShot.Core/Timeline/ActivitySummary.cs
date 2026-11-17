@@ -3,10 +3,24 @@ using ClockShot.Core.Models;
 namespace ClockShot.Core.Timeline;
 
 /// <summary>
-/// Totals over a time range, such as how long the computer was active.
+/// Totals over a time range, such as how long each application was used and how long the computer was active.
 /// </summary>
 public static class ActivitySummary
 {
+    /// <summary>
+    /// The time each application was used within <paramref name="range"/>, longest first.
+    /// </summary>
+    public static IReadOnlyList<ApplicationTotal> ByApplication(
+        IEnumerable<ActivitySegment> activities,
+        TimeRange range) =>
+        [.. activities
+            .Select(a => (a.ApplicationId, Overlap: a.Range.Intersect(range)))
+            .Where(a => a.Overlap is not null)
+            .GroupBy(a => a.ApplicationId, a => a.Overlap!.Value.Duration)
+            .Select(g => new ApplicationTotal(g.Key, g.Sum()))
+            .OrderByDescending(t => t.Duration)
+            .ThenBy(t => t.ApplicationId)];
+
     /// <summary>
     /// The total time in <paramref name="state"/> within <paramref name="range"/>.
     /// </summary>

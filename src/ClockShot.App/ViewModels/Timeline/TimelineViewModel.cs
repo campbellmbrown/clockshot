@@ -79,6 +79,15 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     public partial string SummaryText { get; private set; } = "";
 
     /// <summary>
+    /// Applications used on this day, most used first.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDayApplications))]
+    public partial IReadOnlyList<ApplicationTotalViewModel> DayApplications { get; private set; } = [];
+
+    public bool HasDayApplications => DayApplications.Count > 0;
+
+    /// <summary>
     /// From the first to the last active time of the day, or null if the computer was never active.
     /// </summary>
     [ObservableProperty]
@@ -151,10 +160,13 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     }
 
     /// <summary>
-    /// Works out the working day and the summary from the loaded records.
+    /// Builds the applications list and summary from the loaded records.
     /// </summary>
     private void ShowRecords()
     {
+        var totals = ActivitySummary.ByApplication(_records.Activities, DayRange);
+        DayApplications = ApplicationTotalViewModel.From(totals, _records.Applications);
+
         // Summarize reads WorkingDay, so it's set first.
         WorkingDay = ActivitySummary.WorkingDay(_records.States, DayRange);
         SummaryText = Summarize(_records);
