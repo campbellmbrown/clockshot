@@ -2,6 +2,7 @@ using ClockShot.App.Controls;
 using ClockShot.App.Services;
 using ClockShot.Core.Models;
 using ClockShot.Core.Timeline;
+using ClockShot.Core.Tracking;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,22 +16,37 @@ namespace ClockShot.App.ViewModels.Timeline;
 /// </summary>
 public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 {
+    private const int TicksPerRefresh = 3;
+
     /// <summary>
     /// The now line moves on every tick.
+    /// Today's records are reloaded every <see cref="TicksPerRefresh"/> ticks.
     /// </summary>
     private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(5);
 
+    /// <summary>
+    /// How far behind now a block's saved end can be while the block is still open.
+    /// It's the tracker's save interval plus the time between reloads, with 15 seconds to spare.
+    /// Blocks that end closer to now than this are drawn up to now.
+    /// </summary>
+    private static readonly TimeSpan StillOpenWithin =
+        TrackingTimings.SaveInterval + TickInterval * TicksPerRefresh + TimeSpan.FromSeconds(15);
+
     private readonly IActivityHistory _history;
+    private readonly ITrackingController _tracking;
     private readonly DayClock _days;
     private readonly ILogger<TimelineViewModel> _logger;
     private readonly BackgroundWork _background;
     private readonly ITimer _timer;
+
+    private int _ticks;
 
     private ActivityRecords _records = ActivityRecords.Empty;
     private CancellationTokenSource? _loading;
 
     public TimelineViewModel(
         IActivityHistory history,
+        ITrackingController tracking,
         TimeProvider time,
         DayClock days,
         ILogger<TimelineViewModel> logger,
@@ -38,6 +54,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         : base("Timeline", Icons.Timeline)
     {
         _history = history;
+        _tracking = tracking;
         _days = days;
         _logger = logger;
         _background = background;
@@ -127,6 +144,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     public partial TimeRange? WorkingDay { get; private set; }
 
+    private bool IsToday => Day == Today();
+
     /// <summary>
     /// Loads the day's records.
     /// A newer load cancels an unfinished older one.
@@ -205,23 +224,43 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         NowUtc = Now();
         OnPropertyChanged(nameof(LatestDate));
         NextDayCommand.NotifyCanExecuteChanged();
+        if (!IsToday)
+        {
+            return;
+        }
+
+        _ticks++;
+        if (_ticks % TicksPerRefresh == 0)
+        {
+            _background.Run(() => LoadAsync());
+        }
+        else
+        {
+            // Keeps the open blocks reaching the now line between reloads.
+            // The totals wait for the next reload.
+            ShowLanes(WithOpenBlocksUpToNow(_records));
+        }
     }
 
     /// <summary>
-    /// Builds the lanes, applications list and summary from the loaded records.
+    /// Builds the lanes, applications list and summary from the loaded records, drawing still-open blocks up to now.
     /// </summary>
     private void ShowRecords()
     {
-        ShowLanes(_records);
-        var totals = ActivitySummary.ByApplication(_records.Activities, DayRange);
-        DayApplications = ApplicationTotalViewModel.From(totals, _records.Applications);
+        var records = WithOpenBlocksUpToNow(_records);
+        ShowLanes(records);
+        var totals = ActivitySummary.ByApplication(records.Activities, DayRange);
+        DayApplications = ApplicationTotalViewModel.From(totals, records.Applications);
 
         // Summarize reads WorkingDay, so it's set first.
-        WorkingDay = ActivitySummary.WorkingDay(_records.States, DayRange);
-        SummaryText = Summarize(_records);
+        WorkingDay = ActivitySummary.WorkingDay(records.States, DayRange);
+        SummaryText = Summarize(records);
     }
 
     private void ShowLanes(ActivityRecords records) => Lanes = TimelineLanes.Build(records);
+
+    private ActivityRecords WithOpenBlocksUpToNow(ActivityRecords records) =>
+        IsToday && !_tracking.Status.IsPaused ? OpenBlocks.UpTo(records, NowUtc, StillOpenWithin) : records;
 
     private DateTime Now() => _days.NowUtc;
 
