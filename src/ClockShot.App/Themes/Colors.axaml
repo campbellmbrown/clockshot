@@ -13,6 +13,7 @@
       <!-- Colours the keys below build on -->
       <Color x:Key="DividerColor">#2C2C31</Color>
       <Color x:Key="PanelColor">#202024</Color>
+      <Color x:Key="TextColor">#E8E8EC</Color>
 
       <!-- General -->
       <SolidColorBrush x:Key="Divider" Color="{StaticResource DividerColor}" />
@@ -21,8 +22,12 @@
       <!-- Timeline -->
       <SolidColorBrush x:Key="TimelineBackground" Color="#161618" />
       <SolidColorBrush x:Key="TimelineRulerBackground" Color="{StaticResource PanelColor}" />
+      <SolidColorBrush x:Key="TimelineLaneBackground" Color="#1C1C1F" />
+      <SolidColorBrush x:Key="TimelineLaneAlternateBackground" Color="{StaticResource PanelColor}" />
       <SolidColorBrush x:Key="TimelineGridLine" Color="{StaticResource DividerColor}" />
       <SolidColorBrush x:Key="TimelineTick" Color="#7A7A82" />
+      <SolidColorBrush x:Key="TimelineText" Color="{StaticResource TextColor}" />
+      <SolidColorBrush x:Key="TimelineSecondaryText" Color="#9A9AA2" />
 
       <!-- Tracking states -->
       <SolidColorBrush x:Key="StateActive" Color="#3E8E5E" />

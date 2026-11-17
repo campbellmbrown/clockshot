@@ -6,29 +6,53 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
 using ClockShot.App.ViewModels.Timeline;
+using ClockShot.Core;
 using ClockShot.Core.Timeline;
 
 namespace ClockShot.App.Controls;
 
 /// <summary>
 /// Draws the timeline that <see cref="TimelineViewModel"/> describes.
+/// Any number of lanes is drawn the same way.
 /// </summary>
 public sealed class TimelineControl : Control
 {
     public const double LaneTitleWidth = 110;
     public const double RulerHeight = 28;
 
+    /// <summary>
+    /// Rows stretch to fill the control's height, but never get shorter than this.
+    /// </summary>
+    public const double MinLaneHeight = 22;
+
     public static readonly StyledProperty<TimelineViewModel?> TimelineProperty =
         AvaloniaProperty.Register<TimelineControl, TimelineViewModel?>(nameof(Timeline));
 
+    // The space above and below each block, within its row.
+    private const double BlockPadding = 3;
+
+    private const double MinLabelWidth = 28;
+
     // Text sizes are in pixels.
+    // Ruler labels are smaller than lane titles and block labels.
     private const double RulerTextSize = 11;
+    private const double LabelTextSize = 12;
+
+    // The lane title starts this far in, and stops this far before the drawing area.
+    private const double LaneTitleLeft = 10;
+    private const double LaneTitleRightGap = 6;
 
     private const double MajorTickHeight = 10;
     private const double MinorTickHeight = 4;
 
     // How far ruler labels sit from their tick and from the top of the ruler.
     private const double RulerLabelInset = 4;
+
+    // How far a block's label sits inside the block's edges.
+    private const double BlockLabelInset = 5;
+
+    // A block narrower than a pixel is still drawn one pixel wide, so it doesn't vanish.
+    private const double MinDrawnWidth = 1;
 
     // This is many times the number of labels in one day.
     // Past it the cache is cleared, so it can't grow without limit.
@@ -41,6 +65,7 @@ public sealed class TimelineControl : Control
 
     private readonly Dictionary<(string Text, double Size), FormattedText> _textCache = [];
     private Pens? _pens;
+    private int _measuredLaneCount;
 
     public TimelineControl()
     {
@@ -60,11 +85,18 @@ public sealed class TimelineControl : Control
     }
 
     /// <summary>
+    /// The height of each row, which shares the space below the ruler equally between the rows.
+    /// </summary>
+    public double LaneHeight => Math.Max(MinLaneHeight, (Bounds.Height - RulerHeight) / LaneCount);
+
+    /// <summary>
     /// The x of the drawing area's left edge, after the lane titles.
     /// </summary>
     private static double AreaLeft => LaneTitleWidth;
 
     private double AreaWidth => Math.Max(MinAreaWidth, Bounds.Width - AreaLeft);
+
+    private int LaneCount => Math.Max(1, Timeline?.Lanes.Count ?? 0);
 
     private Pens ThemePens => _pens ??= Pens.ForCurrentTheme();
 
@@ -78,10 +110,14 @@ public sealed class TimelineControl : Control
 
         var viewport = timeline.Zoom.Viewport;
 
-        DrawLaneBackgrounds(context);
+        DrawLaneBackgrounds(context, timeline);
         using (context.PushClip(new Rect(AreaLeft, 0, AreaWidth, Bounds.Height)))
         {
             DrawRuler(context, viewport, timeline.TimeZone);
+            for (var i = 0; i < timeline.Lanes.Count; i++)
+            {
+                DrawBlocks(context, viewport, timeline.Lanes[i], LaneTop(i));
+            }
         }
     }
 
@@ -101,12 +137,19 @@ public sealed class TimelineControl : Control
                 ReportWidth(timeline);
             }
 
+            InvalidateMeasure();
             InvalidateVisual();
         }
         else if (change.Property == BoundsProperty && Timeline is { } timeline)
         {
             ReportWidth(timeline);
         }
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        _measuredLaneCount = LaneCount;
+        return new Size(0, RulerHeight + MinLaneHeight * LaneCount);
     }
 
     /// <summary>
@@ -128,11 +171,31 @@ public sealed class TimelineControl : Control
         }
     }
 
-    private void OnRedrawNeeded() => InvalidateVisual();
+    /// <summary>
+    /// The control's height depends on the number of lanes, so it's measured again only when that changes.
+    /// </summary>
+    private void OnRedrawNeeded()
+    {
+        if (LaneCount != _measuredLaneCount)
+        {
+            InvalidateMeasure();
+        }
 
-    private void DrawLaneBackgrounds(DrawingContext context)
+        InvalidateVisual();
+    }
+
+    private void DrawLaneBackgrounds(DrawingContext context, TimelineViewModel timeline)
     {
         context.FillRectangle(ThemeBrushes.RulerBackground, new Rect(0, 0, Bounds.Width, RulerHeight));
+        for (var i = 0; i < timeline.Lanes.Count; i++)
+        {
+            var top = LaneTop(i);
+            var background = i % 2 == 0 ? ThemeBrushes.LaneBackground : ThemeBrushes.LaneAlternateBackground;
+            context.FillRectangle(background, new Rect(0, top, Bounds.Width, LaneHeight));
+            var titleWidth = LaneTitleWidth - LaneTitleLeft - LaneTitleRightGap;
+            var title = Text(timeline.Lanes[i].Title, LabelTextSize, ThemeBrushes.SecondaryText, titleWidth);
+            context.DrawText(title, new Point(LaneTitleLeft, top + (LaneHeight - title.Height) / 2));
+        }
 
         // The divider sits on the middle of the lane titles' last pixel, so it's drawn sharp.
         context.DrawLine(ThemePens.Grid, new Point(AreaLeft - 0.5, 0), new Point(AreaLeft - 0.5, Bounds.Height));
@@ -160,9 +223,52 @@ public sealed class TimelineControl : Control
     }
 
     /// <summary>
-    /// A cached single-line text.
+    /// Draws the lane's visible blocks.
+    /// Only the first block in each pixel column is drawn, which keeps drawing fast when zoomed out.
     /// </summary>
-    private FormattedText Text(string text, double size, IBrush brush)
+    private void DrawBlocks(
+        DrawingContext context,
+        TimelineViewport viewport,
+        TimelineLane lane,
+        double top)
+    {
+        var lastPixel = double.NegativeInfinity;
+        foreach (var block in lane.BlocksIn(viewport.Visible))
+        {
+            var left = AreaLeft + viewport.XOf(block.Range.Start);
+            var right = AreaLeft + viewport.XOf(block.Range.End);
+            var pixel = Math.Floor(left);
+            if (right - left < MinDrawnWidth && pixel <= lastPixel)
+            {
+                continue;
+            }
+
+            lastPixel = Math.Floor(right);
+
+            // Square and touching, so a row reads as one continuous bar at any zoom.
+            var width = Math.Max(MinDrawnWidth, right - left);
+            var rect = new Rect(left, top + BlockPadding, width, LaneHeight - BlockPadding * 2);
+            context.FillRectangle(ThemeBrushes.For(block.Color), rect);
+
+            var labelLeft = Math.Max(left, AreaLeft) + BlockLabelInset;
+            var labelWidth = Math.Min(right, AreaLeft + AreaWidth) - BlockLabelInset - labelLeft;
+            if (labelWidth < MinLabelWidth)
+            {
+                continue;
+            }
+
+            var label = Text(block.Label, LabelTextSize, ThemeBrushes.Text, labelWidth);
+            context.DrawText(label, new Point(labelLeft, rect.Y + (rect.Height - label.Height) / 2));
+        }
+    }
+
+    private double LaneTop(int index) => RulerHeight + index * LaneHeight;
+
+    /// <summary>
+    /// A cached single-line text.
+    /// <paramref name="maxWidth"/> is set only when it changes, because setting it makes the text lay itself out again.
+    /// </summary>
+    private FormattedText Text(string text, double size, IBrush brush, double? maxWidth = null)
     {
         text = text.ReplaceLineEndings(" ");
         if (!_textCache.TryGetValue((text, size), out var formatted))
@@ -187,6 +293,11 @@ public sealed class TimelineControl : Control
         }
 
         formatted.SetForegroundBrush(brush);
+        if (maxWidth is { } width && !FloatingPoint.AreEqual(formatted.MaxTextWidth, width))
+        {
+            formatted.MaxTextWidth = width;
+        }
+
         return formatted;
     }
 

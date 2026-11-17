@@ -6,6 +6,9 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 
+using ClockShot.Core.Models;
+using ClockShot.Core.Timeline;
+
 namespace ClockShot.App.Controls;
 
 /// <summary>
@@ -26,12 +29,25 @@ public static class ThemeBrushes
 
     public static IBrush Background => Get("TimelineBackground");
     public static IBrush RulerBackground => Get("TimelineRulerBackground");
+    public static IBrush LaneBackground => Get("TimelineLaneBackground");
+    public static IBrush LaneAlternateBackground => Get("TimelineLaneAlternateBackground");
     public static IBrush GridLine => Get("TimelineGridLine");
     public static IBrush Tick => Get("TimelineTick");
+    public static IBrush Text => Get("TimelineText");
+    public static IBrush SecondaryText => Get("TimelineSecondaryText");
     public static IBrush StateActive => Get("StateActive");
     public static IBrush StateAway => Get("StateAway");
     public static IBrush StateLocked => Get("StateLocked");
     public static IBrush StatePaused => Get("StatePaused");
+
+    /// <summary>
+    /// The brush for a timeline block's colour, in the current theme.
+    /// </summary>
+    public static IBrush For(IBlockColor color) => color switch
+    {
+        StateColor state => ForState(state.State),
+        _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Unknown type of block colour."),
+    };
 
     /// <summary>
     /// A brush for a stored colour like "#3E8E5E".
@@ -41,6 +57,14 @@ public static class ThemeBrushes
         ColorBrushes.GetOrAdd(
             hex,
             h => new ImmutableSolidColorBrush(Color.TryParse(h, out var color) ? color : Colors.Gray));
+
+    private static IBrush ForState(ComputerState state) => state switch
+    {
+        ComputerState.Active => StateActive,
+        ComputerState.Away => StateAway,
+        ComputerState.Locked => StateLocked,
+        _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown computer state."),
+    };
 
     private static IBrush Get(string key)
     {

@@ -26,6 +26,10 @@ public readonly record struct TimeRange
     public DateTime End { get; }
     public TimeSpan Duration => End - Start;
 
+    public bool Overlaps(TimeRange other) => Start < other.End && other.Start < End;
+
+    public bool Contains(DateTime time) => time >= Start && time < End;
+
     public TimeRange? Intersect(TimeRange other)
     {
         var start = TimeMath.Max(Start, other.Start);

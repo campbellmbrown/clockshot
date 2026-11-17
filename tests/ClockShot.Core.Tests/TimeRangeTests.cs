@@ -29,6 +29,42 @@ public sealed class TimeRangeTests
         Assert.IsType<ArgumentException>(exception);
     }
 
+    [Theory]
+    [InlineData(9, 0, true)]
+    [InlineData(9, 59, true)]
+    [InlineData(10, 0, false)]
+    public void ContainsItsStartButNotItsEnd(int hour, int minute, bool expected)
+    {
+        // Arrange
+        var range = new TimeRange(At(9), At(10));
+
+        // Act
+        var contains = range.Contains(At(hour, minute));
+
+        // Assert
+        Assert.Equal(expected, contains);
+    }
+
+    [Fact]
+    public void RangesThatShareTimeOverlap()
+    {
+        // Act
+        var overlaps = new TimeRange(At(9), At(10)).Overlaps(new TimeRange(At(9, 30), At(11)));
+
+        // Assert
+        Assert.True(overlaps);
+    }
+
+    [Fact]
+    public void TouchingRangesDoNotOverlap()
+    {
+        // Act
+        var overlaps = new TimeRange(At(9), At(10)).Overlaps(new TimeRange(At(10), At(11)));
+
+        // Assert
+        Assert.False(overlaps);
+    }
+
     [Fact]
     public void IntersectReturnsTheSharedPart()
     {

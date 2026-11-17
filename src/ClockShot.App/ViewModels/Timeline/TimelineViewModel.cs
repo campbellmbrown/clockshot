@@ -83,6 +83,9 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     public TimeRange DayRange => _days.RangeOf(Day);
 
+    [ObservableProperty]
+    public partial IReadOnlyList<TimelineLane> Lanes { get; private set; } = [];
+
     /// <summary>
     /// The start, end and length of the working day with the time spent active, or why there's nothing to show.
     /// </summary>
@@ -139,6 +142,9 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _loading?.Dispose();
     }
 
+    // The toolkit calls this when a property the control draws has changed.
+    partial void OnLanesChanged(IReadOnlyList<TimelineLane> value) => RedrawNeeded?.Invoke();
+
     partial void OnDayChanged(DateOnly value)
     {
         Zoom.Fit(DayRange);
@@ -172,10 +178,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     }
 
     /// <summary>
-    /// Builds the applications list and summary from the loaded records.
+    /// Builds the lanes, applications list and summary from the loaded records.
     /// </summary>
     private void ShowRecords()
     {
+        ShowLanes(_records);
         var totals = ActivitySummary.ByApplication(_records.Activities, DayRange);
         DayApplications = ApplicationTotalViewModel.From(totals, _records.Applications);
 
@@ -183,6 +190,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         WorkingDay = ActivitySummary.WorkingDay(_records.States, DayRange);
         SummaryText = Summarize(_records);
     }
+
+    private void ShowLanes(ActivityRecords records) => Lanes = TimelineLanes.Build(records);
 
     private DateOnly Today() => _days.Today;
 
