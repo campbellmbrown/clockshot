@@ -134,7 +134,10 @@
               </ItemsControl>
               <StackPanel Orientation="Horizontal" Spacing="6">
                 <AutoCompleteBox Width="220"
+                                 ItemsSource="{Binding KnownApps}"
                                  Text="{Binding NewExcludedApp}"
+                                 FilterMode="Contains"
+                                 MinimumPrefixLength="0"
                                  PlaceholderText="PasswordManager.exe"
                                  AutomationProperties.AutomationId="SettingNewExcludedApp" />
                 <Button Command="{Binding AddExcludedAppCommand}" AutomationProperties.AutomationId="SettingAddExcludedApp">

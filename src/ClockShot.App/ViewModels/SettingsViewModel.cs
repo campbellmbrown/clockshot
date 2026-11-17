@@ -4,6 +4,7 @@ using ClockShot.App.Controls;
 using ClockShot.App.Services;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Timeline;
 using ClockShot.Data;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,6 +22,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly ISettingsStore _settings;
     private readonly IScreenshotStore _screenshots;
     private readonly IShell _shell;
+    private readonly IActivityHistory _history;
     private readonly DataPaths _paths;
     private readonly BackgroundWork _background;
 
@@ -28,6 +30,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         ISettingsStore settings,
         IScreenshotStore screenshots,
         IShell shell,
+        IActivityHistory history,
         DataPaths paths,
         BackgroundWork background)
         : base("Settings", Icons.Settings)
@@ -35,6 +38,7 @@ public sealed partial class SettingsViewModel : PageViewModel
         _settings = settings;
         _screenshots = screenshots;
         _shell = shell;
+        _history = history;
         _paths = paths;
         _background = background;
         ExcludedApps = [.. settings.Current.Screenshots.ExcludedProcessNames];
@@ -44,7 +48,14 @@ public sealed partial class SettingsViewModel : PageViewModel
         settings.Changed += _ => OnUiThread(() => OnPropertyChanged(string.Empty));
     }
 
-    public override void OnShown() => _background.Run(CountStorageAsync);
+    /// <summary>
+    /// Counts the space the screenshots use and loads the app suggestions, because both change while the app runs.
+    /// </summary>
+    public override void OnShown()
+    {
+        _background.Run(CountStorageAsync);
+        _background.Run(LoadKnownAppsAsync);
+    }
 
     private AppSettings Current => _settings.Current;
 
@@ -125,6 +136,12 @@ public sealed partial class SettingsViewModel : PageViewModel
     /// </summary>
     public ObservableCollection<string> ExcludedApps { get; }
 
+    /// <summary>
+    /// The process names of apps seen so far, suggested for <see cref="NewExcludedApp"/>.
+    /// </summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<string> KnownApps { get; private set; } = [];
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddExcludedAppCommand))]
     public partial string? NewExcludedApp { get; set; }
@@ -161,6 +178,15 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     [RelayCommand]
     private void OpenScreenshotFolder() => _shell.OpenFolder(_paths.Screenshots);
+
+    // ---- Loading ----
+
+    private async Task LoadKnownAppsAsync()
+    {
+        var apps = await _history.GetApplicationsAsync();
+        var processNames = apps.Select(a => a.ProcessName).Distinct(StringComparer.OrdinalIgnoreCase);
+        KnownApps = [.. processNames.Order(StringComparer.OrdinalIgnoreCase)];
+    }
 
     private async Task CountStorageAsync()
     {
