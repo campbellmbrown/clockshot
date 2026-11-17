@@ -37,6 +37,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _dialogs = dialogs;
         _settings = settings;
         _paths = paths;
+        OnTimeline = new ShowPageFirstCommand(() => SelectedPage = Timeline);
     }
 
     public TimelineViewModel Timeline { get; }
@@ -56,6 +57,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// Whether closing the window hides it to the tray instead of exiting, so tracking keeps running.
     /// </summary>
     public bool CloseToTray => _settings.Current.General.CloseToTray;
+
+    /// <summary>
+    /// Runs the Timeline command given as the parameter, showing the Timeline tab first.
+    /// </summary>
+    public ShowPageFirstCommand OnTimeline { get; }
 
     partial void OnSelectedPageChanged(PageViewModel value) => value.OnShown();
 

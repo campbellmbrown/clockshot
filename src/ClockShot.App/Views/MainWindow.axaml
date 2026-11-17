@@ -36,6 +36,44 @@
                   CommandParameter="{Binding Settings}"
                   AutomationProperties.AutomationId="SettingsMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Settings}" />
+        <Separator />
+        <MenuItem Header="P_revious day"
+                  InputGesture="{x:Static input:Shortcuts.PreviousDay}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.PreviousDayCommand}"
+                  AutomationProperties.AutomationId="PreviousDayMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.PreviousDay}" />
+        <MenuItem Header="_Next day"
+                  InputGesture="{x:Static input:Shortcuts.NextDay}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.NextDayCommand}"
+                  AutomationProperties.AutomationId="NextDayMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.NextDay}" />
+        <MenuItem Header="T_oday"
+                  InputGesture="{x:Static input:Shortcuts.Today}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.GoToTodayCommand}"
+                  AutomationProperties.AutomationId="TodayMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Today}" />
+        <Separator />
+        <MenuItem Header="Zoom _in"
+                  InputGesture="{x:Static input:Shortcuts.ZoomIn}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.ZoomInCommand}"
+                  AutomationProperties.AutomationId="ZoomInMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.ZoomIn}" />
+        <MenuItem Header="Zoom _out"
+                  InputGesture="{x:Static input:Shortcuts.ZoomOut}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.ZoomOutCommand}"
+                  AutomationProperties.AutomationId="ZoomOutMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.ZoomOut}" />
+        <MenuItem Header="Show the _whole day"
+                  InputGesture="{x:Static input:Shortcuts.ShowWholeDay}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.FitDayCommand}"
+                  AutomationProperties.AutomationId="ShowWholeDayMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.ShowWholeDay}" />
       </MenuItem>
       <MenuItem Header="_Tracking" AutomationProperties.AutomationId="TrackingMenu">
         <MenuItem Header="{Binding Tracking.PauseCommandText}"

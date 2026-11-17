@@ -264,6 +264,25 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             $"Active {DurationText.Format(active)}");
     }
 
+    [RelayCommand]
+    private void ZoomIn() => Zoom.ZoomAt(ZoomAnchorX(), steps: 1);
+
+    [RelayCommand]
+    private void ZoomOut() => Zoom.ZoomAt(ZoomAnchorX(), steps: -1);
+
+    [RelayCommand]
+    private void FitDay() => Zoom.Fit(DayRange);
+
+    /// <summary>
+    /// Keyboard zoom keeps the now line in place when it's visible, and the middle of the view otherwise.
+    /// </summary>
+    private double ZoomAnchorX()
+    {
+        var viewport = Zoom.Viewport;
+        var nowX = viewport.XOf(NowUtc);
+        return nowX >= 0 && nowX <= viewport.Width ? nowX : viewport.Width / 2;
+    }
+
     private void OnTick()
     {
         NowUtc = Now();

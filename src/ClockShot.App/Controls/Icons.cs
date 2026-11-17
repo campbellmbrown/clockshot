@@ -27,9 +27,12 @@ public static class Icons
     public const string Add = "plus";
     public const string Remove = "x";
 
-    // ---- Days ----
+    // ---- Days and zoom ----
     public const string PreviousDay = "chevron-left";
     public const string NextDay = "chevron-right";
     public const string Today = "calendar-check";
     public const string PickDate = "calendar";
+    public const string ZoomIn = "zoom-in";
+    public const string ZoomOut = "zoom-out";
+    public const string ShowWholeDay = "maximize-2";
 }
