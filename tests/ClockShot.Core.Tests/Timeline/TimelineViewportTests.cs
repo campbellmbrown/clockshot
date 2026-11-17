@@ -115,6 +115,26 @@ public sealed class TimelineViewportTests
     }
 
     [Fact]
+    public void CenterOnPutsTheTimeInTheMiddle()
+    {
+        // Act
+        var centred = FirstSixHours().CenterOn(Midnight.AddHours(12));
+
+        // Assert
+        Assert.Equal(new TimeRange(Midnight.AddHours(9), Midnight.AddHours(15)), centred.Visible);
+    }
+
+    [Fact]
+    public void CenterOnNearEndIsClamped()
+    {
+        // Act
+        var centred = FirstSixHours().CenterOn(Midnight.AddHours(23));
+
+        // Assert
+        Assert.Equal(Day.End, centred.VisibleEnd);
+    }
+
+    [Fact]
     public void ResizingFittedViewStaysFitted()
     {
         // Act

@@ -2,6 +2,7 @@ using System.Globalization;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
@@ -12,9 +13,13 @@ using ClockShot.Core.Timeline;
 namespace ClockShot.App.Controls;
 
 /// <summary>
-/// Draws the timeline that <see cref="TimelineViewModel"/> describes.
+/// Draws the timeline and turns pointer input into calls on <see cref="TimelineViewModel"/>, which owns the behaviour.
+/// It draws the ruler, the lanes and the now line.
 /// Any number of lanes is drawn the same way.
 /// </summary>
+/// <remarks>
+/// The mouse wheel zooms around the pointer.
+/// </remarks>
 public sealed class TimelineControl : Control
 {
     public const double LaneTitleWidth = 110;
@@ -160,6 +165,20 @@ public sealed class TimelineControl : Control
     {
         _measuredLaneCount = LaneCount;
         return new Size(0, RulerHeight + MinLaneHeight * LaneCount);
+    }
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+        if (Timeline is not { } timeline)
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        var point = e.GetPosition(this);
+        timeline.Zoom.ZoomAt(point.X - AreaLeft, e.Delta.Y);
     }
 
     /// <summary>

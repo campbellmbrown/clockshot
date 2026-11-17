@@ -17,6 +17,30 @@ public sealed class TimelineZoomTests
     }
 
     [Fact]
+    public void ZoomingInOneStepShowsLessTime()
+    {
+        // Act
+        _zoom.ZoomAt(x: 500, steps: 1);
+
+        // Assert
+        // Each step divides the visible time by 1.5, so 24 hours become 16.
+        Assert.Equal(16, _zoom.Viewport.Visible.Duration.TotalHours, precision: 6);
+    }
+
+    [Fact]
+    public void ZoomingOutOneStepShowsMoreTime()
+    {
+        // Arrange
+        _zoom.ZoomAt(x: 500, steps: 2);
+
+        // Act
+        _zoom.ZoomAt(x: 500, steps: -1);
+
+        // Assert
+        Assert.Equal(16, _zoom.Viewport.Visible.Duration.TotalHours, precision: 6);
+    }
+
+    [Fact]
     public void FitShowsTheWholeRange()
     {
         // Arrange
@@ -38,6 +62,20 @@ public sealed class TimelineZoomTests
 
         // Act
         _zoom.SetWidth(width: 500);
+
+        // Assert
+        Assert.Equal(1, changes);
+    }
+
+    [Fact]
+    public void ChangingTheViewportTellsTheTimelineToRedraw()
+    {
+        // Arrange
+        var changes = 0;
+        _zoom.ViewportChanged += () => changes++;
+
+        // Act
+        _zoom.ZoomAt(x: 500, steps: 1);
 
         // Assert
         Assert.Equal(1, changes);

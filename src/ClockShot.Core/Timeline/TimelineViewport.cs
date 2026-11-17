@@ -86,6 +86,12 @@ public readonly record struct TimelineViewport
         new(Bounds, VisibleStart.AddSeconds(pixels * SecondsPerPixel), SecondsPerPixel, Width);
 
     /// <summary>
+    /// Keeps the zoom and centres on <paramref name="timeUtc"/>, as far as the bounds allow.
+    /// </summary>
+    public TimelineViewport CenterOn(DateTime timeUtc) =>
+        new(Bounds, timeUtc.AddSeconds(-Width * SecondsPerPixel / 2), SecondsPerPixel, Width);
+
+    /// <summary>
     /// The viewport after the drawing area is resized.
     /// It keeps the start time and zoom, and a viewport showing the whole day stays that way.
     /// </summary>

@@ -239,8 +239,15 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     private bool CanGoToNextDay() => Day < Today();
 
+    /// <summary>
+    /// Shows today, scrolled so the current time is visible.
+    /// </summary>
     [RelayCommand]
-    private void GoToToday() => Day = Today();
+    private void GoToToday()
+    {
+        Day = Today();
+        Zoom.CenterOn(NowUtc);
+    }
 
     private string Summarize(ActivityRecords records)
     {
