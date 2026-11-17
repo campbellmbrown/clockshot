@@ -5,8 +5,9 @@ using ClockShot.Core;
 namespace ClockShot.App.Input;
 
 /// <summary>
-/// Every keyboard shortcut, defined once.
+/// Every keyboard and mouse shortcut, defined once.
 /// Menus show these gestures and key bindings use them.
+/// The timeline reads its mouse modifiers from here.
 /// Changing a key here changes it everywhere.
 /// Avoid function keys, Home, End, Page Up and Page Down, because they need the Fn key on many laptops.
 /// Alt+F4 is listed only because Windows handles it.
@@ -20,6 +21,11 @@ public static class Shortcuts
     public static KeyGesture ShowTimeline { get; } = KeyGesture.Parse("Ctrl+D1");
     public static KeyGesture ShowSettings { get; } = KeyGesture.Parse("Ctrl+D4");
 
+    // ---- Timeline ----
+
+    // TimelineControl reads these mouse modifiers.
+    public static KeyModifiers ScrollModifier { get; } = KeyModifiers.Shift;
+
     // ---- Other ----
     public static KeyGesture CloseWindow { get; } = KeyGesture.Parse("Alt+F4");
 
@@ -30,6 +36,10 @@ public static class Shortcuts
     [
         Key("Tabs", ShowTimeline, "Timeline"),
         Key("Tabs", ShowSettings, "Settings"),
+
+        MouseWithModifier("Timeline", ScrollModifier, "+wheel", "Scroll"),
+        MouseOnly("Timeline", "Mouse wheel", "Zoom around the pointer"),
+        MouseOnly("Timeline", "Drag the ruler", "Scroll"),
 
         Key(
             "Other",
@@ -49,4 +59,13 @@ public static class Shortcuts
         string action,
         ShortcutScope scope = ShortcutScope.Window) =>
         new(group, Describe(gesture), action, scope, gesture);
+
+    private static Shortcut MouseWithModifier(string group, KeyModifiers modifier, string suffix, string action) =>
+        new(group, $"{modifier}{suffix}", action, ShortcutScope.Mouse, Gesture: null);
+
+    /// <summary>
+    /// A mouse action with no key to change. TimelineControl handles it.
+    /// </summary>
+    private static Shortcut MouseOnly(string group, string keys, string action) =>
+        new(group, keys, action, ShortcutScope.Mouse, Gesture: null);
 }

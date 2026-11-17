@@ -7,7 +7,7 @@ namespace ClockShot.App.ViewModels.Timeline;
 
 /// <summary>
 /// How much of the day the timeline shows, and which part.
-/// It turns zoom steps into changes to the <see cref="TimelineViewport"/>.
+/// It turns zoom steps and pans into changes to the <see cref="TimelineViewport"/>.
 /// </summary>
 public sealed partial class TimelineZoom : ViewModelBase
 {
@@ -34,6 +34,8 @@ public sealed partial class TimelineZoom : ViewModelBase
     /// Positive steps zoom in.
     /// </summary>
     public void ZoomAt(double x, double steps) => Viewport = Viewport.ZoomAt(x, Math.Pow(ZoomStep, steps));
+
+    public void PanBy(double pixels) => Viewport = Viewport.PanBy(pixels);
 
     /// <summary>
     /// Shows the whole range, keeping the current width.

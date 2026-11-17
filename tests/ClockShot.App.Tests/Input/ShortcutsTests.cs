@@ -25,4 +25,17 @@ public sealed class ShortcutsTests
         Assert.NotEmpty(keys);
         Assert.All(keys, key => Assert.Contains(key, listed));
     }
+
+    [Fact]
+    public void MouseShortcutsNameTheirModifier()
+    {
+        // Act
+        var mouseKeys = Shortcuts.All
+            .Where(shortcut => shortcut.Scope == ShortcutScope.Mouse)
+            .Select(shortcut => shortcut.Keys)
+            .ToList();
+
+        // Assert
+        Assert.Contains("Shift+wheel", mouseKeys);
+    }
 }

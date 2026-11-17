@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 
+using ClockShot.App.Input;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core;
 using ClockShot.Core.Timeline;
@@ -19,6 +20,7 @@ namespace ClockShot.App.Controls;
 /// </summary>
 /// <remarks>
 /// The mouse wheel zooms around the pointer.
+/// Shift with the wheel, or dragging the ruler, scrolls.
 /// </remarks>
 public sealed class TimelineControl : Control
 {
@@ -37,6 +39,9 @@ public sealed class TimelineControl : Control
     private const double BlockPadding = 3;
 
     private const double MinLabelWidth = 28;
+
+    // One wheel notch scrolls about as far as it scrolls three lines of text in most apps.
+    private const double WheelPanPixels = 60;
 
     // Text sizes are in pixels.
     // Ruler labels are smaller than lane titles and block labels.
@@ -78,6 +83,8 @@ public sealed class TimelineControl : Control
     private readonly Dictionary<(string Text, double Size), FormattedText> _textCache = [];
     private Pens? _pens;
     private StreamGeometry? _nowMarker;
+    private Gesture _gesture;
+    private Point _pressPoint;
     private int _measuredLaneCount;
 
     public TimelineControl()
@@ -89,6 +96,16 @@ public sealed class TimelineControl : Control
             _pens = null;
             InvalidateVisual();
         };
+    }
+
+    private enum Gesture
+    {
+        None,
+
+        /// <summary>
+        /// Pressed on the ruler, so dragging scrolls.
+        /// </summary>
+        Pan,
     }
 
     public TimelineViewModel? Timeline
@@ -167,6 +184,61 @@ public sealed class TimelineControl : Control
         return new Size(0, RulerHeight + MinLaneHeight * LaneCount);
     }
 
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        if (Timeline is null)
+        {
+            return;
+        }
+
+        var point = e.GetPosition(this);
+        if (point.X < AreaLeft)
+        {
+            return;
+        }
+
+        var properties = e.GetCurrentPoint(this).Properties;
+        if (!properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        e.Pointer.Capture(this);
+        e.Handled = true;
+        _pressPoint = point;
+        if (LaneAt(point.Y) < 0)
+        {
+            _gesture = Gesture.Pan;
+        }
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (Timeline is not { } timeline || _gesture != Gesture.Pan)
+        {
+            return;
+        }
+
+        var point = e.GetPosition(this);
+        timeline.Zoom.PanBy(_pressPoint.X - point.X);
+        _pressPoint = point;
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        _gesture = Gesture.None;
+        e.Pointer.Capture(null);
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        base.OnPointerCaptureLost(e);
+        _gesture = Gesture.None;
+    }
+
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
@@ -178,7 +250,18 @@ public sealed class TimelineControl : Control
         e.Handled = true;
 
         var point = e.GetPosition(this);
-        timeline.Zoom.ZoomAt(point.X - AreaLeft, e.Delta.Y);
+        if (Math.Abs(e.Delta.X) > Math.Abs(e.Delta.Y))
+        {
+            timeline.Zoom.PanBy(-e.Delta.X * WheelPanPixels);
+        }
+        else if (e.KeyModifiers.HasFlag(Shortcuts.ScrollModifier))
+        {
+            timeline.Zoom.PanBy(-e.Delta.Y * WheelPanPixels);
+        }
+        else
+        {
+            timeline.Zoom.ZoomAt(point.X - AreaLeft, e.Delta.Y);
+        }
     }
 
     /// <summary>
@@ -359,6 +442,11 @@ public sealed class TimelineControl : Control
 
         return formatted;
     }
+
+    /// <summary>
+    /// The lane under <paramref name="y"/>, or -1 over the ruler.
+    /// </summary>
+    private int LaneAt(double y) => y < RulerHeight ? -1 : (int)((y - RulerHeight) / LaneHeight);
 
     /// <summary>
     /// Pens for the current theme, made once rather than on every frame.

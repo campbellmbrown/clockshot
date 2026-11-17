@@ -16,4 +16,9 @@ public enum ShortcutScope
     /// It's listed but never bound.
     /// </summary>
     System,
+
+    /// <summary>
+    /// The shortcut is a mouse action, which the list only describes.
+    /// </summary>
+    Mouse,
 }
