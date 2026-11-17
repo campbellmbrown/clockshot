@@ -3,11 +3,22 @@ using System.Globalization;
 using Avalonia.Media;
 
 using ClockShot.App.Controls;
+using ClockShot.Core.Timeline;
 
 namespace ClockShot.App.Tests;
 
 public sealed class ThemeBrushesTests
 {
+    [Fact]
+    public void AStoredBlockColourBecomesItsBrush()
+    {
+        // Act
+        var brush = ThemeBrushes.For(new HexColor("#3E8E5E"));
+
+        // Assert
+        Assert.Equal(Color.Parse("#3E8E5E"), Assert.IsAssignableFrom<ISolidColorBrush>(brush).Color);
+    }
+
     [Fact]
     public void FromHexShowsAStoredColour()
     {

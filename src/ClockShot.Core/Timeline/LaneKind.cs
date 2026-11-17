@@ -6,4 +6,5 @@ namespace ClockShot.Core.Timeline;
 public enum LaneKind
 {
     Computer,
+    Applications,
 }

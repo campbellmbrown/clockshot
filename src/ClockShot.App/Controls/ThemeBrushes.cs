@@ -45,6 +45,7 @@ public static class ThemeBrushes
     /// </summary>
     public static IBrush For(IBlockColor color) => color switch
     {
+        HexColor hex => ForColor(hex.Hex),
         StateColor state => ForState(state.State),
         _ => throw new ArgumentOutOfRangeException(nameof(color), color, "Unknown type of block colour."),
     };
