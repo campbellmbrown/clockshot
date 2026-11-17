@@ -51,6 +51,13 @@ public sealed class TimelineControl : Control
     // How far a block's label sits inside the block's edges.
     private const double BlockLabelInset = 5;
 
+    // The now line is thicker than the grid lines, so it stands out.
+    private const double EmphasisPenThickness = 1.5;
+
+    // The now marker is a small triangle on top of the now line.
+    private const double NowMarkerHalfWidth = 5;
+    private const double NowMarkerHeight = 7;
+
     // A block narrower than a pixel is still drawn one pixel wide, so it doesn't vanish.
     private const double MinDrawnWidth = 1;
 
@@ -65,6 +72,7 @@ public sealed class TimelineControl : Control
 
     private readonly Dictionary<(string Text, double Size), FormattedText> _textCache = [];
     private Pens? _pens;
+    private StreamGeometry? _nowMarker;
     private int _measuredLaneCount;
 
     public TimelineControl()
@@ -118,6 +126,8 @@ public sealed class TimelineControl : Control
             {
                 DrawBlocks(context, viewport, timeline.Lanes[i], LaneTop(i));
             }
+
+            DrawNowLine(context, viewport, timeline.NowUtc);
         }
     }
 
@@ -150,6 +160,21 @@ public sealed class TimelineControl : Control
     {
         _measuredLaneCount = LaneCount;
         return new Size(0, RulerHeight + MinLaneHeight * LaneCount);
+    }
+
+    /// <summary>
+    /// The small triangle on top of the now line.
+    /// It points down and is centred on x = 0.
+    /// </summary>
+    private static StreamGeometry CreateNowMarker()
+    {
+        var marker = new StreamGeometry();
+        using var geometry = marker.Open();
+        geometry.BeginFigure(new Point(-NowMarkerHalfWidth, 0), isFilled: true);
+        geometry.LineTo(new Point(NowMarkerHalfWidth, 0));
+        geometry.LineTo(new Point(0, NowMarkerHeight));
+        geometry.EndFigure(isClosed: true);
+        return marker;
     }
 
     /// <summary>
@@ -262,6 +287,21 @@ public sealed class TimelineControl : Control
         }
     }
 
+    private void DrawNowLine(DrawingContext context, TimelineViewport viewport, DateTime nowUtc)
+    {
+        if (!viewport.Visible.Contains(nowUtc))
+        {
+            return;
+        }
+
+        var x = LineX(viewport, nowUtc);
+        context.DrawLine(ThemePens.Now, new Point(x, 0), new Point(x, Bounds.Height));
+        using (context.PushTransform(Matrix.CreateTranslation(x, 0)))
+        {
+            context.DrawGeometry(ThemeBrushes.NowLine, pen: null, _nowMarker ??= CreateNowMarker());
+        }
+    }
+
     private double LaneTop(int index) => RulerHeight + index * LaneHeight;
 
     /// <summary>
@@ -306,11 +346,13 @@ public sealed class TimelineControl : Control
     /// </summary>
     private sealed record Pens(
         IPen Grid,
-        IPen Tick)
+        IPen Tick,
+        IPen Now)
     {
         public static Pens ForCurrentTheme() => new(
             Make(ThemeBrushes.GridLine),
-            Make(ThemeBrushes.Tick));
+            Make(ThemeBrushes.Tick),
+            Make(ThemeBrushes.NowLine, EmphasisPenThickness));
 
         private static ImmutablePen Make(IBrush brush, double thickness = 1, IDashStyle? dash = null) =>
             new Pen(brush, thickness, dash).ToImmutable();

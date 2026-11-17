@@ -15,16 +15,23 @@ namespace ClockShot.App.ViewModels.Timeline;
 /// </summary>
 public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 {
+    /// <summary>
+    /// The now line moves on every tick.
+    /// </summary>
+    private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(5);
+
     private readonly IActivityHistory _history;
     private readonly DayClock _days;
     private readonly ILogger<TimelineViewModel> _logger;
     private readonly BackgroundWork _background;
+    private readonly ITimer _timer;
 
     private ActivityRecords _records = ActivityRecords.Empty;
     private CancellationTokenSource? _loading;
 
     public TimelineViewModel(
         IActivityHistory history,
+        TimeProvider time,
         DayClock days,
         ILogger<TimelineViewModel> logger,
         BackgroundWork background)
@@ -38,9 +45,16 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         Zoom = new TimelineZoom();
 
         Zoom.ViewportChanged += () => RedrawNeeded?.Invoke();
+        NowUtc = Now();
 
         // Setting the day loads it, through OnDayChanged.
         Day = Today();
+
+        _timer = time.CreateTimer(
+            _ => OnUiThread(OnTick),
+            state: null,
+            dueTime: TickInterval,
+            period: TickInterval);
     }
 
     /// <summary>
@@ -102,6 +116,12 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     public bool HasDayApplications => DayApplications.Count > 0;
 
     /// <summary>
+    /// The current time, drawn as the now line when it's inside the day.
+    /// </summary>
+    [ObservableProperty]
+    public partial DateTime NowUtc { get; private set; }
+
+    /// <summary>
     /// From the first to the last active time of the day, or null if the computer was never active.
     /// </summary>
     [ObservableProperty]
@@ -138,18 +158,21 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     public void Dispose()
     {
+        _timer.Dispose();
         _loading?.Cancel();
         _loading?.Dispose();
     }
-
-    // The toolkit calls this when a property the control draws has changed.
-    partial void OnLanesChanged(IReadOnlyList<TimelineLane> value) => RedrawNeeded?.Invoke();
 
     partial void OnDayChanged(DateOnly value)
     {
         Zoom.Fit(DayRange);
         _background.Run(() => LoadAsync());
     }
+
+    // The toolkit calls these when a property the control draws has changed.
+    partial void OnLanesChanged(IReadOnlyList<TimelineLane> value) => RedrawNeeded?.Invoke();
+
+    partial void OnNowUtcChanged(DateTime value) => RedrawNeeded?.Invoke();
 
     [RelayCommand]
     private void PreviousDay() => Day = Day.AddDays(-1);
@@ -177,6 +200,13 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             $"Active {DurationText.Format(active)}");
     }
 
+    private void OnTick()
+    {
+        NowUtc = Now();
+        OnPropertyChanged(nameof(LatestDate));
+        NextDayCommand.NotifyCanExecuteChanged();
+    }
+
     /// <summary>
     /// Builds the lanes, applications list and summary from the loaded records.
     /// </summary>
@@ -192,6 +222,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     }
 
     private void ShowLanes(ActivityRecords records) => Lanes = TimelineLanes.Build(records);
+
+    private DateTime Now() => _days.NowUtc;
 
     private DateOnly Today() => _days.Today;
 

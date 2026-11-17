@@ -28,6 +28,7 @@
       <SolidColorBrush x:Key="TimelineTick" Color="#7A7A82" />
       <SolidColorBrush x:Key="TimelineText" Color="{StaticResource TextColor}" />
       <SolidColorBrush x:Key="TimelineSecondaryText" Color="#9A9AA2" />
+      <SolidColorBrush x:Key="TimelineNowLine" Color="#FF5A5A" />
 
       <!-- Tracking states -->
       <SolidColorBrush x:Key="StateActive" Color="#3E8E5E" />
