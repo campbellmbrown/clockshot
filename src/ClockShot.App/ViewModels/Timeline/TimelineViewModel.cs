@@ -35,9 +35,20 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _logger = logger;
         _background = background;
 
+        Zoom = new TimelineZoom();
+
+        Zoom.ViewportChanged += () => RedrawNeeded?.Invoke();
+
         // Setting the day loads it, through OnDayChanged.
         Day = Today();
     }
+
+    /// <summary>
+    /// Raised when anything the timeline control draws has changed.
+    /// </summary>
+    public event Action? RedrawNeeded;
+
+    public TimelineZoom Zoom { get; }
 
     public TimeZoneInfo TimeZone => _days.Zone;
 
@@ -130,6 +141,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     partial void OnDayChanged(DateOnly value)
     {
+        Zoom.Fit(DayRange);
         _background.Run(() => LoadAsync());
     }
 

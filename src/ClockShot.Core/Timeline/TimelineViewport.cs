@@ -84,4 +84,14 @@ public readonly record struct TimelineViewport
     /// </summary>
     public TimelineViewport PanBy(double pixels) =>
         new(Bounds, VisibleStart.AddSeconds(pixels * SecondsPerPixel), SecondsPerPixel, Width);
+
+    /// <summary>
+    /// The viewport after the drawing area is resized.
+    /// It keeps the start time and zoom, and a viewport showing the whole day stays that way.
+    /// </summary>
+    public TimelineViewport WithWidth(double width)
+    {
+        width = Math.Max(MinWidth, width);
+        return IsFit ? Fit(Bounds, width) : new TimelineViewport(Bounds, VisibleStart, SecondsPerPixel, width);
+    }
 }

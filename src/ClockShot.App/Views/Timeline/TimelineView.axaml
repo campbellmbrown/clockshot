@@ -9,6 +9,7 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="170" MinHeight="90" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
@@ -46,7 +47,13 @@
                Margin="0,0,0,8"
                AutomationProperties.AutomationId="DaySummary" />
 
-    <DockPanel Grid.Row="2" Margin="0,8,0,0">
+    <Border Grid.Row="2"
+            CornerRadius="4"
+            ClipToBounds="True">
+      <controls:TimelineControl Timeline="{Binding}" AutomationProperties.AutomationId="Timeline" />
+    </Border>
+
+    <DockPanel Grid.Row="3" Margin="0,8,0,0">
       <TextBlock DockPanel.Dock="Top"
                  Classes="h3"
                  Text="Applications on this day"

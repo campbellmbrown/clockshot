@@ -24,6 +24,10 @@ public static class ThemeBrushes
     private static readonly ConcurrentDictionary<(string Key, ThemeVariant Theme), IBrush> BrushesByKey = new();
     private static readonly ConcurrentDictionary<string, IBrush> ColorBrushes = new(StringComparer.OrdinalIgnoreCase);
 
+    public static IBrush Background => Get("TimelineBackground");
+    public static IBrush RulerBackground => Get("TimelineRulerBackground");
+    public static IBrush GridLine => Get("TimelineGridLine");
+    public static IBrush Tick => Get("TimelineTick");
     public static IBrush StateActive => Get("StateActive");
     public static IBrush StateAway => Get("StateAway");
     public static IBrush StateLocked => Get("StateLocked");

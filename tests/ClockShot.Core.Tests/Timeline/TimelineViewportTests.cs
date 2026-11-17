@@ -114,6 +114,30 @@ public sealed class TimelineViewportTests
         Assert.Equal(Day.End, panned.VisibleEnd);
     }
 
+    [Fact]
+    public void ResizingFittedViewStaysFitted()
+    {
+        // Act
+        var resized = Fitted().WithWidth(720);
+
+        // Assert
+        Assert.Equal(Day, resized.Visible);
+    }
+
+    [Fact]
+    public void ResizingZoomedViewKeepsStartAndZoom()
+    {
+        // Arrange
+        var zoomed = FirstSixHours().PanBy(pixels: 240);
+
+        // Act
+        var resized = zoomed.WithWidth(720);
+
+        // Assert
+        Assert.Equal(zoomed.VisibleStart, resized.VisibleStart);
+        Assert.Equal(zoomed.SecondsPerPixel, resized.SecondsPerPixel);
+    }
+
     private static TimelineViewport Fitted() => TimelineViewport.Fit(Day, MinutesInADay);
 
     /// <summary>

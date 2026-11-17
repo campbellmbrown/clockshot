@@ -4,15 +4,25 @@
     The app's own colours.
     Everything else comes from the Fluent theme.
     Views use the general keys.
-    The status bar looks up the State keys in code, through ThemeBrushes.
+    The timeline and the status bar look up the Timeline and State keys in code, through ThemeBrushes.
     Only a Dark variant exists so far.
     A light theme needs a "Light" dictionary with the same keys.
   -->
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Dark">
+      <!-- Colours the keys below build on -->
+      <Color x:Key="DividerColor">#2C2C31</Color>
+      <Color x:Key="PanelColor">#202024</Color>
+
       <!-- General -->
-      <SolidColorBrush x:Key="Divider" Color="#2C2C31" />
-      <SolidColorBrush x:Key="PanelBackground" Color="#202024" />
+      <SolidColorBrush x:Key="Divider" Color="{StaticResource DividerColor}" />
+      <SolidColorBrush x:Key="PanelBackground" Color="{StaticResource PanelColor}" />
+
+      <!-- Timeline -->
+      <SolidColorBrush x:Key="TimelineBackground" Color="#161618" />
+      <SolidColorBrush x:Key="TimelineRulerBackground" Color="{StaticResource PanelColor}" />
+      <SolidColorBrush x:Key="TimelineGridLine" Color="{StaticResource DividerColor}" />
+      <SolidColorBrush x:Key="TimelineTick" Color="#7A7A82" />
 
       <!-- Tracking states -->
       <SolidColorBrush x:Key="StateActive" Color="#3E8E5E" />
