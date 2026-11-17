@@ -23,6 +23,8 @@ The Timeline tab that will show them is still being built.
 - It keeps screenshots for 30 days, then deletes them.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
+- A day starts at midnight.
+  If you work past midnight, you can start it later in Settings.
 
 The Settings tab lets you change how often screenshots are taken, how long they're kept and more.
 Help > Keyboard shortcuts lists every shortcut.

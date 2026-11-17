@@ -1,6 +1,7 @@
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
 using ClockShot.Core.Models;
+using ClockShot.Core.Settings;
 using ClockShot.Core.Timeline;
 using ClockShot.Core.Tracking;
 
@@ -41,12 +42,16 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     private int _ticks;
 
+    // The last day start hour seen, so a settings change that keeps it doesn't reload the day.
+    private int _dayStartHour;
+
     private ActivityRecords _records = ActivityRecords.Empty;
     private CancellationTokenSource? _loading;
 
     public TimelineViewModel(
         IActivityHistory history,
         ITrackingController tracking,
+        ISettingsStore settings,
         TimeProvider time,
         DayClock days,
         ILogger<TimelineViewModel> logger,
@@ -62,6 +67,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         Zoom = new TimelineZoom();
 
         Zoom.ViewportChanged += () => RedrawNeeded?.Invoke();
+        _dayStartHour = settings.Current.General.DayStartHour;
+        settings.Changed += changed => OnUiThread(() => OnSettingsChanged(changed));
         NowUtc = Now();
 
         // Setting the day loads it, through OnDayChanged.
@@ -182,16 +189,47 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _loading?.Dispose();
     }
 
-    partial void OnDayChanged(DateOnly value)
-    {
-        Zoom.Fit(DayRange);
-        _background.Run(() => LoadAsync());
-    }
+    partial void OnDayChanged(DateOnly value) => ShowDay();
 
     // The toolkit calls these when a property the control draws has changed.
     partial void OnLanesChanged(IReadOnlyList<TimelineLane> value) => RedrawNeeded?.Invoke();
 
     partial void OnNowUtcChanged(DateTime value) => RedrawNeeded?.Invoke();
+
+    /// <summary>
+    /// Refits and reloads the day when the day start hour changes.
+    /// </summary>
+    private void OnSettingsChanged(AppSettings settings)
+    {
+        if (settings.General.DayStartHour == _dayStartHour)
+        {
+            return;
+        }
+
+        _dayStartHour = settings.General.DayStartHour;
+        OnPropertyChanged(nameof(LatestDate));
+        NextDayCommand.NotifyCanExecuteChanged();
+
+        // A later hour can make the shown day start in the future, so the timeline moves to today.
+        // An earlier hour keeps the shown day, as the normal change of day at the start hour does.
+        if (Day > Today())
+        {
+            Day = Today();
+            return;
+        }
+
+        OnPropertyChanged(nameof(DayRange));
+        ShowDay();
+    }
+
+    /// <summary>
+    /// Fits the whole day in view and loads it.
+    /// </summary>
+    private void ShowDay()
+    {
+        Zoom.Fit(DayRange);
+        _background.Run(() => LoadAsync());
+    }
 
     [RelayCommand]
     private void PreviousDay() => Day = Day.AddDays(-1);

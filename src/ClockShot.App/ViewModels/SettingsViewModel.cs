@@ -85,6 +85,12 @@ public sealed partial class SettingsViewModel : PageViewModel
         set => Update(s => s with { General = s.General with { CloseToTray = value } });
     }
 
+    public decimal? DayStartHour
+    {
+        get => Current.General.DayStartHour;
+        set => UpdateNumber(value, (s, v) => s with { General = s.General with { DayStartHour = v } });
+    }
+
     // ---- Tracking ----
 
     public decimal? AwayAfterMinutes

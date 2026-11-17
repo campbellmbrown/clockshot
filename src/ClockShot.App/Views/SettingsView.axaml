@@ -45,6 +45,16 @@
         <CheckBox Content="Close to tray"
                   ToolTip.Tip="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Closing the window keeps {0} running in the tray.'}"
                   IsChecked="{Binding CloseToTray}" />
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="The hour a new day starts. If you work past midnight, set it to an hour after you stop.">
+          <TextBlock Text="Day start (hour)" />
+          <NumericUpDown Grid.Column="1"
+                         Value="{Binding DayStartHour}"
+                         Minimum="{Binding Min, Source={x:Static settings:SettingLimits.DayStartHour}}"
+                         Maximum="{Binding Max, Source={x:Static settings:SettingLimits.DayStartHour}}"
+                         AutomationProperties.AutomationId="SettingDayStartHour" />
+        </Grid>
       </StackPanel>
 
       <!-- Tracking -->
