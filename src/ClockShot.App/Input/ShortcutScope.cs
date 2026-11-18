@@ -12,6 +12,12 @@ public enum ShortcutScope
     Window,
 
     /// <summary>
+    /// The key works only while the timeline has focus.
+    /// TimelineView binds it.
+    /// </summary>
+    Timeline,
+
+    /// <summary>
     /// The operating system handles the key, such as Alt+F4.
     /// It's listed but never bound.
     /// </summary>

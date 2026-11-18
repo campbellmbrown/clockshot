@@ -14,6 +14,8 @@ namespace ClockShot.App.ViewModels.Timeline;
 
 /// <summary>
 /// The Timeline tab, which shows one day of recorded activity.
+/// It zooms and scrolls, previews screenshots on hover and shows the details of the selection.
+/// <see cref="Controls.TimelineControl"/> draws it and passes the pointer input here.
 /// </summary>
 public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 {
@@ -59,6 +61,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         TimeProvider time,
         DayClock days,
         ScreenshotPreviewViewModel preview,
+        SelectionDetailsViewModel details,
         ILogger<TimelineViewModel> logger,
         BackgroundWork background)
         : base("Timeline", Icons.Timeline)
@@ -70,8 +73,16 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _background = background;
 
         Preview = preview;
+        Details = details;
+        Details.SetDay(ActivityRecords.Empty, TimeZone);
         Zoom = new TimelineZoom();
+        Selection = new TimelineSelection(details);
 
+        Selection.Changed += () =>
+        {
+            RedrawNeeded?.Invoke();
+            ClearSelectionCommand.NotifyCanExecuteChanged();
+        };
         preview.PauseChanged += () =>
         {
             // Resuming shows what's under the pointer straight away, instead of on its next move.
@@ -104,7 +115,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     public ScreenshotPreviewViewModel Preview { get; }
 
+    public SelectionDetailsViewModel Details { get; }
+
     public TimelineZoom Zoom { get; }
+
+    public TimelineSelection Selection { get; }
 
     public TimeZoneInfo TimeZone => _days.Zone;
 
@@ -195,7 +210,9 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
             _records = records;
             _screenshots = new ScreenshotIndex(records.Screenshots);
+            Details.SetDay(_records, TimeZone);
             ShowRecords();
+            Selection.Refresh(Lanes);
         }
         catch (OperationCanceledException)
         {
@@ -226,6 +243,21 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _hoverX = null;
         HoverTimeUtc = null;
         Preview.IsHovering = false;
+    }
+
+    /// <summary>
+    /// A click on a lane selects the block under the pointer, or clears the selection when there's none.
+    /// </summary>
+    public void ClickAt(DateTime time, LaneKind? lane)
+    {
+        if (lane is { } kind && Lane(kind)?.BlockAt(time) is { } block)
+        {
+            Selection.SelectBlock(kind, block);
+        }
+        else
+        {
+            ClearSelection();
+        }
     }
 
     public void Dispose()
@@ -333,6 +365,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         // The last time shown was on the old day, so there's nothing to pause on until the next hover.
         Preview.ShownAtUtc = null;
         Zoom.Fit(DayRange);
+        ClearSelection();
         _background.Run(() => LoadAsync());
     }
 
@@ -401,6 +434,16 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         var nowX = viewport.XOf(NowUtc);
         return nowX >= 0 && nowX <= viewport.Width ? nowX : viewport.Width / 2;
     }
+
+    /// <summary>
+    /// The lane showing <paramref name="kind"/>, once the day has loaded.
+    /// </summary>
+    private TimelineLane? Lane(LaneKind kind) => Lanes.FirstOrDefault(l => l.Kind == kind);
+
+    private bool HasSelection() => Selection.HasSelection;
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void ClearSelection() => Selection.Clear();
 
     private void OnTick()
     {

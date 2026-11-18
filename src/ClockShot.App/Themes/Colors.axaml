@@ -32,6 +32,9 @@
       <SolidColorBrush x:Key="TimelineSecondaryText" Color="#9A9AA2" />
       <SolidColorBrush x:Key="TimelineNowLine" Color="#FF5A5A" />
       <SolidColorBrush x:Key="TimelineHoverLine" Color="#B0FFFFFF" />
+      <SolidColorBrush x:Key="TimelineSelectionFill" Color="#334C9AFF" />
+      <SolidColorBrush x:Key="TimelineSelectionBorder" Color="#4C9AFF" />
+      <SolidColorBrush x:Key="TimelineSelectedBlock" Color="#FFFFFF" />
       <SolidColorBrush x:Key="TimelinePreviewPaused" Color="{StaticResource PausedColor}" />
 
       <!-- Tracking states -->

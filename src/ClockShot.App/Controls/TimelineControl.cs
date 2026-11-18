@@ -15,12 +15,13 @@ namespace ClockShot.App.Controls;
 
 /// <summary>
 /// Draws the timeline and turns pointer input into calls on <see cref="TimelineViewModel"/>, which owns the behaviour.
-/// It draws the ruler, the lanes, the hover line and the now line.
+/// It draws the ruler, the lanes, the selection, the hover line and the now line.
 /// Any number of lanes is drawn the same way.
 /// </summary>
 /// <remarks>
 /// The mouse wheel zooms around the pointer.
 /// Shift with the wheel, or dragging the ruler, scrolls.
+/// Clicking a block selects it.
 /// </remarks>
 public sealed class TimelineControl : Control
 {
@@ -61,8 +62,10 @@ public sealed class TimelineControl : Control
     // How far a block's label sits inside the block's edges.
     private const double BlockLabelInset = 5;
 
-    // The now line is thicker than the grid and hover lines, so it stands out.
+    // The now line and the selection's edges are thicker than the grid and hover lines, so they stand out.
     private const double EmphasisPenThickness = 1.5;
+
+    private const double SelectedBlockPenThickness = 2;
 
     // The now marker is a small triangle on top of the now line.
     private const double NowMarkerHalfWidth = 5;
@@ -78,7 +81,7 @@ public sealed class TimelineControl : Control
     // A float, because that's what Avalonia's FillRectangle takes for a corner radius.
     private const float BadgeCornerRadius = 3;
 
-    // A block narrower than a pixel is still drawn one pixel wide, so it doesn't vanish.
+    // A block or selection narrower than a pixel is still drawn one pixel wide, so it doesn't vanish.
     private const double MinDrawnWidth = 1;
 
     // This is many times the number of labels in one day.
@@ -95,11 +98,13 @@ public sealed class TimelineControl : Control
     private StreamGeometry? _nowMarker;
     private Gesture _gesture;
     private Point _pressPoint;
+    private int _pressLane;
     private int _measuredLaneCount;
 
     public TimelineControl()
     {
         ClipToBounds = true;
+        Focusable = true;
         ActualThemeVariantChanged += (_, _) =>
         {
             // The pens are made again from the new theme's brushes on the next draw.
@@ -111,6 +116,12 @@ public sealed class TimelineControl : Control
     private enum Gesture
     {
         None,
+
+        /// <summary>
+        /// Pressed on a lane.
+        /// It's a click when the button is released.
+        /// </summary>
+        PendingClick,
 
         /// <summary>
         /// Pressed on the ruler, so dragging scrolls.
@@ -161,9 +172,10 @@ public sealed class TimelineControl : Control
             DrawRuler(context, viewport, timeline.TimeZone);
             for (var i = 0; i < timeline.Lanes.Count; i++)
             {
-                DrawBlocks(context, viewport, timeline.Lanes[i], LaneTop(i));
+                DrawBlocks(context, viewport, timeline, timeline.Lanes[i], LaneTop(i));
             }
 
+            DrawSelection(context, viewport, timeline);
             DrawPreviewPause(context, viewport, timeline);
             DrawNowLine(context, viewport, timeline.NowUtc);
             DrawHoverLine(context, viewport, timeline);
@@ -216,17 +228,24 @@ public sealed class TimelineControl : Control
         }
 
         var properties = e.GetCurrentPoint(this).Properties;
+
         if (!properties.IsLeftButtonPressed)
         {
             return;
         }
 
+        Focus();
         e.Pointer.Capture(this);
         e.Handled = true;
         _pressPoint = point;
-        if (LaneAt(point.Y) < 0)
+        _pressLane = LaneAt(point.Y);
+        if (_pressLane < 0)
         {
             _gesture = Gesture.Pan;
+        }
+        else
+        {
+            _gesture = Gesture.PendingClick;
         }
     }
 
@@ -252,8 +271,19 @@ public sealed class TimelineControl : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+        // Losing the capture below clears the gesture, so it's read first.
+        var gesture = _gesture;
         _gesture = Gesture.None;
         e.Pointer.Capture(null);
+        if (Timeline is not { } timeline)
+        {
+            return;
+        }
+
+        if (gesture == Gesture.PendingClick)
+        {
+            timeline.ClickAt(TimeAt(timeline, _pressPoint), KindOf(timeline, _pressLane));
+        }
     }
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
@@ -321,6 +351,12 @@ public sealed class TimelineControl : Control
     /// </summary>
     private static double LineX(TimelineViewport viewport, DateTime time) =>
         Math.Round(AreaLeft + viewport.XOf(time)) + 0.5;
+
+    private static LaneKind? KindOf(TimelineViewModel timeline, int lane) =>
+        lane >= 0 && lane < timeline.Lanes.Count ? timeline.Lanes[lane].Kind : null;
+
+    private static DateTime TimeAt(TimelineViewModel timeline, Point point) =>
+        timeline.Zoom.Viewport.TimeAt(point.X - AreaLeft);
 
     /// <summary>
     /// Tells the view model how wide the drawing area is, once the control has been laid out.
@@ -393,6 +429,7 @@ public sealed class TimelineControl : Control
     private void DrawBlocks(
         DrawingContext context,
         TimelineViewport viewport,
+        TimelineViewModel timeline,
         TimelineLane lane,
         double top)
     {
@@ -413,6 +450,10 @@ public sealed class TimelineControl : Control
             var width = Math.Max(MinDrawnWidth, right - left);
             var rect = new Rect(left, top + BlockPadding, width, LaneHeight - BlockPadding * 2);
             context.FillRectangle(ThemeBrushes.For(block.Color), rect);
+            if (timeline.Selection.IsSelected(lane, block))
+            {
+                context.DrawRectangle(null, ThemePens.SelectedBlock, rect.Deflate(SelectedBlockPenThickness / 2));
+            }
 
             var labelLeft = Math.Max(left, AreaLeft) + BlockLabelInset;
             var labelWidth = Math.Min(right, AreaLeft + AreaWidth) - BlockLabelInset - labelLeft;
@@ -424,6 +465,22 @@ public sealed class TimelineControl : Control
             var label = Text(block.Label, LabelTextSize, ThemeBrushes.Text, labelWidth);
             context.DrawText(label, new Point(labelLeft, rect.Y + (rect.Height - label.Height) / 2));
         }
+    }
+
+    private void DrawSelection(DrawingContext context, TimelineViewport viewport, TimelineViewModel timeline)
+    {
+        if (timeline.Selection.Range is not { } selection)
+        {
+            return;
+        }
+
+        var left = AreaLeft + viewport.XOf(selection.Start);
+        var right = AreaLeft + viewport.XOf(selection.End);
+        var rect = new Rect(left, RulerHeight, Math.Max(MinDrawnWidth, right - left), Bounds.Height - RulerHeight);
+        context.FillRectangle(ThemeBrushes.SelectionFill, rect);
+        var pen = ThemePens.Selection;
+        context.DrawLine(pen, rect.TopLeft, rect.BottomLeft);
+        context.DrawLine(pen, rect.TopRight, rect.BottomRight);
     }
 
     private void DrawNowLine(DrawingContext context, TimelineViewport viewport, DateTime nowUtc)
@@ -559,14 +616,18 @@ public sealed class TimelineControl : Control
     private sealed record Pens(
         IPen Grid,
         IPen Tick,
+        IPen Selection,
         IPen Now,
-        IPen Hover)
+        IPen Hover,
+        IPen SelectedBlock)
     {
         public static Pens ForCurrentTheme() => new(
             Make(ThemeBrushes.GridLine),
             Make(ThemeBrushes.Tick),
+            Make(ThemeBrushes.SelectionBorder, EmphasisPenThickness),
             Make(ThemeBrushes.NowLine, EmphasisPenThickness),
-            Make(ThemeBrushes.HoverLine));
+            Make(ThemeBrushes.HoverLine),
+            Make(ThemeBrushes.SelectedBlock, SelectedBlockPenThickness));
 
         private static ImmutablePen Make(IBrush brush, double thickness = 1, IDashStyle? dash = null) =>
             new Pen(brush, thickness, dash).ToImmutable();

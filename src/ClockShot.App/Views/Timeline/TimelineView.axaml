@@ -6,121 +6,143 @@
              xmlns:input="using:ClockShot.App.Input"
              x:Class="ClockShot.App.Views.Timeline.TimelineView"
              x:DataType="timeline:TimelineViewModel">
-  <Grid Margin="12,8,6,12">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="170" MinHeight="90" />
-      <RowDefinition Height="*" />
-    </Grid.RowDefinitions>
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="{x:Static input:Shortcuts.ClearSelection}" Command="{Binding ClearSelectionCommand}" />
+  </UserControl.KeyBindings>
+
+  <!-- The columns are the main area and the details panel. -->
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" MinWidth="420" />
+      <ColumnDefinition Width="360" />
+    </Grid.ColumnDefinitions>
 
     <!--
-      The toolbar has day navigation, then zoom and preview.
-      It wraps onto a second row in narrow windows.
+      The rows are the toolbar, the day summary and the timeline.
+      The last row holds the screenshot preview or the applications list.
     -->
-    <WrapPanel>
-      <StackPanel Orientation="Horizontal"
-                  Spacing="6"
-                  Margin="0,0,24,6">
-        <Button Command="{Binding PreviousDayCommand}"
-                ToolTip.Tip="{input:WithKeys 'Previous day ({0})',
-                                             {x:Static input:Shortcuts.PreviousDay}}"
-                AutomationProperties.AutomationId="PreviousDayButton">
-          <controls:Icon Kind="{x:Static controls:Icons.PreviousDay}" />
-        </Button>
-        <controls:DatePickerButton SelectedDate="{Binding SelectedDate}"
-                                   DisplayDateEnd="{Binding LatestDate}"
-                                   DateFormat="ddd d MMM yyyy"
-                                   Width="170"
-                                   ToolTip.Tip="Choose a day"
-                                   AutomationProperties.AutomationId="DayButton" />
-        <Button Command="{Binding NextDayCommand}"
-                ToolTip.Tip="{input:WithKeys 'Next day ({0})',
-                                             {x:Static input:Shortcuts.NextDay}}"
-                AutomationProperties.AutomationId="NextDayButton">
-          <controls:Icon Kind="{x:Static controls:Icons.NextDay}" />
-        </Button>
-        <Button Command="{Binding GoToTodayCommand}"
-                ToolTip.Tip="{input:WithKeys 'Go to today and the current time ({0})',
-                                             {x:Static input:Shortcuts.Today}}"
-                AutomationProperties.AutomationId="TodayButton">
-          <controls:Icon Kind="{x:Static controls:Icons.Today}" />
-        </Button>
-      </StackPanel>
+    <Grid Margin="12,8,6,12">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="170" MinHeight="90" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
 
-      <StackPanel Orientation="Horizontal"
-                  Spacing="6"
-                  Margin="0,0,0,6">
-        <Button Command="{Binding FitWorkingDayCommand}"
-                ToolTip.Tip="{input:WithKeys 'Fit to the working day, from day start to day end ({0})',
-                                             {x:Static input:Shortcuts.FitWorkingDay}}"
-                AutomationProperties.AutomationId="FitWorkingDayButton">
-          <controls:Icon Kind="{x:Static controls:Icons.FitWorkingDay}" />
-        </Button>
-        <Button Command="{Binding FitDayCommand}"
-                ToolTip.Tip="{input:WithKeys 'Show the whole day ({0})',
-                                             {x:Static input:Shortcuts.ShowWholeDay}}"
-                AutomationProperties.AutomationId="FitDayButton">
-          <controls:Icon Kind="{x:Static controls:Icons.ShowWholeDay}" />
-        </Button>
-        <ComboBox ItemsSource="{Binding Preview.Choices}"
-                  SelectedItem="{Binding Preview.Choice}"
-                  Margin="12,0,0,0"
-                  AutomationProperties.AutomationId="PreviewModeBox"
-                  ToolTip.Tip="{input:WithKeys 'Choose where screenshots appear when you hover over the timeline. {0} switches to the next one.',
-                                               {x:Static input:Shortcuts.SwitchPreview}}">
-          <ComboBox.ItemTemplate>
-            <DataTemplate DataType="timeline:PreviewModeChoice">
-              <controls:IconText Kind="{Binding Icon}" Text="{Binding Label}" />
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-      </StackPanel>
-    </WrapPanel>
+      <!--
+        The toolbar has day navigation, then zoom and preview.
+        It wraps onto a second row in narrow windows.
+      -->
+      <WrapPanel>
+        <StackPanel Orientation="Horizontal"
+                    Spacing="6"
+                    Margin="0,0,24,6">
+          <Button Command="{Binding PreviousDayCommand}"
+                  ToolTip.Tip="{input:WithKeys 'Previous day ({0})',
+                                               {x:Static input:Shortcuts.PreviousDay}}"
+                  AutomationProperties.AutomationId="PreviousDayButton">
+            <controls:Icon Kind="{x:Static controls:Icons.PreviousDay}" />
+          </Button>
+          <controls:DatePickerButton SelectedDate="{Binding SelectedDate}"
+                                     DisplayDateEnd="{Binding LatestDate}"
+                                     DateFormat="ddd d MMM yyyy"
+                                     Width="170"
+                                     ToolTip.Tip="Choose a day"
+                                     AutomationProperties.AutomationId="DayButton" />
+          <Button Command="{Binding NextDayCommand}"
+                  ToolTip.Tip="{input:WithKeys 'Next day ({0})',
+                                               {x:Static input:Shortcuts.NextDay}}"
+                  AutomationProperties.AutomationId="NextDayButton">
+            <controls:Icon Kind="{x:Static controls:Icons.NextDay}" />
+          </Button>
+          <Button Command="{Binding GoToTodayCommand}"
+                  ToolTip.Tip="{input:WithKeys 'Go to today and the current time ({0})',
+                                               {x:Static input:Shortcuts.Today}}"
+                  AutomationProperties.AutomationId="TodayButton">
+            <controls:Icon Kind="{x:Static controls:Icons.Today}" />
+          </Button>
+        </StackPanel>
 
-    <TextBlock Grid.Row="1"
-               Classes="secondary"
-               Text="{Binding SummaryText}"
-               Margin="0,0,0,8"
-               AutomationProperties.AutomationId="DaySummary" />
+        <StackPanel Orientation="Horizontal"
+                    Spacing="6"
+                    Margin="0,0,0,6">
+          <Button Command="{Binding FitWorkingDayCommand}"
+                  ToolTip.Tip="{input:WithKeys 'Fit to the working day, from day start to day end ({0})',
+                                               {x:Static input:Shortcuts.FitWorkingDay}}"
+                  AutomationProperties.AutomationId="FitWorkingDayButton">
+            <controls:Icon Kind="{x:Static controls:Icons.FitWorkingDay}" />
+          </Button>
+          <Button Command="{Binding FitDayCommand}"
+                  ToolTip.Tip="{input:WithKeys 'Show the whole day ({0})',
+                                               {x:Static input:Shortcuts.ShowWholeDay}}"
+                  AutomationProperties.AutomationId="FitDayButton">
+            <controls:Icon Kind="{x:Static controls:Icons.ShowWholeDay}" />
+          </Button>
+          <ComboBox ItemsSource="{Binding Preview.Choices}"
+                    SelectedItem="{Binding Preview.Choice}"
+                    Margin="12,0,0,0"
+                    AutomationProperties.AutomationId="PreviewModeBox"
+                    ToolTip.Tip="{input:WithKeys 'Choose where screenshots appear when you hover over the timeline. {0} switches to the next one.',
+                                                 {x:Static input:Shortcuts.SwitchPreview}}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate DataType="timeline:PreviewModeChoice">
+                <controls:IconText Kind="{Binding Icon}" Text="{Binding Label}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+      </WrapPanel>
 
-    <Border x:Name="TimelineArea"
-            Grid.Row="2"
-            CornerRadius="4"
-            ClipToBounds="True">
-      <controls:TimelineControl Timeline="{Binding}"
-                                AutomationProperties.AutomationId="Timeline"
-                                PointerMoved="OnTimelinePointerMoved" />
-    </Border>
+      <TextBlock Grid.Row="1"
+                 Classes="secondary"
+                 Text="{Binding SummaryText}"
+                 Margin="0,0,0,8"
+                 AutomationProperties.AutomationId="DaySummary" />
 
-    <!-- The screenshot preview when it's shown below the timeline, and the day's applications otherwise. -->
-    <Panel Grid.Row="3">
-      <Border IsVisible="{Binding Preview.IsBelowTimeline}" Padding="0,4,0,0">
-        <views:ScreenshotPreviewView DataContext="{Binding Preview}" AutomationProperties.AutomationId="PreviewBelowTimeline" />
+      <Border x:Name="TimelineArea"
+              Grid.Row="2"
+              CornerRadius="4"
+              ClipToBounds="True">
+        <controls:TimelineControl Timeline="{Binding}"
+                                  AutomationProperties.AutomationId="Timeline"
+                                  PointerMoved="OnTimelinePointerMoved" />
       </Border>
-      <DockPanel IsVisible="{Binding !Preview.IsBelowTimeline}" Margin="0,8,0,0">
-        <TextBlock DockPanel.Dock="Top"
-                   Classes="h3"
-                   Text="Applications on this day"
-                   Margin="0,0,0,6"
-                   IsVisible="{Binding HasDayApplications}" />
-        <ScrollViewer>
-          <!-- The list is left-aligned and at most 520 pixels wide, so rows stay readable on wide screens. -->
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" MaxWidth="520" />
-            </Grid.ColumnDefinitions>
-            <ItemsControl ItemsSource="{Binding DayApplications}" AutomationProperties.AutomationId="DayApplications">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="timeline:ApplicationTotalViewModel">
-                  <views:ApplicationTotalRow />
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </Grid>
-        </ScrollViewer>
-      </DockPanel>
-    </Panel>
+
+      <!-- The screenshot preview when it's shown below the timeline, and the day's applications otherwise. -->
+      <Panel Grid.Row="3">
+        <Border IsVisible="{Binding Preview.IsBelowTimeline}" Padding="0,4,0,0">
+          <views:ScreenshotPreviewView DataContext="{Binding Preview}" AutomationProperties.AutomationId="PreviewBelowTimeline" />
+        </Border>
+        <DockPanel IsVisible="{Binding !Preview.IsBelowTimeline}" Margin="0,8,0,0">
+          <TextBlock DockPanel.Dock="Top"
+                     Classes="h3"
+                     Text="Applications on this day"
+                     Margin="0,0,0,6"
+                     IsVisible="{Binding HasDayApplications}" />
+          <ScrollViewer>
+            <!-- The list is left-aligned and at most 520 pixels wide, so rows stay readable on wide screens. -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MaxWidth="520" />
+              </Grid.ColumnDefinitions>
+              <ItemsControl ItemsSource="{Binding DayApplications}" AutomationProperties.AutomationId="DayApplications">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="timeline:ApplicationTotalViewModel">
+                    <views:ApplicationTotalRow />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Grid>
+          </ScrollViewer>
+        </DockPanel>
+      </Panel>
+    </Grid>
+
+    <Border Grid.Column="1"
+            ClipToBounds="True"
+            AutomationProperties.AutomationId="DetailsPanel">
+      <views:SelectionDetailsView DataContext="{Binding Details}" />
+    </Border>
 
     <!-- The popup preview sits below the timeline and follows the pointer from side to side. -->
     <Popup x:Name="PreviewPopup"

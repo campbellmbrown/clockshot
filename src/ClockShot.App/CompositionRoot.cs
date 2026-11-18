@@ -70,6 +70,7 @@ internal static class CompositionRoot
         services.AddSingleton<TrackingStatusViewModel>();
         services.AddSingleton<TimelineViewModel>();
         services.AddTransient<ScreenshotPreviewViewModel>();
+        services.AddTransient<SelectionDetailsViewModel>();
         services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<SettingsViewModel>();
 

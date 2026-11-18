@@ -1,3 +1,4 @@
+using ClockShot.Core.Models;
 using ClockShot.Core.Timeline;
 
 namespace ClockShot.Core.Tests.Timeline;
@@ -15,6 +16,19 @@ public sealed class LocalTimeTests
 
         // Assert
         Assert.Equal("14:30", text);
+    }
+
+    [Fact]
+    public void FormatRangeJoinsTheLocalStartAndEndWithADash()
+    {
+        // Arrange
+        var range = new TimeRange(NineAmUtc, NineAmUtc.AddMinutes(75));
+
+        // Act
+        var text = LocalTime.FormatRange(range, Zone);
+
+        // Assert
+        Assert.Equal("14:30 - 15:45", text);
     }
 
     [Fact]
