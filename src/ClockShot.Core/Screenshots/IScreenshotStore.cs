@@ -15,6 +15,11 @@ public interface IScreenshotStore
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// The file on disk for a screenshot's stored <see cref="Screenshot.ImagePath"/>.
+    /// </summary>
+    string FullPath(string imagePath);
+
+    /// <summary>
     /// Deletes screenshots taken before <paramref name="cutoffUtc"/>.
     /// It also deletes temporary files a crash left behind before then, and the folders left empty.
     /// </summary>

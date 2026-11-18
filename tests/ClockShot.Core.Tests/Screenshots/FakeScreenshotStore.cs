@@ -46,5 +46,7 @@ internal sealed class FakeScreenshotStore : IScreenshotStore
         return 0;
     }
 
+    public string FullPath(string imagePath) => throw new NotSupportedException();
+
     public Task<StorageUse> GetStorageUseAsync() => throw new NotSupportedException();
 }
