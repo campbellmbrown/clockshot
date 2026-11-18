@@ -9,6 +9,7 @@ public interface IActivityHistory
 {
     /// <summary>
     /// The segments that overlap <paramref name="range"/>, sorted by start.
+    /// Also the screenshots taken in <paramref name="range"/>, sorted by time.
     /// </summary>
     Task<ActivityRecords> LoadAsync(TimeRange range, CancellationToken cancellationToken = default);
 

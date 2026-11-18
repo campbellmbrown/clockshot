@@ -8,7 +8,8 @@ namespace ClockShot.Core.Timeline;
 public sealed record ActivityRecords(
     IReadOnlyList<ActivitySegment> Activities,
     IReadOnlyList<ComputerStateSegment> States,
-    IReadOnlyDictionary<long, TrackedApplication> Applications)
+    IReadOnlyDictionary<long, TrackedApplication> Applications,
+    IReadOnlyList<Screenshot> Screenshots)
 {
-    public static ActivityRecords Empty { get; } = new([], [], new Dictionary<long, TrackedApplication>());
+    public static ActivityRecords Empty { get; } = new([], [], new Dictionary<long, TrackedApplication>(), []);
 }

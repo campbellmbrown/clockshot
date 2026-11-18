@@ -7,6 +7,10 @@ namespace ClockShot.Data.Tests;
 
 public sealed class ActivityHistoryTests
 {
+    // The history only reads the screenshot table, so the size has no effect.
+    private const int ScreenshotWidth = 10;
+    private const int ScreenshotHeight = 10;
+
     private static readonly DateTime Nine = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
     private static readonly ForegroundWindow Editor = new(
         Handle: 1,
@@ -16,7 +20,7 @@ public sealed class ActivityHistoryTests
         Title: "notes.txt");
 
     [Fact]
-    public async Task LoadsSegmentsAndApplicationsInRange()
+    public async Task LoadsSegmentsApplicationsAndScreenshotsInRange()
     {
         // Arrange
         using var data = new MemoryDatabase();
@@ -31,6 +35,9 @@ public sealed class ActivityHistoryTests
                 TrackingTables.SetStateEnd(connection, stateId, Nine.AddMinutes(1), transaction);
                 await transaction.CommitAsync(TestContext.Current.CancellationToken);
             }
+
+            ScreenshotTable.Insert(connection, Nine.AddSeconds(30), "inside.webp", ScreenshotWidth, ScreenshotHeight);
+            ScreenshotTable.Insert(connection, Nine.AddHours(5), "outside.webp", ScreenshotWidth, ScreenshotHeight);
         }
 
         // Act
@@ -41,5 +48,6 @@ public sealed class ActivityHistoryTests
         Assert.Equal(new TimeRange(Nine, Nine.AddMinutes(1)), Assert.Single(records.Activities).Range);
         Assert.Equal(ComputerState.Active, Assert.Single(records.States).State);
         Assert.Equal("Editor", Assert.Single(records.Applications).Value.DisplayName);
+        Assert.Equal(Nine.AddSeconds(30), Assert.Single(records.Screenshots).TakenUtc);
     }
 }

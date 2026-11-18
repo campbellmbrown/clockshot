@@ -5,7 +5,7 @@ using ClockShot.Data.Sqlite;
 namespace ClockShot.Data.Tracking;
 
 /// <summary>
-/// Reads recorded activity and computer state for the timeline.
+/// Reads recorded activity, computer state and screenshots for the timeline.
 /// </summary>
 public sealed class ActivityHistory(SqliteDatabase database) : IActivityHistory
 {
@@ -17,7 +17,8 @@ public sealed class ActivityHistory(SqliteDatabase database) : IActivityHistory
             return new ActivityRecords(
                 TrackingTables.GetActivities(connection, range),
                 TrackingTables.GetStates(connection, range),
-                TrackingTables.GetApplications(connection).ToDictionary(a => a.Id));
+                TrackingTables.GetApplications(connection).ToDictionary(a => a.Id),
+                ScreenshotTable.GetTakenIn(connection, range));
         }, cancellationToken);
 
     public Task<IReadOnlyList<TrackedApplication>> GetApplicationsAsync() =>

@@ -65,7 +65,8 @@ public sealed class OpenBlocksTests
                 State(new TimeRange(At(10), At(10, 20)), ComputerState.Locked),
                 State(new TimeRange(At(10, 20), At(10, 30)), ComputerState.Active),
             ],
-            new Dictionary<long, TrackedApplication>());
+            new Dictionary<long, TrackedApplication>(),
+            []);
 
         // Act
         var result = OpenBlocks.UpTo(records, nowUtc: At(10, 40), SavedWithin);
@@ -107,7 +108,8 @@ public sealed class OpenBlocksTests
     private static ActivityRecords Records(ComputerState state, DateTime end) => new(
         [Activity(new TimeRange(Start, end))],
         [State(new TimeRange(Start, end), state)],
-        new Dictionary<long, TrackedApplication>());
+        new Dictionary<long, TrackedApplication>(),
+        []);
 
     private static ActivitySegment Activity(TimeRange range) =>
         new(AnyId, range, ApplicationId: AnyId, WindowTitle: "notes.txt");
