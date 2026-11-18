@@ -152,6 +152,12 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     [NotifyCanExecuteChangedFor(nameof(FitWorkingDayCommand))]
     public partial TimeRange? WorkingDay { get; private set; }
 
+    /// <summary>
+    /// The time under the pointer, or null when it isn't over the timeline.
+    /// </summary>
+    [ObservableProperty]
+    public partial DateTime? HoverTimeUtc { get; private set; }
+
     private bool IsToday => Day == Today();
 
     /// <summary>
@@ -183,6 +189,22 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         }
     }
 
+    /// <summary>
+    /// The pointer moved over the timeline.
+    /// </summary>
+    public void HoverAt(DateTime time)
+    {
+        HoverTimeUtc = time;
+    }
+
+    /// <summary>
+    /// The pointer left the timeline.
+    /// </summary>
+    public void EndHover()
+    {
+        HoverTimeUtc = null;
+    }
+
     public void Dispose()
     {
         _timer.Dispose();
@@ -194,6 +216,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     // The toolkit calls these when a property the control draws has changed.
     partial void OnLanesChanged(IReadOnlyList<TimelineLane> value) => RedrawNeeded?.Invoke();
+
+    partial void OnHoverTimeUtcChanged(DateTime? value) => RedrawNeeded?.Invoke();
 
     partial void OnNowUtcChanged(DateTime value) => RedrawNeeded?.Invoke();
 

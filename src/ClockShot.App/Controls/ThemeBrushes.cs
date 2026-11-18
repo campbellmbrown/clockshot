@@ -36,6 +36,7 @@ public static class ThemeBrushes
     public static IBrush Text => Get("TimelineText");
     public static IBrush SecondaryText => Get("TimelineSecondaryText");
     public static IBrush NowLine => Get("TimelineNowLine");
+    public static IBrush HoverLine => Get("TimelineHoverLine");
     public static IBrush StateActive => Get("StateActive");
     public static IBrush StateAway => Get("StateAway");
     public static IBrush StateLocked => Get("StateLocked");

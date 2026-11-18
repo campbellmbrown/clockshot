@@ -15,7 +15,7 @@ namespace ClockShot.App.Controls;
 
 /// <summary>
 /// Draws the timeline and turns pointer input into calls on <see cref="TimelineViewModel"/>, which owns the behaviour.
-/// It draws the ruler, the lanes and the now line.
+/// It draws the ruler, the lanes, the hover line and the now line.
 /// Any number of lanes is drawn the same way.
 /// </summary>
 /// <remarks>
@@ -55,18 +55,23 @@ public sealed class TimelineControl : Control
     private const double MajorTickHeight = 10;
     private const double MinorTickHeight = 4;
 
-    // How far ruler labels sit from their tick and from the top of the ruler.
+    // How far ruler labels sit from their tick, and how far they and the badges sit from the top of the ruler.
     private const double RulerLabelInset = 4;
 
     // How far a block's label sits inside the block's edges.
     private const double BlockLabelInset = 5;
 
-    // The now line is thicker than the grid lines, so it stands out.
+    // The now line is thicker than the grid and hover lines, so it stands out.
     private const double EmphasisPenThickness = 1.5;
 
     // The now marker is a small triangle on top of the now line.
     private const double NowMarkerHalfWidth = 5;
     private const double NowMarkerHeight = 7;
+
+    // Badges are the small labels on the ruler for the hover time.
+    private const double BadgeHorizontalPadding = 4;
+    private const double BadgeVerticalPadding = 1;
+    private const double BadgeCornerRadius = 3;
 
     // A block narrower than a pixel is still drawn one pixel wide, so it doesn't vanish.
     private const double MinDrawnWidth = 1;
@@ -126,6 +131,11 @@ public sealed class TimelineControl : Control
 
     private double AreaWidth => Math.Max(MinAreaWidth, Bounds.Width - AreaLeft);
 
+    /// <summary>
+    /// The part of the control right of the lane titles, where times are drawn.
+    /// </summary>
+    private Rect DrawingArea => new(AreaLeft, 0, AreaWidth, Bounds.Height);
+
     private int LaneCount => Math.Max(1, Timeline?.Lanes.Count ?? 0);
 
     private Pens ThemePens => _pens ??= Pens.ForCurrentTheme();
@@ -141,7 +151,7 @@ public sealed class TimelineControl : Control
         var viewport = timeline.Zoom.Viewport;
 
         DrawLaneBackgrounds(context, timeline);
-        using (context.PushClip(new Rect(AreaLeft, 0, AreaWidth, Bounds.Height)))
+        using (context.PushClip(DrawingArea))
         {
             DrawRuler(context, viewport, timeline.TimeZone);
             for (var i = 0; i < timeline.Lanes.Count; i++)
@@ -150,6 +160,7 @@ public sealed class TimelineControl : Control
             }
 
             DrawNowLine(context, viewport, timeline.NowUtc);
+            DrawHoverLine(context, viewport, timeline);
         }
     }
 
@@ -216,14 +227,20 @@ public sealed class TimelineControl : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        if (Timeline is not { } timeline || _gesture != Gesture.Pan)
+        if (Timeline is not { } timeline)
         {
             return;
         }
 
         var point = e.GetPosition(this);
-        timeline.Zoom.PanBy(_pressPoint.X - point.X);
-        _pressPoint = point;
+
+        if (_gesture == Gesture.Pan)
+        {
+            timeline.Zoom.PanBy(_pressPoint.X - point.X);
+            _pressPoint = point;
+        }
+
+        UpdateHover(timeline, point);
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -237,6 +254,12 @@ public sealed class TimelineControl : Control
     {
         base.OnPointerCaptureLost(e);
         _gesture = Gesture.None;
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        Timeline?.EndHover();
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -262,6 +285,9 @@ public sealed class TimelineControl : Control
         {
             timeline.Zoom.ZoomAt(point.X - AreaLeft, e.Delta.Y);
         }
+
+        // The time under the pointer just changed, so the hover line follows it straight away.
+        UpdateHover(timeline, point);
     }
 
     /// <summary>
@@ -284,6 +310,9 @@ public sealed class TimelineControl : Control
     /// </summary>
     private static double LineX(TimelineViewport viewport, DateTime time) =>
         Math.Round(AreaLeft + viewport.XOf(time)) + 0.5;
+
+    private static DateTime TimeAt(TimelineViewModel timeline, Point point) =>
+        timeline.Zoom.Viewport.TimeAt(point.X - AreaLeft);
 
     /// <summary>
     /// Tells the view model how wide the drawing area is, once the control has been laid out.
@@ -404,6 +433,50 @@ public sealed class TimelineControl : Control
         }
     }
 
+    private void DrawHoverLine(DrawingContext context, TimelineViewport viewport, TimelineViewModel timeline)
+    {
+        if (timeline.HoverTimeUtc is not { } hover || !viewport.Visible.Contains(hover))
+        {
+            return;
+        }
+
+        var x = LineX(viewport, hover);
+        context.DrawLine(ThemePens.Hover, new Point(x, RulerHeight), new Point(x, Bounds.Height));
+
+        var label = Text(LocalTime.Format(hover, timeline.TimeZone), RulerTextSize, ThemeBrushes.Text);
+        var box = Badge(x, label, BadgeHorizontalPadding);
+        context.DrawRectangle(ThemeBrushes.RulerBackground, ThemePens.Hover, box, BadgeCornerRadius, BadgeCornerRadius);
+        context.DrawText(label, new Point(box.X + BadgeHorizontalPadding, box.Y + BadgeVerticalPadding));
+    }
+
+    /// <summary>
+    /// The box around a badge's label, centred on <paramref name="x"/> but kept inside the drawing area.
+    /// </summary>
+    private Rect Badge(double x, FormattedText label, double horizontalPadding)
+    {
+        var width = label.Width + horizontalPadding * 2;
+
+        // Not Math.Clamp, which throws when the area is narrower than the badge, as it is before the first layout.
+        var left = Math.Max(AreaLeft, Math.Min(x - width / 2, AreaLeft + AreaWidth - width));
+        return new Rect(left, RulerLabelInset, width, label.Height + BadgeVerticalPadding * 2);
+    }
+
+    /// <summary>
+    /// Shows the hover line at the pointer, or hides it when the pointer isn't over the drawing area.
+    /// A drag captures the pointer, so its moves can come from outside the control.
+    /// </summary>
+    private void UpdateHover(TimelineViewModel timeline, Point point)
+    {
+        if (DrawingArea.Contains(point))
+        {
+            timeline.HoverAt(TimeAt(timeline, point));
+        }
+        else
+        {
+            timeline.EndHover();
+        }
+    }
+
     private double LaneTop(int index) => RulerHeight + index * LaneHeight;
 
     /// <summary>
@@ -454,12 +527,14 @@ public sealed class TimelineControl : Control
     private sealed record Pens(
         IPen Grid,
         IPen Tick,
-        IPen Now)
+        IPen Now,
+        IPen Hover)
     {
         public static Pens ForCurrentTheme() => new(
             Make(ThemeBrushes.GridLine),
             Make(ThemeBrushes.Tick),
-            Make(ThemeBrushes.NowLine, EmphasisPenThickness));
+            Make(ThemeBrushes.NowLine, EmphasisPenThickness),
+            Make(ThemeBrushes.HoverLine));
 
         private static ImmutablePen Make(IBrush brush, double thickness = 1, IDashStyle? dash = null) =>
             new Pen(brush, thickness, dash).ToImmutable();
