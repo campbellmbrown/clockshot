@@ -41,16 +41,43 @@ public sealed class TimelineZoomTests
     }
 
     [Fact]
-    public void FitShowsTheWholeRange()
+    public void ShowingARangeZoomsToIt()
     {
         // Arrange
-        var workingHours = new TimeRange(Midnight.AddHours(9), Midnight.AddHours(17));
+        var morning = new TimeRange(Midnight.AddHours(8), Midnight.AddHours(12));
 
         // Act
-        _zoom.Fit(workingHours);
+        _zoom.Show(morning);
 
         // Assert
-        Assert.Equal(workingHours, _zoom.Viewport.Visible);
+        Assert.Equal(morning, _zoom.Viewport.Visible);
+    }
+
+    [Fact]
+    public void ShowingARangeStillScrollsThroughTheWholeDay()
+    {
+        // Arrange
+        _zoom.Show(new TimeRange(Midnight.AddHours(8), Midnight.AddHours(12)));
+
+        // Act
+        // Further left than the day goes, so the view stops at the day's start.
+        _zoom.PanBy(pixels: -100_000);
+
+        // Assert
+        Assert.Equal(Day.Start, _zoom.Viewport.VisibleStart);
+    }
+
+    [Fact]
+    public void FitShowsTheWholeDay()
+    {
+        // Arrange
+        _zoom.ZoomAt(x: 500, steps: 2);
+
+        // Act
+        _zoom.Fit(Day);
+
+        // Assert
+        Assert.Equal(Day, _zoom.Viewport.Visible);
     }
 
     [Fact]

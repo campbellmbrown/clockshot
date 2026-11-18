@@ -68,6 +68,12 @@
                   CommandParameter="{Binding Timeline.ZoomOutCommand}"
                   AutomationProperties.AutomationId="ZoomOutMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.ZoomOut}" />
+        <MenuItem Header="Fit to the wor_king day"
+                  InputGesture="{x:Static input:Shortcuts.FitWorkingDay}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.FitWorkingDayCommand}"
+                  AutomationProperties.AutomationId="FitWorkingDayMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.FitWorkingDay}" />
         <MenuItem Header="Show the _whole day"
                   InputGesture="{x:Static input:Shortcuts.ShowWholeDay}"
                   Command="{Binding OnTimeline}"

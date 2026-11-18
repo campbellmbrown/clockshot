@@ -92,6 +92,13 @@ public readonly record struct TimelineViewport
         new(Bounds, timeUtc.AddSeconds(-Width * SecondsPerPixel / 2), SecondsPerPixel, Width);
 
     /// <summary>
+    /// Shows <paramref name="range"/>.
+    /// A range shorter than <see cref="MinVisibleDuration"/> is shown from its start.
+    /// </summary>
+    public TimelineViewport ShowRange(TimeRange range) =>
+        new(Bounds, range.Start, range.Duration.TotalSeconds / Width, Width);
+
+    /// <summary>
     /// The viewport after the drawing area is resized.
     /// It keeps the start time and zoom, and a viewport showing the whole day stays that way.
     /// </summary>

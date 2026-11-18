@@ -27,6 +27,7 @@ public static class Shortcuts
     public static KeyGesture Today { get; } = KeyGesture.Parse("Ctrl+T");
     public static KeyGesture ZoomIn { get; } = KeyGesture.Parse("Ctrl+OemPlus");
     public static KeyGesture ZoomOut { get; } = KeyGesture.Parse("Ctrl+OemMinus");
+    public static KeyGesture FitWorkingDay { get; } = KeyGesture.Parse("Ctrl+D9");
     public static KeyGesture ShowWholeDay { get; } = KeyGesture.Parse("Ctrl+D0");
 
     // TimelineControl reads these mouse modifiers.
@@ -48,6 +49,7 @@ public static class Shortcuts
         Key("Timeline", Today, "Today, scrolled to now"),
         Key("Timeline", ZoomIn, "Zoom in"),
         Key("Timeline", ZoomOut, "Zoom out"),
+        Key("Timeline", FitWorkingDay, "Fit to the working day"),
         Key("Timeline", ShowWholeDay, "Show the whole day"),
         MouseWithModifier("Timeline", ScrollModifier, "+wheel", "Scroll"),
         MouseOnly("Timeline", "Mouse wheel", "Zoom around the pointer"),

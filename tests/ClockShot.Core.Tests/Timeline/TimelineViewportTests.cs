@@ -135,6 +135,33 @@ public sealed class TimelineViewportTests
     }
 
     [Fact]
+    public void ShowRangeShowsExactlyThatRange()
+    {
+        // Arrange
+        var range = new TimeRange(Midnight.AddHours(9), Midnight.AddHours(11));
+
+        // Act
+        var shown = Fitted().ShowRange(range);
+
+        // Assert
+        Assert.Equal(range, shown.Visible);
+    }
+
+    [Fact]
+    public void ShowRangeShorterThanTheZoomLimitIsShownFromItsStart()
+    {
+        // Arrange
+        var range = new TimeRange(Midnight.AddHours(9), Midnight.AddHours(9).AddSeconds(30));
+
+        // Act
+        var shown = Fitted().ShowRange(range);
+
+        // Assert
+        Assert.Equal(range.Start, shown.VisibleStart);
+        Assert.Equal(TimelineViewport.MinVisibleDuration.TotalSeconds, shown.Visible.Duration.TotalSeconds, precision: 3);
+    }
+
+    [Fact]
     public void ResizingFittedViewStaysFitted()
     {
         // Act

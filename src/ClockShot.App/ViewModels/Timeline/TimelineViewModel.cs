@@ -149,6 +149,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// From the first to the last active time of the day, or null if the computer was never active.
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(FitWorkingDayCommand))]
     public partial TimeRange? WorkingDay { get; private set; }
 
     private bool IsToday => Day == Today();
@@ -272,6 +273,20 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     [RelayCommand]
     private void FitDay() => Zoom.Fit(DayRange);
+
+    /// <summary>
+    /// Zooms to the working day, with a margin either side.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasWorkingDay))]
+    private void FitWorkingDay()
+    {
+        if (WorkingDay is { } working)
+        {
+            Zoom.Show(WorkingDayMargin.Around(working, DayRange));
+        }
+    }
+
+    private bool HasWorkingDay() => WorkingDay is not null;
 
     /// <summary>
     /// Keyboard zoom keeps the now line in place when it's visible, and the middle of the view otherwise.

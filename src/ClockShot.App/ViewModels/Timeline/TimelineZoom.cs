@@ -38,9 +38,15 @@ public sealed partial class TimelineZoom : ViewModelBase
     public void PanBy(double pixels) => Viewport = Viewport.PanBy(pixels);
 
     /// <summary>
-    /// Shows the whole range, keeping the current width.
+    /// Shows the whole day, which also becomes the limit for scrolling and zooming out.
     /// </summary>
-    public void Fit(TimeRange range) => Viewport = TimelineViewport.Fit(range, Viewport.Width);
+    public void Fit(TimeRange day) => Viewport = TimelineViewport.Fit(day, Viewport.Width);
+
+    /// <summary>
+    /// Shows part of the day.
+    /// The day stays the limit for scrolling and zooming out.
+    /// </summary>
+    public void Show(TimeRange range) => Viewport = Viewport.ShowRange(range);
 
     public void CenterOn(DateTime timeUtc) => Viewport = Viewport.CenterOn(timeUtc);
 

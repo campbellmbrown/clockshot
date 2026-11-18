@@ -51,6 +51,12 @@
       <StackPanel Orientation="Horizontal"
                   Spacing="6"
                   Margin="0,0,0,6">
+        <Button Command="{Binding FitWorkingDayCommand}"
+                ToolTip.Tip="{input:WithKeys 'Fit to the working day, from day start to day end ({0})',
+                                             {x:Static input:Shortcuts.FitWorkingDay}}"
+                AutomationProperties.AutomationId="FitWorkingDayButton">
+          <controls:Icon Kind="{x:Static controls:Icons.FitWorkingDay}" />
+        </Button>
         <Button Command="{Binding FitDayCommand}"
                 ToolTip.Tip="{input:WithKeys 'Show the whole day ({0})',
                                              {x:Static input:Shortcuts.ShowWholeDay}}"
