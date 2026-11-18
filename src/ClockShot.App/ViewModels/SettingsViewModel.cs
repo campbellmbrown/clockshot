@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
+using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Timeline;
@@ -135,6 +136,14 @@ public sealed partial class SettingsViewModel : PageViewModel
     {
         get => Current.Screenshots.KeepForDays;
         set => UpdateNumber(value, (s, v) => s with { Screenshots = s.Screenshots with { KeepForDays = v } });
+    }
+
+    public IReadOnlyList<PreviewModeChoice> PreviewModes { get; } = PreviewModeChoice.All;
+
+    public PreviewModeChoice PreviewMode
+    {
+        get => PreviewModeChoice.For(Current.Screenshots.PreviewMode);
+        set => Update(s => s with { Screenshots = s.Screenshots with { PreviewMode = value.Mode } });
     }
 
     /// <summary>

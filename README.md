@@ -21,7 +21,8 @@ Selecting and tagging time on the timeline is still being built.
   A screenshot copies the part of the screen where the window is.
   It also shows any window on top, even one from an excluded app.
 - It keeps screenshots for 30 days, then deletes them.
-- On the Timeline tab, hovering over a time shows the screenshot from then beside the pointer.
+- On the Timeline tab, hovering over a time shows the screenshot from then.
+  It appears beside the pointer, below the timeline or in a separate window, and Ctrl+P switches between them.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
 - A day starts at midnight.

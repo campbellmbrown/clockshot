@@ -36,4 +36,11 @@ public static class Icons
     public const string ZoomOut = "zoom-out";
     public const string FitWorkingDay = "fold-horizontal";
     public const string ShowWholeDay = "maximize-2";
+
+    // ---- Screenshot preview ----
+    public const string ScreenshotPreview = "image";
+    public const string SwitchPreview = "chevron-right";
+    public const string PreviewBesidePointer = "picture-in-picture-2";
+    public const string PreviewBelowTimeline = "panel-bottom";
+    public const string PreviewInWindow = "app-window";
 }

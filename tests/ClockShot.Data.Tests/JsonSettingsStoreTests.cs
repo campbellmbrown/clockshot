@@ -59,6 +59,24 @@ public sealed class JsonSettingsStoreTests
     }
 
     [Fact]
+    public void ThePreviewModeIsSavedByItsName()
+    {
+        // Arrange
+        var store = CreateStore();
+        var changed = store.Current with
+        {
+            Screenshots = store.Current.Screenshots with { PreviewMode = ScreenshotPreviewMode.BelowTimeline },
+        };
+
+        // Act
+        store.Save(changed);
+
+        // Assert
+        Assert.Contains("\"PreviewMode\": \"BelowTimeline\"", _fileSystem.File.ReadAllText(SettingsPath));
+        Assert.Equal(ScreenshotPreviewMode.BelowTimeline, CreateStore().Current.Screenshots.PreviewMode);
+    }
+
+    [Fact]
     public void ValuesMissingFromFileGetDefaults()
     {
         // Arrange

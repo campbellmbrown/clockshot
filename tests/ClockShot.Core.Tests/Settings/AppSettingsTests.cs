@@ -105,4 +105,20 @@ public sealed class AppSettingsTests
         Assert.Equal(SettingLimits.ScreenshotQuality.Min, normalized.Screenshots.Quality);
         Assert.Equal(SettingLimits.KeepScreenshotsForDays.Min, normalized.Screenshots.KeepForDays);
     }
+
+    [Fact]
+    public void NormalizedReplacesUnknownChoicesWithDefaults()
+    {
+        // Arrange
+        var settings = new AppSettings
+        {
+            Screenshots = new ScreenshotSettings { PreviewMode = (ScreenshotPreviewMode)99 },
+        };
+
+        // Act
+        var normalized = settings.Normalized();
+
+        // Assert
+        Assert.Equal(new ScreenshotSettings().PreviewMode, normalized.Screenshots.PreviewMode);
+    }
 }

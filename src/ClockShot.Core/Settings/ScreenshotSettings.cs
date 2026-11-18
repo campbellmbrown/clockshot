@@ -40,4 +40,9 @@ public sealed record ScreenshotSettings
     /// A name matches with or without its extension.
     /// </summary>
     public IReadOnlyList<string> ExcludedProcessNames { get; init; } = [];
+
+    /// <summary>
+    /// Where the screenshot appears when hovering the timeline.
+    /// </summary>
+    public ScreenshotPreviewMode PreviewMode { get; init; } = ScreenshotPreviewMode.PopupByCursor;
 }

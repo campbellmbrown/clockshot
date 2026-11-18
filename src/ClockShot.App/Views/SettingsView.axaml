@@ -3,6 +3,7 @@
              xmlns:vm="using:ClockShot.App.ViewModels"
              xmlns:core="using:ClockShot.Core"
              xmlns:settings="using:ClockShot.Core.Settings"
+             xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
              xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -167,6 +168,21 @@
                          Minimum="{Binding Min, Source={x:Static settings:SettingLimits.KeepScreenshotsForDays}}"
                          Maximum="{Binding Max, Source={x:Static settings:SettingLimits.KeepScreenshotsForDays}}"
                          AutomationProperties.AutomationId="SettingKeepDays" />
+        </Grid>
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="Where the screenshot appears when you hover over the timeline.">
+          <TextBlock Text="Preview" />
+          <ComboBox Grid.Column="1"
+                    ItemsSource="{Binding PreviewModes}"
+                    SelectedItem="{Binding PreviewMode}"
+                    Width="220">
+            <ComboBox.ItemTemplate>
+              <DataTemplate DataType="timeline:PreviewModeChoice">
+                <TextBlock Text="{Binding Label}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
         </Grid>
         <Grid Classes="setting"
               ColumnDefinitions="280,*"

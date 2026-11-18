@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using ClockShot.Core.Settings;
 
@@ -18,6 +19,7 @@ public sealed class JsonSettingsStore : ISettingsStore
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() },
     };
 
     private readonly IFileSystem _fileSystem;

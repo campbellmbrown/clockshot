@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+        xmlns:views="using:ClockShot.App.Views.Timeline"
+        xmlns:controls="using:ClockShot.App.Controls"
+        xmlns:core="using:ClockShot.Core"
+        x:Class="ClockShot.App.Views.Timeline.ScreenshotPreviewWindow"
+        x:DataType="timeline:ScreenshotPreviewViewModel"
+        Title="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='{}{0} - screenshot preview'}"
+        Icon="{x:Static controls:AppIcon.Normal}"
+        Width="960"
+        Height="640"
+        MinWidth="320"
+        MinHeight="240"
+        ShowInTaskbar="False">
+  <!-- This window is the separate window preview mode. It follows the hover and keeps the last screenshot shown. -->
+  <views:ScreenshotPreviewView Margin="12" />
+</Window>

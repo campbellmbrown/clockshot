@@ -42,6 +42,7 @@ public sealed record AppSettings
                 Quality = SettingLimits.ScreenshotQuality.Clamp(screenshots.Quality),
                 KeepForDays = SettingLimits.KeepScreenshotsForDays.Clamp(screenshots.KeepForDays),
                 ExcludedProcessNames = Cleaned(screenshots.ExcludedProcessNames),
+                PreviewMode = Enum.IsDefined(screenshots.PreviewMode) ? screenshots.PreviewMode : new ScreenshotSettings().PreviewMode,
             },
         };
     }

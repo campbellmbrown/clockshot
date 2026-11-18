@@ -4,6 +4,8 @@
         xmlns:controls="using:ClockShot.App.Controls"
         xmlns:input="using:ClockShot.App.Input"
         xmlns:core="using:ClockShot.Core"
+        xmlns:settings="using:ClockShot.Core.Settings"
+        xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
         x:Class="ClockShot.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static core:AppInfo.Name}"
@@ -80,6 +82,61 @@
                   CommandParameter="{Binding Timeline.FitDayCommand}"
                   AutomationProperties.AutomationId="ShowWholeDayMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.ShowWholeDay}" />
+        <Separator />
+        <MenuItem Header="Screenshot _preview"
+                  AutomationProperties.AutomationId="PreviewModeMenu"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.ScreenshotPreview}">
+          <!--
+            Radio items show a dot when chosen, so the icon goes before the text instead of in the icon column.
+            Labels and icons come from PreviewModeChoice, shared with Settings and the toolbar.
+          -->
+          <MenuItem ToggleType="Radio"
+                    GroupName="PreviewMode"
+                    IsChecked="{Binding Timeline.Preview.IsPopup, Mode=OneWay}"
+                    Command="{Binding Timeline.Preview.SetModeCommand}"
+                    CommandParameter="{x:Static settings:ScreenshotPreviewMode.PopupByCursor}"
+                    AutomationProperties.AutomationId="PreviewPopupMenuItem">
+            <MenuItem.Header>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <controls:Icon Kind="{Binding Icon, Source={x:Static timeline:PreviewModeChoice.BesidePointer}}" />
+                <TextBlock Text="{Binding Label, Source={x:Static timeline:PreviewModeChoice.BesidePointer}}" />
+              </StackPanel>
+            </MenuItem.Header>
+          </MenuItem>
+          <MenuItem ToggleType="Radio"
+                    GroupName="PreviewMode"
+                    IsChecked="{Binding Timeline.Preview.IsBelowTimeline, Mode=OneWay}"
+                    Command="{Binding Timeline.Preview.SetModeCommand}"
+                    CommandParameter="{x:Static settings:ScreenshotPreviewMode.BelowTimeline}"
+                    AutomationProperties.AutomationId="PreviewBelowMenuItem">
+            <MenuItem.Header>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <controls:Icon Kind="{Binding Icon, Source={x:Static timeline:PreviewModeChoice.BelowTimeline}}" />
+                <TextBlock Text="{Binding Label, Source={x:Static timeline:PreviewModeChoice.BelowTimeline}}" />
+              </StackPanel>
+            </MenuItem.Header>
+          </MenuItem>
+          <MenuItem ToggleType="Radio"
+                    GroupName="PreviewMode"
+                    IsChecked="{Binding Timeline.Preview.IsInWindow, Mode=OneWay}"
+                    Command="{Binding Timeline.Preview.SetModeCommand}"
+                    CommandParameter="{x:Static settings:ScreenshotPreviewMode.SeparateWindow}"
+                    AutomationProperties.AutomationId="PreviewWindowMenuItem">
+            <MenuItem.Header>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <controls:Icon Kind="{Binding Icon, Source={x:Static timeline:PreviewModeChoice.InWindow}}" />
+                <TextBlock Text="{Binding Label, Source={x:Static timeline:PreviewModeChoice.InWindow}}" />
+              </StackPanel>
+            </MenuItem.Header>
+          </MenuItem>
+          <Separator />
+          <MenuItem Header="_Switch to the next one"
+                    InputGesture="{x:Static input:Shortcuts.SwitchPreview}"
+                    Command="{Binding OnTimeline}"
+                    CommandParameter="{Binding Timeline.Preview.CycleModeCommand}"
+                    AutomationProperties.AutomationId="SwitchPreviewMenuItem"
+                    controls:MenuIcon.Kind="{x:Static controls:Icons.SwitchPreview}" />
+        </MenuItem>
       </MenuItem>
       <MenuItem Header="_Tracking" AutomationProperties.AutomationId="TrackingMenu">
         <MenuItem Header="{Binding Tracking.PauseCommandText}"

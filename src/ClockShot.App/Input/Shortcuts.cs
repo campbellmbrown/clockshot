@@ -33,6 +33,9 @@ public static class Shortcuts
     // TimelineControl reads these mouse modifiers.
     public static KeyModifiers ScrollModifier { get; } = KeyModifiers.Shift;
 
+    // ---- Screenshots ----
+    public static KeyGesture SwitchPreview { get; } = KeyGesture.Parse("Ctrl+P");
+
     // ---- Other ----
     public static KeyGesture CloseWindow { get; } = KeyGesture.Parse("Alt+F4");
 
@@ -54,6 +57,8 @@ public static class Shortcuts
         MouseWithModifier("Timeline", ScrollModifier, "+wheel", "Scroll"),
         MouseOnly("Timeline", "Mouse wheel", "Zoom around the pointer"),
         MouseOnly("Timeline", "Drag the ruler", "Scroll"),
+
+        Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
 
         Key(
             "Other",

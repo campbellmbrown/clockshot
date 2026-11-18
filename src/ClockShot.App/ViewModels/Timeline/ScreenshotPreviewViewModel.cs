@@ -2,22 +2,30 @@ using Avalonia.Media.Imaging;
 
 using ClockShot.App.Services;
 using ClockShot.Core.Models;
+using ClockShot.Core.Settings;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ClockShot.App.ViewModels.Timeline;
 
 /// <summary>
-/// The screenshot shown while hovering the timeline.
+/// The screenshot shown while hovering the timeline, and where it's shown.
+/// The same view model feeds all three places the preview can be shown.
 /// </summary>
 public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposable
 {
     private readonly ScreenshotImageLoader _images;
+    private readonly ISettingsStore _settings;
     private CancellationTokenSource? _loading;
 
-    public ScreenshotPreviewViewModel(ScreenshotImageLoader images)
+    public ScreenshotPreviewViewModel(ScreenshotImageLoader images, ISettingsStore settings)
     {
         _images = images;
+        _settings = settings;
+
+        // The mode can also change on the Settings tab.
+        _settings.Changed += OnSettingsChanged;
     }
 
     /// <summary>
@@ -53,6 +61,51 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
     /// </summary>
     [ObservableProperty]
     public partial bool IsHovering { get; set; }
+
+    // ---- Where the preview is shown ----
+
+    public ScreenshotPreviewMode Mode
+    {
+        get => _settings.Current.Screenshots.PreviewMode;
+        set
+        {
+            if (value == Mode)
+            {
+                return;
+            }
+
+            var current = _settings.Current;
+            _settings.Save(current with { Screenshots = current.Screenshots with { PreviewMode = value } });
+            NotifyModeChanged();
+        }
+    }
+
+    /// <summary>
+    /// The modes offered in the timeline toolbar's dropdown.
+    /// </summary>
+    public IReadOnlyList<PreviewModeChoice> Choices { get; } = PreviewModeChoice.All;
+
+    /// <summary>
+    /// The current mode, as chosen in the timeline toolbar's dropdown.
+    /// </summary>
+    public PreviewModeChoice Choice
+    {
+        get => PreviewModeChoice.For(Mode);
+        set
+        {
+            // A dropdown can briefly pass null while it rebuilds.
+            if (value is not null)
+            {
+                Mode = value.Mode;
+            }
+        }
+    }
+
+    public bool IsPopup => Mode == ScreenshotPreviewMode.PopupByCursor;
+
+    public bool IsBelowTimeline => Mode == ScreenshotPreviewMode.BelowTimeline;
+
+    public bool IsInWindow => Mode == ScreenshotPreviewMode.SeparateWindow;
 
     /// <summary>
     /// Shows a screenshot, loading it in the background.
@@ -97,8 +150,29 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
 
     public void Dispose()
     {
+        _settings.Changed -= OnSettingsChanged;
         _loading?.Cancel();
         _loading?.Dispose();
+    }
+
+    [RelayCommand]
+    private void SetMode(ScreenshotPreviewMode mode) => Mode = mode;
+
+    /// <summary>
+    /// Moves to the next mode in <see cref="PreviewModeChoice.All"/>, wrapping round to the first.
+    /// </summary>
+    [RelayCommand]
+    private void CycleMode() => Mode = Choice.Next().Mode;
+
+    private void OnSettingsChanged(AppSettings settings) => OnUiThread(NotifyModeChanged);
+
+    private void NotifyModeChanged()
+    {
+        OnPropertyChanged(nameof(Mode));
+        OnPropertyChanged(nameof(Choice));
+        OnPropertyChanged(nameof(IsPopup));
+        OnPropertyChanged(nameof(IsBelowTimeline));
+        OnPropertyChanged(nameof(IsInWindow));
     }
 
     /// <summary>
