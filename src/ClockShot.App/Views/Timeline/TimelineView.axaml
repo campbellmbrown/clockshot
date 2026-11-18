@@ -3,6 +3,7 @@
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
              xmlns:views="using:ClockShot.App.Views.Timeline"
              xmlns:controls="using:ClockShot.App.Controls"
+             xmlns:input="using:ClockShot.App.Input"
              x:Class="ClockShot.App.Views.Timeline.TimelineView"
              x:DataType="timeline:TimelineViewModel">
   <Grid Margin="12,8,6,12">
@@ -13,12 +14,17 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
+    <!--
+      The toolbar has day navigation, then zoom.
+      It wraps onto a second row in narrow windows.
+    -->
     <WrapPanel>
       <StackPanel Orientation="Horizontal"
                   Spacing="6"
                   Margin="0,0,24,6">
         <Button Command="{Binding PreviousDayCommand}"
-                ToolTip.Tip="Previous day"
+                ToolTip.Tip="{input:WithKeys 'Previous day ({0})',
+                                             {x:Static input:Shortcuts.PreviousDay}}"
                 AutomationProperties.AutomationId="PreviousDayButton">
           <controls:Icon Kind="{x:Static controls:Icons.PreviousDay}" />
         </Button>
@@ -29,14 +35,55 @@
                                    ToolTip.Tip="Choose a day"
                                    AutomationProperties.AutomationId="DayButton" />
         <Button Command="{Binding NextDayCommand}"
-                ToolTip.Tip="Next day"
+                ToolTip.Tip="{input:WithKeys 'Next day ({0})',
+                                             {x:Static input:Shortcuts.NextDay}}"
                 AutomationProperties.AutomationId="NextDayButton">
           <controls:Icon Kind="{x:Static controls:Icons.NextDay}" />
         </Button>
         <Button Command="{Binding GoToTodayCommand}"
-                ToolTip.Tip="Go to today"
+                ToolTip.Tip="{input:WithKeys 'Go to today and the current time ({0})',
+                                             {x:Static input:Shortcuts.Today}}"
                 AutomationProperties.AutomationId="TodayButton">
           <controls:Icon Kind="{x:Static controls:Icons.Today}" />
+        </Button>
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal"
+                  Spacing="6"
+                  Margin="0,0,0,6">
+        <TextBlock Classes="secondary"
+                   Text="Showing"
+                   VerticalAlignment="Center" />
+        <!--
+          The spinner shows how much time is visible.
+          Scroll over it, use its arrows, or type a length and press Enter.
+        -->
+        <ButtonSpinner x:Name="VisibleDurationSpinner"
+                       Width="140"
+                       Spin="OnVisibleDurationSpin"
+                       AllowSpin="True"
+                       AutomationProperties.AutomationId="VisibleDurationSpinner"
+                       ToolTip.Tip="How much time the timeline shows. Scroll over it or use the arrows, or type a length such as 90 min or 1.5 h and press Enter.">
+          <TextBox x:Name="VisibleDurationBox"
+                   Text="{Binding Zoom.VisibleDurationText, Mode=OneWay}"
+                   BorderThickness="0"
+                   Background="Transparent"
+                   MinWidth="0"
+                   VerticalContentAlignment="Center"
+                   LostFocus="OnVisibleDurationLostFocus"
+                   AutomationProperties.AutomationId="VisibleDurationBox">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter"
+                          Command="{Binding Zoom.ShowDurationCommand}"
+                          CommandParameter="{Binding #VisibleDurationBox.Text}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+        </ButtonSpinner>
+        <Button Command="{Binding FitDayCommand}"
+                ToolTip.Tip="{input:WithKeys 'Show the whole day ({0})',
+                                             {x:Static input:Shortcuts.ShowWholeDay}}"
+                AutomationProperties.AutomationId="FitDayButton">
+          <controls:Icon Kind="{x:Static controls:Icons.ShowWholeDay}" />
         </Button>
       </StackPanel>
     </WrapPanel>
