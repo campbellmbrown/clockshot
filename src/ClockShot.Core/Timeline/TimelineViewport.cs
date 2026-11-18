@@ -92,17 +92,6 @@ public readonly record struct TimelineViewport
         new(Bounds, timeUtc.AddSeconds(-Width * SecondsPerPixel / 2), SecondsPerPixel, Width);
 
     /// <summary>
-    /// Shows <paramref name="duration"/> of time, keeping the middle of the view in place.
-    /// The bounds and zoom limits still apply.
-    /// </summary>
-    public TimelineViewport WithVisibleDuration(TimeSpan duration)
-    {
-        var middle = VisibleStart.AddSeconds(Width * SecondsPerPixel / 2);
-        var secondsPerPixel = duration.TotalSeconds / Width;
-        return new TimelineViewport(Bounds, middle.AddSeconds(-Width * secondsPerPixel / 2), secondsPerPixel, Width);
-    }
-
-    /// <summary>
     /// The viewport after the drawing area is resized.
     /// It keeps the start time and zoom, and a viewport showing the whole day stays that way.
     /// </summary>

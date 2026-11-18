@@ -51,34 +51,6 @@
       <StackPanel Orientation="Horizontal"
                   Spacing="6"
                   Margin="0,0,0,6">
-        <TextBlock Classes="secondary"
-                   Text="Showing"
-                   VerticalAlignment="Center" />
-        <!--
-          The spinner shows how much time is visible.
-          Scroll over it, use its arrows, or type a length and press Enter.
-        -->
-        <ButtonSpinner x:Name="VisibleDurationSpinner"
-                       Width="140"
-                       Spin="OnVisibleDurationSpin"
-                       AllowSpin="True"
-                       AutomationProperties.AutomationId="VisibleDurationSpinner"
-                       ToolTip.Tip="How much time the timeline shows. Scroll over it or use the arrows, or type a length such as 90 min or 1.5 h and press Enter.">
-          <TextBox x:Name="VisibleDurationBox"
-                   Text="{Binding Zoom.VisibleDurationText, Mode=OneWay}"
-                   BorderThickness="0"
-                   Background="Transparent"
-                   MinWidth="0"
-                   VerticalContentAlignment="Center"
-                   LostFocus="OnVisibleDurationLostFocus"
-                   AutomationProperties.AutomationId="VisibleDurationBox">
-            <TextBox.KeyBindings>
-              <KeyBinding Gesture="Enter"
-                          Command="{Binding Zoom.ShowDurationCommand}"
-                          CommandParameter="{Binding #VisibleDurationBox.Text}" />
-            </TextBox.KeyBindings>
-          </TextBox>
-        </ButtonSpinner>
         <Button Command="{Binding FitDayCommand}"
                 ToolTip.Tip="{input:WithKeys 'Show the whole day ({0})',
                                              {x:Static input:Shortcuts.ShowWholeDay}}"

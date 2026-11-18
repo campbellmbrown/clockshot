@@ -85,16 +85,6 @@ public sealed class TimelineViewportTests
     }
 
     [Fact]
-    public void WithVisibleDurationKeepsTheMiddle()
-    {
-        // Act
-        var shown = Fitted().WithVisibleDuration(TimeSpan.FromHours(2));
-
-        // Assert
-        Assert.Equal(new TimeRange(Midnight.AddHours(11), Midnight.AddHours(13)), shown.Visible);
-    }
-
-    [Fact]
     public void PanMovesTheViewByTheTimeThePixelsCover()
     {
         // Act
