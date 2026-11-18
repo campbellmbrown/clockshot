@@ -68,10 +68,15 @@ public sealed class TimelineControl : Control
     private const double NowMarkerHalfWidth = 5;
     private const double NowMarkerHeight = 7;
 
-    // Badges are the small labels on the ruler for the hover time.
+    private const double PausedBarWidth = 3;
+
+    // Badges are the small labels on the ruler for the hover time and a paused preview.
     private const double BadgeHorizontalPadding = 4;
+    private const double PausedBadgeHorizontalPadding = 5;
     private const double BadgeVerticalPadding = 1;
-    private const double BadgeCornerRadius = 3;
+
+    // A float, because that's what Avalonia's FillRectangle takes for a corner radius.
+    private const float BadgeCornerRadius = 3;
 
     // A block narrower than a pixel is still drawn one pixel wide, so it doesn't vanish.
     private const double MinDrawnWidth = 1;
@@ -159,6 +164,7 @@ public sealed class TimelineControl : Control
                 DrawBlocks(context, viewport, timeline.Lanes[i], LaneTop(i));
             }
 
+            DrawPreviewPause(context, viewport, timeline);
             DrawNowLine(context, viewport, timeline.NowUtc);
             DrawHoverLine(context, viewport, timeline);
         }
@@ -433,6 +439,30 @@ public sealed class TimelineControl : Control
         {
             context.DrawGeometry(ThemeBrushes.NowLine, pen: null, _nowMarker ??= CreateNowMarker());
         }
+    }
+
+    /// <summary>
+    /// Draws a coloured bar where the preview is paused, with "Paused" on the ruler.
+    /// </summary>
+    private void DrawPreviewPause(DrawingContext context, TimelineViewport viewport, TimelineViewModel timeline)
+    {
+        if (timeline.Preview.PausedAtUtc is not { } paused || !viewport.Visible.Contains(paused))
+        {
+            return;
+        }
+
+        var x = Math.Round(AreaLeft + viewport.XOf(paused));
+        var brush = ThemeBrushes.PreviewPaused;
+
+        // The bar is centred on x, and starts on a whole pixel so it's drawn sharp.
+        var barLeft = x - Math.Floor(PausedBarWidth / 2);
+        var bar = new Rect(barLeft, RulerHeight, PausedBarWidth, Bounds.Height - RulerHeight);
+        context.FillRectangle(brush, bar);
+
+        var label = Text("Paused", RulerTextSize, ThemeBrushes.Background);
+        var box = Badge(x, label, PausedBadgeHorizontalPadding);
+        context.FillRectangle(brush, box, BadgeCornerRadius);
+        context.DrawText(label, new Point(box.X + PausedBadgeHorizontalPadding, box.Y + BadgeVerticalPadding));
     }
 
     private void DrawHoverLine(DrawingContext context, TimelineViewport viewport, TimelineViewModel timeline)

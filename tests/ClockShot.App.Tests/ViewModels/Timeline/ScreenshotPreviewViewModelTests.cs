@@ -42,6 +42,55 @@ public sealed class ScreenshotPreviewViewModelTests
     }
 
     [Fact]
+    public void PausingKeepsTheTimeLastShown()
+    {
+        // Arrange
+        using var preview = Preview();
+        preview.ShownAtUtc = NineAm;
+
+        // Act
+        preview.TogglePauseCommand.Execute(null);
+
+        // Assert
+        Assert.Equal(NineAm, preview.PausedAtUtc);
+        Assert.True(preview.IsPaused);
+        Assert.Equal("Resume the preview", preview.PauseText);
+    }
+
+    [Fact]
+    public void TogglingAgainResumes()
+    {
+        // Arrange
+        using var preview = Preview();
+        preview.ShownAtUtc = NineAm;
+        preview.TogglePauseCommand.Execute(null);
+
+        // Act
+        preview.TogglePauseCommand.Execute(null);
+
+        // Assert
+        Assert.Null(preview.PausedAtUtc);
+        Assert.False(preview.IsPaused);
+    }
+
+    [Fact]
+    public void PausingAndResumingTellTheTimelineToRedraw()
+    {
+        // Arrange
+        using var preview = Preview();
+        preview.ShownAtUtc = NineAm;
+        var changes = 0;
+        preview.PauseChanged += () => changes++;
+
+        // Act
+        preview.TogglePauseCommand.Execute(null);
+        preview.Resume();
+
+        // Assert
+        Assert.Equal(2, changes);
+    }
+
+    [Fact]
     public async Task AScreenshotThatCannotBeOpenedStillShowsItsDetails()
     {
         // Arrange

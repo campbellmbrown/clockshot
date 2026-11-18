@@ -1,5 +1,6 @@
 using Avalonia.Media.Imaging;
 
+using ClockShot.App.Controls;
 using ClockShot.App.Services;
 using ClockShot.Core.Models;
 using ClockShot.Core.Settings;
@@ -10,7 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace ClockShot.App.ViewModels.Timeline;
 
 /// <summary>
-/// The screenshot shown while hovering the timeline, and where it's shown.
+/// The screenshot shown while hovering the timeline, where it's shown, and whether it's paused on one screenshot.
 /// The same view model feeds all three places the preview can be shown.
 /// </summary>
 public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposable
@@ -27,6 +28,11 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
         // The mode can also change on the Settings tab.
         _settings.Changed += OnSettingsChanged;
     }
+
+    /// <summary>
+    /// Raised when the preview is paused or resumed, since the timeline marks where it's paused.
+    /// </summary>
+    public event Action? PauseChanged;
 
     /// <summary>
     /// The screenshot being shown, or null.
@@ -107,6 +113,26 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
 
     public bool IsInWindow => Mode == ScreenshotPreviewMode.SeparateWindow;
 
+    // ---- Pausing on one screenshot ----
+
+    /// <summary>
+    /// The time the preview last showed, so pausing knows where to stay.
+    /// </summary>
+    public DateTime? ShownAtUtc { get; set; }
+
+    /// <summary>
+    /// Where the preview is paused, or null when it follows the pointer.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPaused), nameof(PauseText), nameof(PauseIconKind))]
+    public partial DateTime? PausedAtUtc { get; private set; }
+
+    public bool IsPaused => PausedAtUtc is not null;
+
+    public string PauseText => IsPaused ? "Resume the preview" : "Pause the preview here";
+
+    public string PauseIconKind => IsPaused ? Icons.ResumePreview : Icons.PausePreview;
+
     /// <summary>
     /// Shows a screenshot, loading it in the background.
     /// Its time, app and window title change with the image, so they never describe the previous screenshot.
@@ -148,6 +174,8 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
         Message = message;
     }
 
+    public void Resume() => PausedAtUtc = null;
+
     public void Dispose()
     {
         _settings.Changed -= OnSettingsChanged;
@@ -163,6 +191,14 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
     /// </summary>
     [RelayCommand]
     private void CycleMode() => Mode = Choice.Next().Mode;
+
+    /// <summary>
+    /// Pauses the preview on what it's showing now, so the pointer can move away, or follows the pointer again.
+    /// </summary>
+    [RelayCommand]
+    private void TogglePause() => PausedAtUtc = IsPaused ? null : ShownAtUtc;
+
+    partial void OnPausedAtUtcChanged(DateTime? value) => PauseChanged?.Invoke();
 
     private void OnSettingsChanged(AppSettings settings) => OnUiThread(NotifyModeChanged);
 

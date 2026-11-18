@@ -35,6 +35,7 @@ public static class Shortcuts
 
     // ---- Screenshots ----
     public static KeyGesture SwitchPreview { get; } = KeyGesture.Parse("Ctrl+P");
+    public static KeyGesture PausePreview { get; } = KeyGesture.Parse("Ctrl+L");
 
     // ---- Other ----
     public static KeyGesture CloseWindow { get; } = KeyGesture.Parse("Alt+F4");
@@ -59,6 +60,7 @@ public static class Shortcuts
         MouseOnly("Timeline", "Drag the ruler", "Scroll"),
 
         Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
+        Key("Screenshots", PausePreview, "Pause the preview where it is / resume"),
 
         Key(
             "Other",

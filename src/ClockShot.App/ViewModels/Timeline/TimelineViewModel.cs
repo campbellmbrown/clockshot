@@ -72,6 +72,12 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         Preview = preview;
         Zoom = new TimelineZoom();
 
+        preview.PauseChanged += () =>
+        {
+            // Resuming shows what's under the pointer straight away, instead of on its next move.
+            ShowHover();
+            RedrawNeeded?.Invoke();
+        };
         Zoom.ViewportChanged += () =>
         {
             ShowHover();
@@ -256,6 +262,12 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         var time = Zoom.Viewport.TimeAt(x);
         HoverTimeUtc = time;
         Preview.IsHovering = true;
+        if (Preview.IsPaused)
+        {
+            return;
+        }
+
+        Preview.ShownAtUtc = time;
 
         var preview = HoverPreview.At(Lanes, _screenshots, time);
         if (preview is { Window: { } window, Screenshot: { } screenshot })
@@ -316,6 +328,10 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// </summary>
     private void ShowDay()
     {
+        Preview.Resume();
+
+        // The last time shown was on the old day, so there's nothing to pause on until the next hover.
+        Preview.ShownAtUtc = null;
         Zoom.Fit(DayRange);
         _background.Run(() => LoadAsync());
     }

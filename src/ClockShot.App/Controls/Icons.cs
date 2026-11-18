@@ -40,6 +40,8 @@ public static class Icons
     // ---- Screenshot preview ----
     public const string ScreenshotPreview = "image";
     public const string SwitchPreview = "chevron-right";
+    public const string PausePreview = "lock";
+    public const string ResumePreview = "lock-open";
     public const string PreviewBesidePointer = "picture-in-picture-2";
     public const string PreviewBelowTimeline = "panel-bottom";
     public const string PreviewInWindow = "app-window";

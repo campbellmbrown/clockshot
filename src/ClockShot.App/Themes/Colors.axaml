@@ -14,10 +14,12 @@
       <Color x:Key="DividerColor">#2C2C31</Color>
       <Color x:Key="PanelColor">#202024</Color>
       <Color x:Key="TextColor">#E8E8EC</Color>
+      <Color x:Key="PausedColor">#F2B33D</Color>
 
       <!-- General -->
       <SolidColorBrush x:Key="Divider" Color="{StaticResource DividerColor}" />
       <SolidColorBrush x:Key="PanelBackground" Color="{StaticResource PanelColor}" />
+      <SolidColorBrush x:Key="PausedBadgeText" Color="#000000" />
 
       <!-- Timeline -->
       <SolidColorBrush x:Key="TimelineBackground" Color="#161618" />
@@ -30,12 +32,13 @@
       <SolidColorBrush x:Key="TimelineSecondaryText" Color="#9A9AA2" />
       <SolidColorBrush x:Key="TimelineNowLine" Color="#FF5A5A" />
       <SolidColorBrush x:Key="TimelineHoverLine" Color="#B0FFFFFF" />
+      <SolidColorBrush x:Key="TimelinePreviewPaused" Color="{StaticResource PausedColor}" />
 
       <!-- Tracking states -->
       <SolidColorBrush x:Key="StateActive" Color="#3E8E5E" />
       <SolidColorBrush x:Key="StateAway" Color="#6B5A3A" />
       <SolidColorBrush x:Key="StateLocked" Color="#4A4A55" />
-      <SolidColorBrush x:Key="StatePaused" Color="#F2B33D" />
+      <SolidColorBrush x:Key="StatePaused" Color="{StaticResource PausedColor}" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

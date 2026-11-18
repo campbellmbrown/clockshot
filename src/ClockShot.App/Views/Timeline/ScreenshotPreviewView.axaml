@@ -1,8 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:input="using:ClockShot.App.Input"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+             xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.Timeline.ScreenshotPreviewView"
              x:DataType="timeline:ScreenshotPreviewViewModel">
+  <!--
+    This view is used in all three places the preview can appear.
+    They're the popup by the cursor, the space below the timeline and the separate window.
+    In the last two the image can be zoomed (wheel), moved (drag) and reset (double-click).
+  -->
   <DockPanel>
     <StackPanel DockPanel.Dock="Top"
                 Margin="0,0,0,6"
@@ -12,6 +19,17 @@
                    FontWeight="SemiBold"
                    IsVisible="{Binding TakenText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
         <TextBlock Text="{Binding ApplicationName}" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource TimelinePreviewPaused}"
+                CornerRadius="3"
+                Padding="6,0"
+                IsVisible="{Binding IsPaused}"
+                AutomationProperties.AutomationId="PreviewPausedBadge">
+          <TextBlock Text="{input:WithKeys 'Paused - {0} to resume',
+                                           {x:Static input:Shortcuts.PausePreview}}"
+                     Classes="small"
+                     Foreground="{DynamicResource PausedBadgeText}"
+                     VerticalAlignment="Center" />
+        </Border>
       </StackPanel>
       <TextBlock Classes="secondary"
                  Text="{Binding WindowTitle}"
@@ -19,7 +37,9 @@
                  IsVisible="{Binding WindowTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
     </StackPanel>
     <Panel>
-      <Image Source="{Binding Image}" AutomationProperties.AutomationId="PreviewImage" />
+      <controls:ZoomableImage Source="{Binding Image}"
+                              AutomationProperties.AutomationId="PreviewImage"
+                              ToolTip.Tip="Scroll to zoom, drag to move, double-click to fit" />
       <TextBlock Classes="secondary"
                  Text="{Binding Message}"
                  TextWrapping="Wrap"

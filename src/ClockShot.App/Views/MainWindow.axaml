@@ -136,6 +136,13 @@
                     CommandParameter="{Binding Timeline.Preview.CycleModeCommand}"
                     AutomationProperties.AutomationId="SwitchPreviewMenuItem"
                     controls:MenuIcon.Kind="{x:Static controls:Icons.SwitchPreview}" />
+          <Separator />
+          <MenuItem Header="{Binding Timeline.Preview.PauseText}"
+                    InputGesture="{x:Static input:Shortcuts.PausePreview}"
+                    Command="{Binding OnTimeline}"
+                    CommandParameter="{Binding Timeline.Preview.TogglePauseCommand}"
+                    AutomationProperties.AutomationId="PausePreviewMenuItem"
+                    controls:MenuIcon.Kind="{Binding Timeline.Preview.PauseIconKind}" />
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_Tracking" AutomationProperties.AutomationId="TrackingMenu">

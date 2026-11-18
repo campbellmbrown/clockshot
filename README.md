@@ -23,6 +23,8 @@ Selecting and tagging time on the timeline is still being built.
 - It keeps screenshots for 30 days, then deletes them.
 - On the Timeline tab, hovering over a time shows the screenshot from then.
   It appears beside the pointer, below the timeline or in a separate window, and Ctrl+P switches between them.
+  Below the timeline and in the window, the wheel zooms into the screenshot.
+  Ctrl+L pauses the preview on the screenshot it's showing, so you can move the pointer away.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
 - A day starts at midnight.
