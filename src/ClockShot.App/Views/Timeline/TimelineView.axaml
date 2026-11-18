@@ -72,10 +72,13 @@
                Margin="0,0,0,8"
                AutomationProperties.AutomationId="DaySummary" />
 
-    <Border Grid.Row="2"
+    <Border x:Name="TimelineArea"
+            Grid.Row="2"
             CornerRadius="4"
             ClipToBounds="True">
-      <controls:TimelineControl Timeline="{Binding}" AutomationProperties.AutomationId="Timeline" />
+      <controls:TimelineControl Timeline="{Binding}"
+                                AutomationProperties.AutomationId="Timeline"
+                                PointerMoved="OnTimelinePointerMoved" />
     </Border>
 
     <DockPanel Grid.Row="3" Margin="0,8,0,0">
@@ -100,5 +103,21 @@
         </Grid>
       </ScrollViewer>
     </DockPanel>
+
+    <!-- The popup preview sits below the timeline and follows the pointer from side to side. -->
+    <Popup x:Name="PreviewPopup"
+           PlacementTarget="{Binding #TimelineArea}"
+           Placement="BottomEdgeAlignedLeft"
+           IsHitTestVisible="False"
+           IsOpen="{Binding Preview.IsHovering}">
+      <Border Background="{DynamicResource PanelBackground}"
+              BorderBrush="{DynamicResource Divider}"
+              BorderThickness="1"
+              CornerRadius="6"
+              Padding="10"
+              BoxShadow="0 6 24 0 #80000000">
+        <views:ScreenshotPreviewView x:Name="PopupPreview" DataContext="{Binding Preview}" />
+      </Border>
+    </Popup>
   </Grid>
 </UserControl>

@@ -10,8 +10,8 @@ It needs no account and sends nothing over the internet.
 ## Status
 
 ClockShot is a work in progress, and there are no releases yet.
-It already records your activity and takes screenshots.
-The Timeline tab that will show them is still being built.
+It already records your activity and takes screenshots, and the Timeline tab shows them.
+Selecting and tagging time on the timeline is still being built.
 
 ## What it does
 
@@ -21,6 +21,7 @@ The Timeline tab that will show them is still being built.
   A screenshot copies the part of the screen where the window is.
   It also shows any window on top, even one from an excluded app.
 - It keeps screenshots for 30 days, then deletes them.
+- On the Timeline tab, hovering over a time shows the screenshot from then beside the pointer.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
 - A day starts at midnight.

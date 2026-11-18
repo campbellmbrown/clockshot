@@ -46,7 +46,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private int _dayStartHour;
 
     private ActivityRecords _records = ActivityRecords.Empty;
+    private ScreenshotIndex _screenshots = ScreenshotIndex.Empty;
     private CancellationTokenSource? _loading;
+
+    // The pointer's last position, kept so the hover follows when the view moves or the day's rows reload.
+    private double? _hoverX;
 
     public TimelineViewModel(
         IActivityHistory history,
@@ -54,6 +58,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         ISettingsStore settings,
         TimeProvider time,
         DayClock days,
+        ScreenshotPreviewViewModel preview,
         ILogger<TimelineViewModel> logger,
         BackgroundWork background)
         : base("Timeline", Icons.Timeline)
@@ -64,9 +69,14 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _logger = logger;
         _background = background;
 
+        Preview = preview;
         Zoom = new TimelineZoom();
 
-        Zoom.ViewportChanged += () => RedrawNeeded?.Invoke();
+        Zoom.ViewportChanged += () =>
+        {
+            ShowHover();
+            RedrawNeeded?.Invoke();
+        };
         _dayStartHour = settings.Current.General.DayStartHour;
         settings.Changed += changed => OnUiThread(() => OnSettingsChanged(changed));
         NowUtc = Now();
@@ -85,6 +95,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// Raised when anything the timeline control draws has changed.
     /// </summary>
     public event Action? RedrawNeeded;
+
+    public ScreenshotPreviewViewModel Preview { get; }
 
     public TimelineZoom Zoom { get; }
 
@@ -176,6 +188,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             }
 
             _records = records;
+            _screenshots = new ScreenshotIndex(records.Screenshots);
             ShowRecords();
         }
         catch (OperationCanceledException)
@@ -192,9 +205,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// <summary>
     /// The pointer moved over the timeline.
     /// </summary>
-    public void HoverAt(DateTime time)
+    /// <param name="x">The pointer's distance from the left edge of the drawing area.</param>
+    public void HoverAt(double x)
     {
-        HoverTimeUtc = time;
+        _hoverX = x;
+        ShowHover();
     }
 
     /// <summary>
@@ -202,7 +217,9 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// </summary>
     public void EndHover()
     {
+        _hoverX = null;
         HoverTimeUtc = null;
+        Preview.IsHovering = false;
     }
 
     public void Dispose()
@@ -210,16 +227,63 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _timer.Dispose();
         _loading?.Cancel();
         _loading?.Dispose();
+        // Preview comes from the service container, which disposes it.
     }
 
     partial void OnDayChanged(DateOnly value) => ShowDay();
 
     // The toolkit calls these when a property the control draws has changed.
-    partial void OnLanesChanged(IReadOnlyList<TimelineLane> value) => RedrawNeeded?.Invoke();
+    partial void OnLanesChanged(IReadOnlyList<TimelineLane> value)
+    {
+        ShowHover();
+        RedrawNeeded?.Invoke();
+    }
 
     partial void OnHoverTimeUtcChanged(DateTime? value) => RedrawNeeded?.Invoke();
 
     partial void OnNowUtcChanged(DateTime value) => RedrawNeeded?.Invoke();
+
+    /// <summary>
+    /// Shows the time and the screenshot or message under the pointer.
+    /// </summary>
+    private void ShowHover()
+    {
+        if (_hoverX is not { } x)
+        {
+            return;
+        }
+
+        var time = Zoom.Viewport.TimeAt(x);
+        HoverTimeUtc = time;
+        Preview.IsHovering = true;
+
+        var preview = HoverPreview.At(Lanes, _screenshots, time);
+        if (preview is { Window: { } window, Screenshot: { } screenshot })
+        {
+            var takenText = LocalTime.FormatWithSeconds(screenshot.TakenUtc, TimeZone);
+            _background.Run(() => Preview.ShowAsync(
+                screenshot,
+                takenText,
+                window.Application.DisplayName,
+                window.Title));
+        }
+        else if (preview.Window is { } windowWithoutScreenshot)
+        {
+            Preview.ShowMessage(
+                "No screenshot of this window.",
+                windowWithoutScreenshot.Application.DisplayName,
+                windowWithoutScreenshot.Title);
+        }
+        else
+        {
+            Preview.ShowMessage(preview.Kind switch
+            {
+                HoverPreviewKind.Away => "No screenshots while away.",
+                HoverPreviewKind.Locked => "No screenshots while locked.",
+                _ => "Nothing was recorded at this time.",
+            });
+        }
+    }
 
     /// <summary>
     /// Refits and reloads the day when the day start hour changes.

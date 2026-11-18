@@ -262,6 +262,14 @@ public sealed class TimelineControl : Control
         Timeline?.EndHover();
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+
+        // Switching tabs removes the control without a pointer exit, which would leave the hover refreshing while hidden.
+        Timeline?.EndHover();
+    }
+
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         base.OnPointerWheelChanged(e);
@@ -285,9 +293,6 @@ public sealed class TimelineControl : Control
         {
             timeline.Zoom.ZoomAt(point.X - AreaLeft, e.Delta.Y);
         }
-
-        // The time under the pointer just changed, so the hover line follows it straight away.
-        UpdateHover(timeline, point);
     }
 
     /// <summary>
@@ -310,9 +315,6 @@ public sealed class TimelineControl : Control
     /// </summary>
     private static double LineX(TimelineViewport viewport, DateTime time) =>
         Math.Round(AreaLeft + viewport.XOf(time)) + 0.5;
-
-    private static DateTime TimeAt(TimelineViewModel timeline, Point point) =>
-        timeline.Zoom.Viewport.TimeAt(point.X - AreaLeft);
 
     /// <summary>
     /// Tells the view model how wide the drawing area is, once the control has been laid out.
@@ -469,7 +471,7 @@ public sealed class TimelineControl : Control
     {
         if (DrawingArea.Contains(point))
         {
-            timeline.HoverAt(TimeAt(timeline, point));
+            timeline.HoverAt(point.X - AreaLeft);
         }
         else
         {

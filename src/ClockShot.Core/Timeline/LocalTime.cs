@@ -9,4 +9,7 @@ public static class LocalTime
 {
     public static string Format(DateTime utc, TimeZoneInfo zone) =>
         TimeZoneInfo.ConvertTimeFromUtc(utc, zone).ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    public static string FormatWithSeconds(DateTime utc, TimeZoneInfo zone) =>
+        TimeZoneInfo.ConvertTimeFromUtc(utc, zone).ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 }

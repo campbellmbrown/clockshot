@@ -58,6 +58,7 @@ internal static class CompositionRoot
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
         services.AddSingleton<IShell, SystemShell>();
+        services.AddSingleton<ScreenshotImageLoader>();
         services.AddSingleton<MainWindowHost>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<BackgroundWork>();
@@ -68,6 +69,7 @@ internal static class CompositionRoot
         services.AddSingleton<TrayIconViewModel>();
         services.AddSingleton<TrackingStatusViewModel>();
         services.AddSingleton<TimelineViewModel>();
+        services.AddTransient<ScreenshotPreviewViewModel>();
         services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<SettingsViewModel>();
 

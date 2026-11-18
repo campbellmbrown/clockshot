@@ -16,4 +16,14 @@ public sealed class LocalTimeTests
         // Assert
         Assert.Equal("14:30", text);
     }
+
+    [Fact]
+    public void FormatWithSecondsShowsTheLocalSeconds()
+    {
+        // Act
+        var text = LocalTime.FormatWithSeconds(NineAmUtc, Zone);
+
+        // Assert
+        Assert.Equal("14:30:05", text);
+    }
 }
