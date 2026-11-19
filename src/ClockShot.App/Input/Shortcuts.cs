@@ -63,6 +63,7 @@ public static class Shortcuts
         MouseOnly("Timeline", "Mouse wheel", "Zoom around the pointer"),
         MouseOnly("Timeline", "Drag the ruler", "Scroll"),
         MouseOnly("Timeline", "Drag across the rows", "Select a time range"),
+        MouseOnly("Timeline", "Drag an edge of the selection", "Make it longer or shorter"),
 
         Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
         Key("Screenshots", PausePreview, "Pause the preview where it is / resume"),

@@ -27,6 +27,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private const double SnapDistancePixels = 8;
 
     /// <summary>
+    /// How close the pointer must be to an edge to grab it, in pixels.
+    /// </summary>
+    private const double EdgeGrabPixels = 5;
+
+    /// <summary>
     /// The now line moves on every tick.
     /// Today's records are reloaded every <see cref="TicksPerRefresh"/> ticks.
     /// </summary>
@@ -270,6 +275,26 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     }
 
     /// <summary>
+    /// True when pressing at the time would grab an edge, so the control shows the resize cursor.
+    /// </summary>
+    public bool IsOverEdge(DateTime time) => FindEdge(time) is not null;
+
+    /// <summary>
+    /// A press on an edge of the selection starts dragging that edge.
+    /// Returns false when there's no edge under the pointer.
+    /// </summary>
+    public bool TryGrabEdge(DateTime time)
+    {
+        if (FindEdge(time) is not { } anchor)
+        {
+            return false;
+        }
+
+        Selection.GrabEdge(anchor);
+        return true;
+    }
+
+    /// <summary>
     /// The pointer moved far enough while pressed, so a new selection starts where it was pressed.
     /// </summary>
     public void StartSelecting(DateTime pressedAt, bool snap) => Selection.StartDrag(SnapIf(snap, pressedAt));
@@ -464,6 +489,14 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void ClearSelection() => Selection.Clear();
+
+    /// <summary>
+    /// Finds the selection's edge within <see cref="EdgeGrabPixels"/> of <paramref name="time"/> and returns the
+    /// opposite end, which stays put while that edge is dragged.
+    /// It returns null when no edge is near.
+    /// </summary>
+    private DateTime? FindEdge(DateTime time) =>
+        Selection.Range is { } selection ? BlockEdges.AnchorNear(selection, time, Pixels(EdgeGrabPixels)) : null;
 
     private DateTime SnapIf(bool snap, DateTime time) => Clamp(snap ? SnapToEdge(time) : time);
 

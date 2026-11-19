@@ -104,6 +104,11 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
     public void StartDrag(DateTime anchor) => _drag = new SelectionDrag(anchor);
 
     /// <summary>
+    /// Starts dragging an edge of the selection, with the anchor as the end that stays put.
+    /// </summary>
+    public void GrabEdge(DateTime anchor) => _drag = new SelectionDrag(anchor);
+
+    /// <summary>
     /// Moves the dragged end to the pointer's time, while the anchor stays put.
     /// </summary>
     public void DragTo(DateTime pointerTime)

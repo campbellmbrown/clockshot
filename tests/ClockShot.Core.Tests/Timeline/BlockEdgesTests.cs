@@ -50,6 +50,49 @@ public sealed class BlockEdgesTests
         Assert.Equal(time, snapped);
     }
 
+    [Fact]
+    public void TheEndStaysPutWhenTheStartIsNear()
+    {
+        // Act
+        var anchor = BlockEdges.AnchorNear(First.Range, NineAm.AddSeconds(30), Tolerance);
+
+        // Assert
+        Assert.Equal(First.Range.End, anchor);
+    }
+
+    [Fact]
+    public void TheStartStaysPutWhenTheEndIsNear()
+    {
+        // Act
+        var anchor = BlockEdges.AnchorNear(First.Range, First.Range.End.AddSeconds(-30), Tolerance);
+
+        // Assert
+        Assert.Equal(First.Range.Start, anchor);
+    }
+
+    [Fact]
+    public void TheEndStaysPutWhenBothEndsAreNear()
+    {
+        // Arrange
+        var shortRange = new TimeRange(NineAm, NineAm.AddSeconds(30));
+
+        // Act
+        var anchor = BlockEdges.AnchorNear(shortRange, NineAm.AddSeconds(15), Tolerance);
+
+        // Assert
+        Assert.Equal(shortRange.End, anchor);
+    }
+
+    [Fact]
+    public void NoEndIsNearTheMiddleOfARange()
+    {
+        // Act
+        var anchor = BlockEdges.AnchorNear(First.Range, NineAm.AddMinutes(30), Tolerance);
+
+        // Assert
+        Assert.Null(anchor);
+    }
+
     private static TimelineBlock Block(DateTime start, DateTime end) =>
         new(
             new TimeRange(start, end),

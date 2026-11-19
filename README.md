@@ -28,6 +28,7 @@ Tagging time is still being built.
 - Clicking a block on the timeline shows its details, such as how long it lasted and the applications used in it.
   Dragging across the timeline selects a time range, snapping to the edges of blocks unless you hold Alt.
   While you hover, a dashed line shows where a drag would snap to.
+  Dragging an edge of the selection makes it longer or shorter.
   Escape clears the selection.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.

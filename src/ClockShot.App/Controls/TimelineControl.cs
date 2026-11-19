@@ -22,6 +22,7 @@ namespace ClockShot.App.Controls;
 /// The mouse wheel zooms around the pointer.
 /// Shift with the wheel, or dragging the ruler, scrolls.
 /// Clicking a block selects it, and dragging across lanes selects a time range.
+/// Dragging an edge of the selection moves that edge.
 /// Drags snap to block edges unless Alt is held.
 /// See <see cref="SelectionDrag"/>.
 /// </remarks>
@@ -97,6 +98,8 @@ public sealed class TimelineControl : Control
     private const double MinAreaWidth = 1;
 
     private static readonly Typeface LabelFont = new(FontFamily.Default);
+    private static readonly Cursor ArrowCursor = new(StandardCursorType.Arrow);
+    private static readonly Cursor ResizeCursor = new(StandardCursorType.SizeWestEast);
 
     private readonly Dictionary<(string Text, double Size), FormattedText> _textCache = [];
     private Pens? _pens;
@@ -110,6 +113,7 @@ public sealed class TimelineControl : Control
     {
         ClipToBounds = true;
         Focusable = true;
+        Cursor = ArrowCursor;
         ActualThemeVariantChanged += (_, _) =>
         {
             // The pens are made again from the new theme's brushes on the next draw.
@@ -134,7 +138,7 @@ public sealed class TimelineControl : Control
         Pan,
 
         /// <summary>
-        /// Moving one end of a new selection.
+        /// Moving one end of the selection, either a new one or an edge that was grabbed.
         /// </summary>
         Drag,
     }
@@ -227,7 +231,7 @@ public sealed class TimelineControl : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (Timeline is null)
+        if (Timeline is not { } timeline)
         {
             return;
         }
@@ -253,6 +257,10 @@ public sealed class TimelineControl : Control
         if (_pressLane < 0)
         {
             _gesture = Gesture.Pan;
+        }
+        else if (timeline.TryGrabEdge(TimeAt(timeline, point)))
+        {
+            _gesture = Gesture.Drag;
         }
         else
         {
@@ -283,6 +291,10 @@ public sealed class TimelineControl : Control
                 break;
             case Gesture.Drag:
                 timeline.DragTo(TimeAt(timeline, point), snap: Snaps(e.KeyModifiers));
+                break;
+            case Gesture.None:
+                var isOverEdge = timeline.IsOverEdge(TimeAt(timeline, point));
+                Cursor = isOverEdge ? ResizeCursor : ArrowCursor;
                 break;
         }
 
@@ -361,6 +373,12 @@ public sealed class TimelineControl : Control
         else
         {
             timeline.Zoom.ZoomAt(point.X - AreaLeft, e.Delta.Y);
+        }
+
+        // The time under the pointer just changed, so a drag's moving end follows it straight away.
+        if (_gesture == Gesture.Drag)
+        {
+            timeline.DragTo(TimeAt(timeline, point), snap: Snaps(e.KeyModifiers));
         }
     }
 
