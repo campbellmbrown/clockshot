@@ -23,8 +23,11 @@ public sealed class SqliteDatabaseTests
             [
                 "activity_segment",
                 "application",
+                "client",
                 "computer_state_segment",
+                "project",
                 "screenshot",
+                "task",
             ],
             tables);
     }
