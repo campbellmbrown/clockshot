@@ -33,6 +33,7 @@ public static class Shortcuts
 
     // TimelineControl reads these mouse modifiers.
     public static KeyModifiers ScrollModifier { get; } = KeyModifiers.Shift;
+    public static KeyModifiers NoSnapModifier { get; } = KeyModifiers.Alt;
 
     // ---- Screenshots ----
     public static KeyGesture SwitchPreview { get; } = KeyGesture.Parse("Ctrl+P");
@@ -58,8 +59,10 @@ public static class Shortcuts
         Key("Timeline", ShowWholeDay, "Show the whole day"),
         Key("Timeline", ClearSelection, "Clear the selection", ShortcutScope.Timeline),
         MouseWithModifier("Timeline", ScrollModifier, "+wheel", "Scroll"),
+        MouseWithModifier("Timeline", NoSnapModifier, " while dragging", "Don't snap to the edges of blocks"),
         MouseOnly("Timeline", "Mouse wheel", "Zoom around the pointer"),
         MouseOnly("Timeline", "Drag the ruler", "Scroll"),
+        MouseOnly("Timeline", "Drag across the rows", "Select a time range"),
 
         Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
         Key("Screenshots", PausePreview, "Pause the preview where it is / resume"),

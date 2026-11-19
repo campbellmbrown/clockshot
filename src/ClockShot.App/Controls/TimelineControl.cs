@@ -21,7 +21,9 @@ namespace ClockShot.App.Controls;
 /// <remarks>
 /// The mouse wheel zooms around the pointer.
 /// Shift with the wheel, or dragging the ruler, scrolls.
-/// Clicking a block selects it.
+/// Clicking a block selects it, and dragging across lanes selects a time range.
+/// Drags snap to block edges unless Alt is held.
+/// See <see cref="SelectionDrag"/>.
 /// </remarks>
 public sealed class TimelineControl : Control
 {
@@ -40,6 +42,9 @@ public sealed class TimelineControl : Control
     private const double BlockPadding = 3;
 
     private const double MinLabelWidth = 28;
+
+    // How far the pointer must move while pressed, in pixels, before a click becomes a drag.
+    private const double DragThreshold = 3;
 
     // One wheel notch scrolls about as far as it scrolls three lines of text in most apps.
     private const double WheelPanPixels = 60;
@@ -119,7 +124,7 @@ public sealed class TimelineControl : Control
 
         /// <summary>
         /// Pressed on a lane.
-        /// It's a click when the button is released.
+        /// It's a click unless the pointer moves, which starts a new selection as a <see cref="Drag"/>.
         /// </summary>
         PendingClick,
 
@@ -127,6 +132,11 @@ public sealed class TimelineControl : Control
         /// Pressed on the ruler, so dragging scrolls.
         /// </summary>
         Pan,
+
+        /// <summary>
+        /// Moving one end of a new selection.
+        /// </summary>
+        Drag,
     }
 
     public TimelineViewModel? Timeline
@@ -178,6 +188,7 @@ public sealed class TimelineControl : Control
             DrawSelection(context, viewport, timeline);
             DrawPreviewPause(context, viewport, timeline);
             DrawNowLine(context, viewport, timeline.NowUtc);
+            DrawSnapPreview(context, viewport, timeline);
             DrawHoverLine(context, viewport, timeline);
         }
     }
@@ -259,20 +270,31 @@ public sealed class TimelineControl : Control
 
         var point = e.GetPosition(this);
 
-        if (_gesture == Gesture.Pan)
+        switch (_gesture)
         {
-            timeline.Zoom.PanBy(_pressPoint.X - point.X);
-            _pressPoint = point;
+            case Gesture.Pan:
+                timeline.Zoom.PanBy(_pressPoint.X - point.X);
+                _pressPoint = point;
+                break;
+            case Gesture.PendingClick when Math.Abs(point.X - _pressPoint.X) > DragThreshold:
+                timeline.StartSelecting(TimeAt(timeline, _pressPoint), snap: Snaps(e.KeyModifiers));
+                _gesture = Gesture.Drag;
+                timeline.DragTo(TimeAt(timeline, point), snap: Snaps(e.KeyModifiers));
+                break;
+            case Gesture.Drag:
+                timeline.DragTo(TimeAt(timeline, point), snap: Snaps(e.KeyModifiers));
+                break;
         }
 
-        UpdateHover(timeline, point);
+        UpdateHover(timeline, point, e.KeyModifiers);
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
-        // Losing the capture below clears the gesture, so it's read first.
         var gesture = _gesture;
+
+        // Cleared first, so losing the capture below doesn't end the drag a second time.
         _gesture = Gesture.None;
         e.Pointer.Capture(null);
         if (Timeline is not { } timeline)
@@ -284,11 +306,22 @@ public sealed class TimelineControl : Control
         {
             timeline.ClickAt(TimeAt(timeline, _pressPoint), KindOf(timeline, _pressLane));
         }
+
+        if (gesture == Gesture.Drag)
+        {
+            timeline.EndDrag();
+        }
     }
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);
+        // Another window took the mouse mid-drag, so keep what was dragged so far.
+        if (_gesture == Gesture.Drag)
+        {
+            Timeline?.EndDrag();
+        }
+
         _gesture = Gesture.None;
     }
 
@@ -357,6 +390,8 @@ public sealed class TimelineControl : Control
 
     private static DateTime TimeAt(TimelineViewModel timeline, Point point) =>
         timeline.Zoom.Viewport.TimeAt(point.X - AreaLeft);
+
+    private static bool Snaps(KeyModifiers modifiers) => !modifiers.HasFlag(Shortcuts.NoSnapModifier);
 
     /// <summary>
     /// Tells the view model how wide the drawing area is, once the control has been laid out.
@@ -522,6 +557,21 @@ public sealed class TimelineControl : Control
         context.DrawText(label, new Point(box.X + PausedBadgeHorizontalPadding, box.Y + BadgeVerticalPadding));
     }
 
+    /// <summary>
+    /// Draws a dashed line where a drag starting here would snap to.
+    /// It's a ghost of the selection's first edge.
+    /// </summary>
+    private void DrawSnapPreview(DrawingContext context, TimelineViewport viewport, TimelineViewModel timeline)
+    {
+        if (timeline.Selection.SnapPreviewUtc is not { } edge)
+        {
+            return;
+        }
+
+        var x = LineX(viewport, edge);
+        context.DrawLine(ThemePens.SnapPreview, new Point(x, RulerHeight), new Point(x, Bounds.Height));
+    }
+
     private void DrawHoverLine(DrawingContext context, TimelineViewport viewport, TimelineViewModel timeline)
     {
         if (timeline.HoverTimeUtc is not { } hover || !viewport.Visible.Contains(hover))
@@ -554,11 +604,11 @@ public sealed class TimelineControl : Control
     /// Shows the hover line at the pointer, or hides it when the pointer isn't over the drawing area.
     /// A drag captures the pointer, so its moves can come from outside the control.
     /// </summary>
-    private void UpdateHover(TimelineViewModel timeline, Point point)
+    private void UpdateHover(TimelineViewModel timeline, Point point, KeyModifiers modifiers)
     {
         if (DrawingArea.Contains(point))
         {
-            timeline.HoverAt(point.X - AreaLeft);
+            timeline.HoverAt(point.X - AreaLeft, snap: Snaps(modifiers));
         }
         else
         {
@@ -619,7 +669,8 @@ public sealed class TimelineControl : Control
         IPen Selection,
         IPen Now,
         IPen Hover,
-        IPen SelectedBlock)
+        IPen SelectedBlock,
+        IPen SnapPreview)
     {
         public static Pens ForCurrentTheme() => new(
             Make(ThemeBrushes.GridLine),
@@ -627,7 +678,8 @@ public sealed class TimelineControl : Control
             Make(ThemeBrushes.SelectionBorder, EmphasisPenThickness),
             Make(ThemeBrushes.NowLine, EmphasisPenThickness),
             Make(ThemeBrushes.HoverLine),
-            Make(ThemeBrushes.SelectedBlock, SelectedBlockPenThickness));
+            Make(ThemeBrushes.SelectedBlock, SelectedBlockPenThickness),
+            Make(ThemeBrushes.SelectionBorder, thickness: 1, dash: DashStyle.Dash));
 
         private static ImmutablePen Make(IBrush brush, double thickness = 1, IDashStyle? dash = null) =>
             new Pen(brush, thickness, dash).ToImmutable();

@@ -22,6 +22,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private const int TicksPerRefresh = 3;
 
     /// <summary>
+    /// How close the pointer must be to an edge to snap to it, in pixels.
+    /// </summary>
+    private const double SnapDistancePixels = 8;
+
+    /// <summary>
     /// The now line moves on every tick.
     /// Today's records are reloaded every <see cref="TicksPerRefresh"/> ticks.
     /// </summary>
@@ -51,8 +56,9 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private ScreenshotIndex _screenshots = ScreenshotIndex.Empty;
     private CancellationTokenSource? _loading;
 
-    // The pointer's last position, kept so the hover follows when the view moves or the day's rows reload.
+    // The pointer's last position and snap flag, kept so the hover follows when the view moves or the day's rows reload.
     private double? _hoverX;
+    private bool _hoverSnaps;
 
     public TimelineViewModel(
         IActivityHistory history,
@@ -229,9 +235,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// The pointer moved over the timeline.
     /// </summary>
     /// <param name="x">The pointer's distance from the left edge of the drawing area.</param>
-    public void HoverAt(double x)
+    /// <param name="snap">False while the no-snap key is held.</param>
+    public void HoverAt(double x, bool snap)
     {
         _hoverX = x;
+        _hoverSnaps = snap;
         ShowHover();
     }
 
@@ -242,6 +250,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     {
         _hoverX = null;
         HoverTimeUtc = null;
+        Selection.ShowSnapPreview(null);
         Preview.IsHovering = false;
     }
 
@@ -259,6 +268,15 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             ClearSelection();
         }
     }
+
+    /// <summary>
+    /// The pointer moved far enough while pressed, so a new selection starts where it was pressed.
+    /// </summary>
+    public void StartSelecting(DateTime pressedAt, bool snap) => Selection.StartDrag(SnapIf(snap, pressedAt));
+
+    public void DragTo(DateTime time, bool snap) => Selection.DragTo(SnapIf(snap, time));
+
+    public void EndDrag() => Selection.EndDrag();
 
     public void Dispose()
     {
@@ -282,7 +300,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     partial void OnNowUtcChanged(DateTime value) => RedrawNeeded?.Invoke();
 
     /// <summary>
-    /// Shows the time and the screenshot or message under the pointer.
+    /// Shows the time, snap preview and screenshot or message under the pointer.
     /// </summary>
     private void ShowHover()
     {
@@ -293,6 +311,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
         var time = Zoom.Viewport.TimeAt(x);
         HoverTimeUtc = time;
+        var edge = _hoverSnaps && !Selection.IsDragging ? SnapToEdge(time) : time;
+        Selection.ShowSnapPreview(edge != time ? edge : null);
         Preview.IsHovering = true;
         if (Preview.IsPaused)
         {
@@ -444,6 +464,14 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void ClearSelection() => Selection.Clear();
+
+    private DateTime SnapIf(bool snap, DateTime time) => Clamp(snap ? SnapToEdge(time) : time);
+
+    private DateTime SnapToEdge(DateTime time) => BlockEdges.Snap(Lanes, time, Pixels(SnapDistancePixels));
+
+    private TimeSpan Pixels(double pixels) => TimeSpan.FromSeconds(pixels * Zoom.Viewport.SecondsPerPixel);
+
+    private DateTime Clamp(DateTime time) => TimeMath.Max(DayRange.Start, TimeMath.Min(time, DayRange.End));
 
     private void OnTick()
     {

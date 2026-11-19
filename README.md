@@ -11,7 +11,7 @@ It needs no account and sends nothing over the internet.
 
 ClockShot is a work in progress, and there are no releases yet.
 It already records your activity and takes screenshots, and the Timeline tab shows them.
-Selecting a time range and tagging time are still being built.
+Tagging time is still being built.
 
 ## What it does
 
@@ -26,6 +26,8 @@ Selecting a time range and tagging time are still being built.
   Below the timeline and in the window, the wheel zooms into the screenshot.
   Ctrl+L pauses the preview on the screenshot it's showing, so you can move the pointer away.
 - Clicking a block on the timeline shows its details, such as how long it lasted and the applications used in it.
+  Dragging across the timeline selects a time range, snapping to the edges of blocks unless you hold Alt.
+  While you hover, a dashed line shows where a drag would snap to.
   Escape clears the selection.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.

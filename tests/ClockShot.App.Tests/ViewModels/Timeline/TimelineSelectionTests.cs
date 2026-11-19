@@ -180,6 +180,59 @@ public sealed class TimelineSelectionTests
         Assert.Equal(2, changes);
     }
 
+    [Fact]
+    public void DraggingSelectsTheTimeFromTheAnchor()
+    {
+        // Arrange
+        _selection.StartDrag(anchor: Hour.End);
+
+        // Act
+        _selection.DragTo(Hour.Start);
+
+        // Assert
+        Assert.Equal(Hour, _selection.Range);
+        Assert.Null(_selection.Lane);
+        Assert.Equal("Selected time", _details.Heading);
+    }
+
+    [Fact]
+    public void DraggingWithoutADragDoesNothing()
+    {
+        // Act
+        _selection.DragTo(Hour.End);
+
+        // Assert
+        Assert.False(_selection.HasSelection);
+    }
+
+    [Fact]
+    public void EndingADragStopsDragging()
+    {
+        // Arrange
+        _selection.StartDrag(anchor: Hour.Start);
+
+        // Act
+        _selection.EndDrag();
+
+        // Assert
+        Assert.False(_selection.IsDragging);
+    }
+
+    [Fact]
+    public void ShowingWhereADragWouldSnapTellsTheTimelineToRedraw()
+    {
+        // Arrange
+        var changes = 0;
+        _selection.Changed += () => changes++;
+
+        // Act
+        _selection.ShowSnapPreview(Hour.Start);
+
+        // Assert
+        Assert.Equal(Hour.Start, _selection.SnapPreviewUtc);
+        Assert.Equal(1, changes);
+    }
+
     /// <summary>
     /// The same block five minutes longer, as a tick draws the block being recorded.
     /// </summary>

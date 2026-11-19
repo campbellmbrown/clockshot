@@ -37,5 +37,6 @@ public sealed class ShortcutsTests
 
         // Assert
         Assert.Contains("Shift+wheel", mouseKeys);
+        Assert.Contains("Alt while dragging", mouseKeys);
     }
 }
