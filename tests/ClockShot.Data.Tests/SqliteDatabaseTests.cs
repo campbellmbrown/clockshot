@@ -28,6 +28,7 @@ public sealed class SqliteDatabaseTests
                 "project",
                 "screenshot",
                 "task",
+                "time_entry",
             ],
             tables);
     }
