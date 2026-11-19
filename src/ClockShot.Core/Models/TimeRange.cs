@@ -36,4 +36,9 @@ public readonly record struct TimeRange
         var end = TimeMath.Min(End, other.End);
         return start < end ? new TimeRange(start, end) : null;
     }
+
+    /// <summary>
+    /// The smallest range that covers both ranges and any gap between them.
+    /// </summary>
+    public TimeRange Cover(TimeRange other) => new(TimeMath.Min(Start, other.Start), TimeMath.Max(End, other.End));
 }

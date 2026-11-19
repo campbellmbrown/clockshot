@@ -84,4 +84,14 @@ public sealed class TimeRangeTests
         // Assert
         Assert.Null(shared);
     }
+
+    [Fact]
+    public void CoverSpansBothRangesAndTheGapBetweenThem()
+    {
+        // Act
+        var cover = new TimeRange(At(9), At(10)).Cover(new TimeRange(At(11), At(12)));
+
+        // Assert
+        Assert.Equal(new TimeRange(At(9), At(12)), cover);
+    }
 }
