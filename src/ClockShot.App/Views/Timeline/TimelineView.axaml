@@ -105,7 +105,28 @@
               ClipToBounds="True">
         <controls:TimelineControl Timeline="{Binding}"
                                   AutomationProperties.AutomationId="Timeline"
-                                  PointerMoved="OnTimelinePointerMoved" />
+                                  PointerMoved="OnTimelinePointerMoved">
+          <controls:TimelineControl.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="Zoom to selection"
+                        Command="{Binding ZoomToSelectionCommand}"
+                        controls:MenuIcon.Kind="{x:Static controls:Icons.ZoomToSelection}" />
+              <MenuItem Header="Clear selection"
+                        InputGesture="{x:Static input:Shortcuts.ClearSelection}"
+                        Command="{Binding ClearSelectionCommand}"
+                        controls:MenuIcon.Kind="{x:Static controls:Icons.ClearSelection}" />
+              <Separator />
+              <MenuItem Header="Fit to the working day"
+                        InputGesture="{x:Static input:Shortcuts.FitWorkingDay}"
+                        Command="{Binding FitWorkingDayCommand}"
+                        controls:MenuIcon.Kind="{x:Static controls:Icons.FitWorkingDay}" />
+              <MenuItem Header="Show the whole day"
+                        InputGesture="{x:Static input:Shortcuts.ShowWholeDay}"
+                        Command="{Binding FitDayCommand}"
+                        controls:MenuIcon.Kind="{x:Static controls:Icons.ShowWholeDay}" />
+            </ContextMenu>
+          </controls:TimelineControl.ContextMenu>
+        </controls:TimelineControl>
       </Border>
 
       <!-- The screenshot preview when it's shown below the timeline, and the day's applications otherwise. -->

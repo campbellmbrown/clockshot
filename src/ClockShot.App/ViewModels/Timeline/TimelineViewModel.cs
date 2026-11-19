@@ -92,6 +92,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         Selection.Changed += () =>
         {
             RedrawNeeded?.Invoke();
+            ZoomToSelectionCommand.NotifyCanExecuteChanged();
             ClearSelectionCommand.NotifyCanExecuteChanged();
         };
         preview.PauseChanged += () =>
@@ -469,6 +470,15 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     }
 
     private bool HasWorkingDay() => WorkingDay is not null;
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void ZoomToSelection()
+    {
+        if (Selection.Range is { } selection)
+        {
+            Zoom.Show(selection);
+        }
+    }
 
     /// <summary>
     /// Keyboard zoom keeps the now line in place when it's visible, and the middle of the view otherwise.

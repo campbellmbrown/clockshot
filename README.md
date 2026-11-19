@@ -29,6 +29,8 @@ Tagging time is still being built.
   Dragging across the timeline selects a time range, snapping to the edges of blocks unless you hold Alt.
   While you hover, a dashed line shows where a drag would snap to.
   Dragging an edge of the selection makes it longer or shorter.
+  Right-clicking the timeline opens a menu to zoom to the selection, clear it, or fit the view to the working day or the whole day.
+  Right-clicking a block outside the selection selects it first.
   Escape clears the selection.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.

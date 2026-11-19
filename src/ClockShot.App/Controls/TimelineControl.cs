@@ -244,6 +244,17 @@ public sealed class TimelineControl : Control
 
         var properties = e.GetCurrentPoint(this).Properties;
 
+        if (properties.IsRightButtonPressed)
+        {
+            // A right-click on a block outside the selection selects it first, so the context menu acts on it.
+            if (timeline.Selection.Range?.Contains(TimeAt(timeline, point)) != true)
+            {
+                timeline.ClickAt(TimeAt(timeline, point), KindOf(timeline, LaneAt(point.Y)));
+            }
+
+            return;
+        }
+
         if (!properties.IsLeftButtonPressed)
         {
             return;

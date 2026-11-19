@@ -34,8 +34,10 @@ public static class Icons
     public const string PickDate = "calendar";
     public const string ZoomIn = "zoom-in";
     public const string ZoomOut = "zoom-out";
+    public const string ZoomToSelection = "zoom-in";
     public const string FitWorkingDay = "fold-horizontal";
     public const string ShowWholeDay = "maximize-2";
+    public const string ClearSelection = "x";
 
     // ---- Screenshot preview ----
     public const string ScreenshotPreview = "image";
