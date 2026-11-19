@@ -11,6 +11,7 @@ public sealed record AppSettings
     public GeneralSettings General { get; init; } = new();
     public TrackingSettings Tracking { get; init; } = new();
     public ScreenshotSettings Screenshots { get; init; } = new();
+    public LayoutSettings Layout { get; init; } = new();
 
     /// <summary>
     /// A copy with every value inside its <see cref="SettingLimits"/> range and missing parts set to defaults.
@@ -22,6 +23,7 @@ public sealed record AppSettings
         var tracking = Tracking ?? new();
         var screenshots = Screenshots ?? new();
         var screenshotInterval = SettingLimits.ScreenshotIntervalSeconds.Clamp(screenshots.IntervalSeconds);
+        var layout = Layout ?? new();
         return this with
         {
             General = general with { DayStartHour = SettingLimits.DayStartHour.Clamp(general.DayStartHour) },
@@ -43,6 +45,12 @@ public sealed record AppSettings
                 KeepForDays = SettingLimits.KeepScreenshotsForDays.Clamp(screenshots.KeepForDays),
                 ExcludedProcessNames = Cleaned(screenshots.ExcludedProcessNames),
                 PreviewMode = Enum.IsDefined(screenshots.PreviewMode) ? screenshots.PreviewMode : new ScreenshotSettings().PreviewMode,
+            },
+            Layout = layout with
+            {
+                // Only a hand-edited file can hold a negative size, which a grid can't lay out.
+                TimelineHeight = Math.Max(0, layout.TimelineHeight),
+                DetailsPanelWidth = Math.Max(0, layout.DetailsPanelWidth),
             },
         };
     }

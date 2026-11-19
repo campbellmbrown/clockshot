@@ -10,23 +10,32 @@
     <KeyBinding Gesture="{x:Static input:Shortcuts.ClearSelection}" Command="{Binding ClearSelectionCommand}" />
   </UserControl.KeyBindings>
 
-  <!-- The columns are the main area and the details panel. -->
-  <Grid>
+  <!--
+    The columns are the main area, a divider and the details panel.
+    This divider and the divider under the timeline can both be dragged, and the sizes are remembered.
+    Dragging this divider nearly all the way right hides the details panel.
+    Double-clicking it hides or shows the panel.
+  -->
+  <Grid x:Name="Root">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" MinWidth="420" />
-      <ColumnDefinition Width="360" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="360"
+                        MinWidth="0"
+                        MaxWidth="900" />
     </Grid.ColumnDefinitions>
 
     <!--
-      The rows are the toolbar, the day summary and the timeline.
+      The rows are the toolbar, the day summary, the timeline and a divider.
       The last row holds the screenshot preview or the applications list.
     -->
-    <Grid Margin="12,8,6,12">
+    <Grid x:Name="MainArea" Margin="12,8,6,12">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="170" MinHeight="90" />
-        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" MinHeight="60" />
       </Grid.RowDefinitions>
 
       <!--
@@ -103,7 +112,8 @@
               Grid.Row="2"
               CornerRadius="4"
               ClipToBounds="True">
-        <controls:TimelineControl Timeline="{Binding}"
+        <controls:TimelineControl x:Name="Timeline"
+                                  Timeline="{Binding}"
                                   AutomationProperties.AutomationId="Timeline"
                                   PointerMoved="OnTimelinePointerMoved">
           <controls:TimelineControl.ContextMenu>
@@ -129,8 +139,17 @@
         </controls:TimelineControl>
       </Border>
 
+      <GridSplitter Grid.Row="3"
+                    ResizeDirection="Rows"
+                    Height="5"
+                    Margin="0,4"
+                    Background="{DynamicResource Divider}"
+                    DragCompleted="OnDividerDragged"
+                    ToolTip.Tip="Drag to make the timeline taller or shorter"
+                    AutomationProperties.AutomationId="TimelineDivider" />
+
       <!-- The screenshot preview when it's shown below the timeline, and the day's applications otherwise. -->
-      <Panel Grid.Row="3">
+      <Panel Grid.Row="4">
         <Border IsVisible="{Binding Preview.IsBelowTimeline}" Padding="0,4,0,0">
           <views:ScreenshotPreviewView DataContext="{Binding Preview}" AutomationProperties.AutomationId="PreviewBelowTimeline" />
         </Border>
@@ -159,7 +178,16 @@
       </Panel>
     </Grid>
 
-    <Border Grid.Column="1"
+    <GridSplitter Grid.Column="1"
+                  ResizeDirection="Columns"
+                  Width="5"
+                  DoubleTapped="OnDetailsDividerDoubleTapped"
+                  Background="{DynamicResource Divider}"
+                  DragCompleted="OnDividerDragged"
+                  ToolTip.Tip="Drag to resize the details panel, or all the way right to hide it. Double-click to hide or show it."
+                  AutomationProperties.AutomationId="DetailsDivider" />
+
+    <Border Grid.Column="2"
             ClipToBounds="True"
             AutomationProperties.AutomationId="DetailsPanel">
       <views:SelectionDetailsView DataContext="{Binding Details}" />

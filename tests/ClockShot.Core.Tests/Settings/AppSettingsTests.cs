@@ -17,6 +17,7 @@ public sealed class AppSettingsTests
         Assert.Equal(defaults.General, normalized.General);
         Assert.Equal(defaults.Tracking, normalized.Tracking);
         Assert.Equal(defaults.Screenshots, normalized.Screenshots);
+        Assert.Equal(defaults.Layout, normalized.Layout);
     }
 
     [Fact]
@@ -73,6 +74,19 @@ public sealed class AppSettingsTests
 
         // Assert
         Assert.Equal(30, normalized.Screenshots.MinimumGapSeconds);
+    }
+
+    [Fact]
+    public void NormalizedTurnsNegativePanelSizesIntoZero()
+    {
+        // Arrange
+        var settings = new AppSettings { Layout = new LayoutSettings { TimelineHeight = -50, DetailsPanelWidth = -1 } };
+
+        // Act
+        var normalized = settings.Normalized();
+
+        // Assert
+        Assert.Equal(new LayoutSettings { TimelineHeight = 0, DetailsPanelWidth = 0 }, normalized.Layout);
     }
 
     [Fact]

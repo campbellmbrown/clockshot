@@ -167,14 +167,14 @@
       </MenuItem>
     </Menu>
 
-    <!-- Shows the tracking state and the window being recorded. -->
+    <!-- Shows the tracking state, the window being recorded and today's active time. -->
     <Border DockPanel.Dock="Bottom"
             Background="{DynamicResource PanelBackground}"
             BorderBrush="{DynamicResource Divider}"
             BorderThickness="0,1,0,0"
             Padding="6,2"
             AutomationProperties.AutomationId="StatusBar">
-      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
         <Button Command="{Binding StatusBar.Tracking.TogglePausedCommand}"
                 ToolTip.Tip="{Binding StatusBar.Tracking.PauseCommandText}"
                 Background="Transparent"
@@ -197,6 +197,12 @@
                    TextTrimming="CharacterEllipsis"
                    VerticalAlignment="Center"
                    AutomationProperties.AutomationId="StatusBarWindow" />
+        <TextBlock Grid.Column="2"
+                   Classes="secondary small"
+                   Text="{Binding StatusBar.TodayText}"
+                   VerticalAlignment="Center"
+                   Margin="0,0,6,0"
+                   AutomationProperties.AutomationId="StatusBarToday" />
       </Grid>
     </Border>
 

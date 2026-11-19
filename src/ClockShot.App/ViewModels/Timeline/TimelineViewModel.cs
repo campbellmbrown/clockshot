@@ -87,6 +87,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         Details = details;
         Details.SetDay(ActivityRecords.Empty, TimeZone);
         Zoom = new TimelineZoom();
+        Layout = new TimelineLayout(settings);
         Selection = new TimelineSelection(details);
 
         Selection.Changed += () =>
@@ -128,6 +129,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     public ScreenshotPreviewViewModel Preview { get; }
 
     public SelectionDetailsViewModel Details { get; }
+
+    public TimelineLayout Layout { get; }
 
     public TimelineZoom Zoom { get; }
 

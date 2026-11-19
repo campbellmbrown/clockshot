@@ -32,6 +32,9 @@ Tagging time is still being built.
   Right-clicking the timeline opens a menu to zoom to the selection, clear it, or fit the view to the working day or the whole day.
   Right-clicking a block outside the selection selects it first.
   Escape clears the selection.
+- The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
+  Double-clicking the details divider hides or shows the panel.
+- The status bar shows today's active time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
 - A day starts at midnight.

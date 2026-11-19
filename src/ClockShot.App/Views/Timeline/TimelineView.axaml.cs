@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Settings;
@@ -11,6 +12,7 @@ namespace ClockShot.App.Views.Timeline;
 
 /// <summary>
 /// The Timeline tab's behaviour that only the view needs.
+/// It restores the panel sizes from the settings and saves them when they change.
 /// It keeps the preview popup beside the pointer.
 /// It also opens and closes the separate preview window.
 /// </summary>
@@ -21,6 +23,19 @@ public sealed partial class TimelineView : UserControl
     /// </summary>
     private const double PopupShareOfWindow = 0.6;
     private const double PopupPointerGap = 16;
+    private const int TimelineRow = 2;
+    private const int DetailsColumn = 2;
+
+    /// <summary>
+    /// Dragging the details panel narrower than this hides it completely.
+    /// </summary>
+    private const double CollapseDetailsBelow = 160;
+    private const double DefaultDetailsWidth = 360;
+
+    /// <summary>
+    /// The details panel's width before it was hidden, to restore on double-click.
+    /// </summary>
+    private double _detailsWidthBeforeCollapse = DefaultDetailsWidth;
 
     private TimelineViewModel? _timeline;
     private ScreenshotPreviewWindow? _previewWindow;
@@ -35,7 +50,16 @@ public sealed partial class TimelineView : UserControl
         base.OnDataContextChanged(e);
         _timeline?.Preview.PropertyChanged -= OnPreviewChanged;
         _timeline = DataContext as TimelineViewModel;
-        _timeline?.Preview.PropertyChanged += OnPreviewChanged;
+        if (_timeline is not null)
+        {
+            _timeline.Preview.PropertyChanged += OnPreviewChanged;
+            MainArea.RowDefinitions[TimelineRow].Height = new GridLength(_timeline.Layout.TimelineHeight);
+            Root.ColumnDefinitions[DetailsColumn].Width = new GridLength(_timeline.Layout.DetailsPanelWidth);
+            if (_timeline.Layout.DetailsPanelWidth > 0)
+            {
+                _detailsWidthBeforeCollapse = _timeline.Layout.DetailsPanelWidth;
+            }
+        }
         UpdatePreviewWindow();
     }
 
@@ -58,6 +82,43 @@ public sealed partial class TimelineView : UserControl
             UpdatePreviewWindow();
         }
     }
+
+    // ---- Panel sizes ----
+
+    private void OnDividerDragged(object? sender, RoutedEventArgs e)
+    {
+        var details = Root.ColumnDefinitions[DetailsColumn];
+        if (details.ActualWidth is > 0 and < CollapseDetailsBelow)
+        {
+            details.Width = new GridLength(0);
+        }
+        else if (details.ActualWidth >= CollapseDetailsBelow)
+        {
+            _detailsWidthBeforeCollapse = details.ActualWidth;
+        }
+
+        SaveLayout();
+    }
+
+    /// <summary>
+    /// Double-clicking the right divider hides the details panel, or brings it back at its previous width.
+    /// </summary>
+    private void OnDetailsDividerDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        var details = Root.ColumnDefinitions[DetailsColumn];
+        if (details.ActualWidth > 0)
+        {
+            _detailsWidthBeforeCollapse = details.ActualWidth;
+        }
+
+        details.Width = new GridLength(details.ActualWidth > 0 ? 0 : _detailsWidthBeforeCollapse);
+        SaveLayout();
+    }
+
+    private void SaveLayout() =>
+        _timeline?.Layout.Save(
+            timelineHeight: MainArea.RowDefinitions[TimelineRow].ActualHeight,
+            detailsPanelWidth: Root.ColumnDefinitions[DetailsColumn].Width.Value);
 
     // ---- Preview popup and window ----
 
