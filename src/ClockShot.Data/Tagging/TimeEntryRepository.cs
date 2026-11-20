@@ -9,7 +9,7 @@ namespace ClockShot.Data.Tagging;
 /// <summary>
 /// Tagged time in SQLite.
 /// </summary>
-public sealed class TimeEntryRepository(SqliteDatabase database)
+public sealed class TimeEntryRepository(SqliteDatabase database) : ITimeEntryRepository
 {
     private const string OverlappingSql = """
         SELECT id, start_utc, end_utc, project_id, task_id, note
@@ -76,6 +76,21 @@ public sealed class TimeEntryRepository(SqliteDatabase database)
                 Added: added,
                 Updated: [.. changes.Updated.Select(u => (u.Before, AsSaved(u.After)))],
                 Removed: changes.Removed);
+        });
+
+    public Task<IReadOnlyList<(long ProjectId, long? TaskId)>> GetRecentTagsAsync(int count) =>
+        Task.Run<IReadOnlyList<(long, long?)>>(() =>
+        {
+            using var connection = database.Open();
+            return [.. connection.Query<(long, long?)>(
+                """
+                SELECT project_id, task_id
+                FROM time_entry
+                GROUP BY project_id, task_id
+                ORDER BY MAX(id) DESC
+                LIMIT @Count
+                """,
+                new { Count = count })];
         });
 
     /// <summary>
