@@ -3,16 +3,15 @@ using System.Threading.Channels;
 using ClockShot.Core.Models;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
-using ClockShot.Core.Tests.Screenshots;
-using ClockShot.Core.Tests.Settings;
 using ClockShot.Core.Tracking;
+using ClockShot.Data.Settings;
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 
-namespace ClockShot.Core.Tests.Tracking;
+namespace ClockShot.Data.Tests;
 
 /// <summary>
 /// Runs the real loop on a fake clock.
@@ -37,7 +36,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     private readonly IWindowCapturer _capturer = Substitute.For<IWindowCapturer>();
     private readonly FakeSink _sink = new();
     private readonly FakeScreenshotStore _screenshots = new();
-    private readonly FakeSettingsStore _settings = new();
+    private readonly JsonSettingsStore _settings = MemorySettingsStore.Create();
     private readonly TrackingLoop _loop;
 
     // The sampler reports these, and a test may change them between ticks.
@@ -292,8 +291,8 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     public async Task WaitsForAScreenshotToSaveBeforeTakingAnother()
     {
         // Arrange
-        var everySecond = new ScreenshotSettings { IntervalSeconds = 1, MinimumGapSeconds = 0 };
-        _settings.Save(new AppSettings { Screenshots = everySecond });
+        var shortestInterval = SettingLimits.ScreenshotIntervalSeconds.Min;
+        _settings.Save(new AppSettings { Screenshots = new ScreenshotSettings { IntervalSeconds = shortestInterval } });
         var saving = new TaskCompletionSource();
         _screenshots.SaveFinishes = saving.Task;
         var captures = 0;
@@ -305,7 +304,12 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         await StartAsync();
 
         // Act
-        await TickAsync();
+        // The next screenshot is due one interval after the first.
+        for (var second = 0; second < shortestInterval; second++)
+        {
+            await TickAsync();
+        }
+
         // Waiting for the next tick makes sure the one before it has finished.
         await TickAsync();
         var capturesBeforeTheSave = Volatile.Read(ref captures);

@@ -1,12 +1,12 @@
 using ClockShot.Core.Settings;
-using ClockShot.Core.Tests.Settings;
 using ClockShot.Core.Timeline;
+using ClockShot.Data.Settings;
 
-namespace ClockShot.Core.Tests.Timeline;
+namespace ClockShot.Data.Tests;
 
 public sealed class TimelineLayoutTests
 {
-    private readonly FakeSettingsStore _settings = new();
+    private readonly JsonSettingsStore _settings = MemorySettingsStore.Create();
 
     [Fact]
     public void ReadsTheSavedSizes()

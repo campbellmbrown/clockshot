@@ -4,7 +4,7 @@ using System.Threading.Channels;
 using ClockShot.Core.Models;
 using ClockShot.Core.Screenshots;
 
-namespace ClockShot.Core.Tests.Screenshots;
+namespace ClockShot.Data.Tests;
 
 /// <summary>
 /// Records what is saved and deleted, without any files.

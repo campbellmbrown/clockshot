@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 
-namespace ClockShot.Core.Tests;
+namespace ClockShot.Data.Tests;
 
 /// <summary>
 /// Waits for what code under test writes from another thread.

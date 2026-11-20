@@ -1,11 +1,11 @@
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
-using ClockShot.Core.Tests.Settings;
+using ClockShot.Data.Settings;
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
-namespace ClockShot.Core.Tests.Screenshots;
+namespace ClockShot.Data.Tests;
 
 public sealed class ScreenshotCleanupTests : IAsyncDisposable
 {
@@ -13,7 +13,7 @@ public sealed class ScreenshotCleanupTests : IAsyncDisposable
 
     private readonly FakeTimeProvider _clock = new(Start);
     private readonly FakeScreenshotStore _screenshots = new();
-    private readonly FakeSettingsStore _settings = new();
+    private readonly JsonSettingsStore _settings = MemorySettingsStore.Create();
     private readonly ScreenshotCleanup _cleanup;
 
     public ScreenshotCleanupTests()

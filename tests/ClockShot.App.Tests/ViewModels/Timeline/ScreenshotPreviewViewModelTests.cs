@@ -4,6 +4,10 @@ using ClockShot.App.Services;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Models;
 using ClockShot.Core.Settings;
+using ClockShot.Data;
+using ClockShot.Data.Settings;
+
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ClockShot.App.Tests.ViewModels.Timeline;
 
@@ -11,7 +15,10 @@ public sealed class ScreenshotPreviewViewModelTests
 {
     private static readonly DateTime NineAm = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
 
-    private readonly FakeSettingsStore _settings = new();
+    private readonly JsonSettingsStore _settings = new(
+        new MockFileSystem(),
+        new DataPaths("data"),
+        NullLogger<JsonSettingsStore>.Instance);
 
     [Fact]
     public void ChangingTheModeSavesIt()

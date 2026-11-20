@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\src\ClockShot.Data\ClockShot.Data.csproj" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="NSubstitute" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
   </ItemGroup>
 </Project>

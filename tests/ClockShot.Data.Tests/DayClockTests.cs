@@ -1,15 +1,21 @@
 using ClockShot.Core.Models;
 using ClockShot.Core.Settings;
-using ClockShot.Core.Tests.Settings;
 using ClockShot.Core.Timeline;
 
 using Microsoft.Extensions.Time.Testing;
 
-namespace ClockShot.Core.Tests.Timeline;
+namespace ClockShot.Data.Tests;
 
 public sealed class DayClockTests
 {
     private static readonly DateOnly Monday = new(2026, 11, 9);
+
+    // Made up, so the tests don't depend on the machine's zone or any real place's rules.
+    private static readonly TimeZoneInfo HalfHourOffset = TimeZoneInfo.CreateCustomTimeZone(
+        id: "Test Half Hour Time",
+        baseUtcOffset: new TimeSpan(5, 30, 0),
+        displayName: "Test time (UTC+5:30)",
+        standardDisplayName: "Test Half Hour Time");
 
     [Fact]
     public void TodayIsTheLocalDate()
@@ -58,9 +64,9 @@ public sealed class DayClockTests
     private static DayClock Clock(DateTime utcNow, int dayStartHour)
     {
         var time = new FakeTimeProvider(new DateTimeOffset(utcNow));
-        time.SetLocalTimeZone(TestTimeZones.HalfHourOffset);
+        time.SetLocalTimeZone(HalfHourOffset);
 
-        var settings = new FakeSettingsStore();
+        var settings = MemorySettingsStore.Create();
         settings.Save(new AppSettings { General = new GeneralSettings { DayStartHour = dayStartHour } });
 
         return new DayClock(time, settings);
