@@ -79,6 +79,8 @@ They aren't hard rules and can be broken when there's a good reason.
 - Prefer clear names to short ones.
   Avoid abbreviations.
   Single letters are fine only where they're the usual name, such as `x` and `y` for coordinates, or in a short lambda.
+- Name a class after what it does, such as `TrackingLoop` or `Tagger`.
+  Use the `Service` suffix only for a wrapper around something outside the app, such as dialogs, kept behind an interface.
 - Use comments to explain why, not what.
 - Give numbers that aren't obvious a name.
   Explain the value's source next to its definition.
