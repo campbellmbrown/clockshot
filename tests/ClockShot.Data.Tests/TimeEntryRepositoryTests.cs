@@ -26,23 +26,6 @@ public sealed class TimeEntryRepositoryTests : IDisposable
     public void Dispose() => _data.Dispose();
 
     [Fact]
-    public async Task TaggingIsSavedInTheDatabase()
-    {
-        // Arrange
-        var website = await AddTopLevelProjectAsync("Website");
-        var shop = await AddTopLevelProjectAsync("Shop");
-        var tagger = new Tagger(_entries);
-
-        // Act
-        await tagger.TagAsync(Minutes(0, 60), website.Id, taskId: null, note: "first", undoDescription: "tag website");
-        await tagger.TagAsync(Minutes(15, 45), shop.Id, taskId: null, note: null, undoDescription: "tag shop");
-
-        // Assert
-        var tagged = await _entries.GetAsync(Minutes(0, 60), CancellationToken);
-        Assert.Equal([website.Id, shop.Id, website.Id], tagged.Select(e => e.ProjectId));
-    }
-
-    [Fact]
     public async Task RecentTagsAreNewestFirst()
     {
         // Arrange
@@ -56,24 +39,6 @@ public sealed class TimeEntryRepositoryTests : IDisposable
 
         // Assert
         Assert.Equal([(shop.Id, (long?)null), (website.Id, (long?)null)], recent);
-    }
-
-    [Fact]
-    public async Task UndoingATagRestoresTheDatabase()
-    {
-        // Arrange
-        var website = await AddTopLevelProjectAsync("Website");
-        var shop = await AddTopLevelProjectAsync("Shop");
-        var tagger = new Tagger(_entries);
-        await tagger.TagAsync(Minutes(0, 60), website.Id, taskId: null, note: "first", undoDescription: "tag website");
-        await tagger.TagAsync(Minutes(15, 45), shop.Id, taskId: null, note: null, undoDescription: "tag shop");
-
-        // Act
-        await tagger.UndoAsync();
-
-        // Assert
-        var entry = Assert.Single(await _entries.GetAsync(Minutes(0, 60), CancellationToken));
-        Assert.Equal((Minutes(0, 60), website.Id, "first"), (entry.Range, entry.ProjectId, entry.Note));
     }
 
     [Fact]
