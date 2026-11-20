@@ -49,11 +49,21 @@ This keeps dev runs away from the data of the copy you use every day.
   Leave out a step the test doesn't need.
 - Keep unit tests fast.
   Don't make them wait on real time with delays or timeouts.
-  Pass in a `TimeProvider` and use a fake one in the test, or pass the timeout in.
+  Pass in a `TimeProvider` and use `FakeTimeProvider` in the test, or pass the timeout in.
 - Don't use the real file system in unit tests.
   Code that reads or writes files takes an `IFileSystem`, and its tests use a `MockFileSystem`.
   The exception is code whose files another library opens, such as a SQLite database.
-- Only add an interface for a second implementation or a test fake, such as the clock, database, OS, or dialogs.
+- In a test, use the real class for code in [src](src).
+  A stand-in is an object a test uses in place of a real one.
+  A stand-in can behave differently from the real class and hide a bug.
+- A test that needs a real class from [ClockShot.Data](src/ClockShot.Data), such as the database, goes in [ClockShot.Data.Tests](tests/ClockShot.Data.Tests).
+  [ClockShot.Core](src/ClockShot.Core) can't reference ClockShot.Data, so its tests can't use Data classes.
+- Use a stand-in only for what ClockShot doesn't control, such as Windows, dialogs, the file system and the clock.
+  Use a ready-made one where it exists, such as `FakeTimeProvider` or `MockFileSystem`.
+  Otherwise make one with NSubstitute, which builds it from an interface.
+  If you write a stand-in by hand, add a comment saying why a ready-made one or NSubstitute won't do.
+- Only add an interface when a class has two real implementations, when ClockShot doesn't control the thing, or when ClockShot.Core needs something from ClockShot.Data.
+- Put decisions in classes that take and return plain data, so their tests need no stand-ins.
 - Aim for methods that are easy to unit test.
   If one is hard to test, consider changing the method.
 - Win32 calls and XAML layout can't be test-driven.

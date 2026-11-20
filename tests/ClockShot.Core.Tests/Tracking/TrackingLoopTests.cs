@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Threading.Channels;
 
 using ClockShot.Core.Models;
@@ -10,6 +9,8 @@ using ClockShot.Core.Tracking;
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
+
+using NSubstitute;
 
 namespace ClockShot.Core.Tests.Tracking;
 
@@ -29,16 +30,26 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         DisplayName: "Editor",
         Title: "a.cs");
 
+    private static readonly CapturedImage Image = new(width: 1, height: 1, new byte[CapturedImage.BytesPerPixel]);
+
     private readonly FakeTimeProvider _clock = new(StartTime);
-    private readonly FakeSampler _sampler = new();
-    private readonly FakeCapturer _capturer = new();
+    private readonly ISystemSampler _sampler = Substitute.For<ISystemSampler>();
+    private readonly IWindowCapturer _capturer = Substitute.For<IWindowCapturer>();
     private readonly FakeSink _sink = new();
     private readonly FakeScreenshotStore _screenshots = new();
     private readonly FakeSettingsStore _settings = new();
     private readonly TrackingLoop _loop;
 
+    // The sampler reports these, and a test may change them between ticks.
+    private ForegroundWindow _window = Editor;
+    private TimeSpan _idleTime;
+
     public TrackingLoopTests()
     {
+        _sampler.Read(Arg.Any<DateTime>())
+            .Returns(call => new TrackingSample(call.Arg<DateTime>(), _window, _idleTime, IsLocked: false));
+        _capturer.Capture(Arg.Any<nint>()).Returns(Image);
+
         _loop = new TrackingLoop(
             _sampler,
             _capturer,
@@ -85,7 +96,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     {
         // Arrange
         _settings.Save(new AppSettings { Tracking = new TrackingSettings { AwayAfterMinutes = 1 } });
-        _sampler.IdleTime = TimeSpan.FromMinutes(2);
+        _idleTime = TimeSpan.FromMinutes(2);
 
         // Act
         var changes = await StartAsync();
@@ -127,7 +138,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         await TickAsync();
         var raised = 0;
         _loop.StatusChanged += () => raised++;
-        _sampler.Window = Editor with { Handle = AnotherHandle };
+        _window = Editor with { Handle = AnotherHandle };
 
         // Act
         await TickAsync();
@@ -256,7 +267,8 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         await _loop.DisposeAsync();
 
         // Assert
-        Assert.Equal([Editor.Handle], _capturer.Handles);
+        _capturer.Received(1).Capture(Arg.Any<nint>());
+        _capturer.Received(1).Capture(Editor.Handle);
         Assert.Equal([StartTime], _screenshots.SavedTimes);
     }
 
@@ -264,7 +276,8 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     public async Task RetriesAFailedCaptureAtTheNextSample()
     {
         // Arrange
-        _capturer.FailuresLeft = 1;
+        // The first capture fails, as for a window that can't be captured.
+        _capturer.Capture(Arg.Any<nint>()).Returns(null, Image);
         await StartAsync();
 
         // Act
@@ -283,17 +296,23 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         _settings.Save(new AppSettings { Screenshots = everySecond });
         var saving = new TaskCompletionSource();
         _screenshots.SaveFinishes = saving.Task;
+        var captures = 0;
+        _capturer.Capture(Arg.Any<nint>()).Returns(_ =>
+        {
+            Interlocked.Increment(ref captures);
+            return Image;
+        });
         await StartAsync();
 
         // Act
         await TickAsync();
         // Waiting for the next tick makes sure the one before it has finished.
         await TickAsync();
-        var captures = _capturer.Handles.Count;
+        var capturesBeforeTheSave = Volatile.Read(ref captures);
         saving.SetResult();
 
         // Assert
-        Assert.Equal(1, captures);
+        Assert.Equal(1, capturesBeforeTheSave);
     }
 
     [Fact]
@@ -325,40 +344,6 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     }
 
     private Task<IReadOnlyList<TrackingChange>> NextWriteAsync() => BackgroundWork.ReadNextAsync(_sink.Writes);
-
-    private sealed class FakeSampler : ISystemSampler
-    {
-        public ForegroundWindow Window { get; set; } = Editor;
-
-        public TimeSpan IdleTime { get; set; }
-
-        public TrackingSample Read(DateTime timeUtc) => new(timeUtc, Window, IdleTime, IsLocked: false);
-    }
-
-    private sealed class FakeCapturer : IWindowCapturer
-    {
-        public ConcurrentQueue<nint> Handles { get; } = new();
-
-        /// <summary>
-        /// How many captures return nothing first, as for a window that can't be captured.
-        /// </summary>
-        /// <remarks>
-        /// Only the loop's thread changes it once tracking starts, so a test sets it before starting.
-        /// </remarks>
-        public int FailuresLeft { get; set; }
-
-        public CapturedImage? Capture(nint windowHandle)
-        {
-            Handles.Enqueue(windowHandle);
-            if (FailuresLeft > 0)
-            {
-                FailuresLeft--;
-                return null;
-            }
-
-            return new CapturedImage(width: 1, height: 1, new byte[CapturedImage.BytesPerPixel]);
-        }
-    }
 
     private sealed class FakeSink : ITrackingSink
     {
