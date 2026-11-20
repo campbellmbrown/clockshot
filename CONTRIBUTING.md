@@ -56,9 +56,11 @@ This keeps dev runs away from the data of the copy you use every day.
 - In a test, use the real class for code in [src](src).
   A stand-in is an object a test uses in place of a real one.
   A stand-in can behave differently from the real class and hide a bug.
+  The exception is when a test needs something the real class can't do, such as keep a save from finishing.
+  Then make a stand-in with NSubstitute.
 - A test that needs a real class from [ClockShot.Data](src/ClockShot.Data), such as the database, goes in [ClockShot.Data.Tests](tests/ClockShot.Data.Tests).
   [ClockShot.Core](src/ClockShot.Core) can't reference ClockShot.Data, so its tests can't use Data classes.
-- Use a stand-in only for what ClockShot doesn't control, such as Windows, dialogs, the file system and the clock.
+- Except as above, use a stand-in only for what ClockShot doesn't control, such as Windows, dialogs, the file system and the clock.
   Use a ready-made one where it exists, such as `FakeTimeProvider` or `MockFileSystem`.
   Otherwise make one with NSubstitute, which builds it from an interface.
   If you write a stand-in by hand, add a comment saying why a ready-made one or NSubstitute won't do.

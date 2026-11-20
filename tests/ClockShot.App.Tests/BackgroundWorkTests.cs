@@ -1,12 +1,13 @@
 using ClockShot.App.Services;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace ClockShot.App.Tests;
 
 public sealed class BackgroundWorkTests
 {
-    private readonly RecordingLogger<BackgroundWork> _logger = new();
+    private readonly FakeLogger<BackgroundWork> _logger = new();
 
     [Fact]
     public void RunsTheWork()
@@ -23,7 +24,7 @@ public sealed class BackgroundWorkTests
 
         // Assert
         Assert.True(ran);
-        Assert.Empty(_logger.Entries);
+        Assert.Empty(_logger.Collector.GetSnapshot());
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public sealed class BackgroundWorkTests
         finish.SetResult();
 
         // Assert
-        var entry = Assert.Single(_logger.Entries);
+        var entry = Assert.Single(_logger.Collector.GetSnapshot());
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Same(failure, entry.Exception);
     }
@@ -57,6 +58,6 @@ public sealed class BackgroundWorkTests
         new BackgroundWork(_logger).Run(() => throw failure);
 
         // Assert
-        Assert.Same(failure, Assert.Single(_logger.Entries).Exception);
+        Assert.Same(failure, Assert.Single(_logger.Collector.GetSnapshot()).Exception);
     }
 }

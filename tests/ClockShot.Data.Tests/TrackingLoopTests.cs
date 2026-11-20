@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading.Channels;
 
 using ClockShot.Core.Models;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
+using NSubstitute.Extensions;
 
 namespace ClockShot.Data.Tests;
 
@@ -34,8 +36,10 @@ public sealed class TrackingLoopTests : IAsyncDisposable
     private readonly FakeTimeProvider _clock = new(StartTime);
     private readonly ISystemSampler _sampler = Substitute.For<ISystemSampler>();
     private readonly IWindowCapturer _capturer = Substitute.For<IWindowCapturer>();
-    private readonly FakeSink _sink = new();
-    private readonly FakeScreenshotStore _screenshots = new();
+    private readonly ITrackingSink _sink = Substitute.For<ITrackingSink>();
+    private readonly Channel<IReadOnlyList<TrackingChange>> _writes = Channel.CreateUnbounded<IReadOnlyList<TrackingChange>>();
+    private readonly IScreenshotStore _screenshots = Substitute.For<IScreenshotStore>();
+    private readonly ConcurrentQueue<DateTime> _savedTimes = new();
     private readonly JsonSettingsStore _settings = MemorySettingsStore.Create();
     private readonly TrackingLoop _loop;
 
@@ -48,6 +52,16 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         _sampler.Read(Arg.Any<DateTime>())
             .Returns(call => new TrackingSample(call.Arg<DateTime>(), _window, _idleTime, IsLocked: false));
         _capturer.Capture(Arg.Any<nint>()).Returns(Image);
+        _sink
+            .When(sink => sink.Write(Arg.Any<IReadOnlyList<TrackingChange>>()))
+            .Do(call => _writes.Writer.TryWrite(call.Arg<IReadOnlyList<TrackingChange>>()));
+        _screenshots
+            .When(store => store.SaveAsync(
+                Arg.Any<CapturedImage>(),
+                Arg.Any<DateTime>(),
+                Arg.Any<ScreenshotEncoding>(),
+                Arg.Any<CancellationToken>()))
+            .Do(call => _savedTimes.Enqueue(call.Arg<DateTime>()));
 
         _loop = new TrackingLoop(
             _sampler,
@@ -125,7 +139,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         await StartAsync();
 
         // Assert
-        Assert.True(_sink.IsStarted);
+        _sink.Received().Start();
     }
 
     [Fact]
@@ -268,7 +282,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         // Assert
         _capturer.Received(1).Capture(Arg.Any<nint>());
         _capturer.Received(1).Capture(Editor.Handle);
-        Assert.Equal([StartTime], _screenshots.SavedTimes);
+        Assert.Equal([StartTime], _savedTimes);
     }
 
     [Fact]
@@ -284,7 +298,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         await _loop.DisposeAsync();
 
         // Assert
-        Assert.Equal([At(1)], _screenshots.SavedTimes);
+        Assert.Equal([At(1)], _savedTimes);
     }
 
     [Fact]
@@ -294,7 +308,14 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         var shortestInterval = SettingLimits.ScreenshotIntervalSeconds.Min;
         _settings.Save(new AppSettings { Screenshots = new ScreenshotSettings { IntervalSeconds = shortestInterval } });
         var saving = new TaskCompletionSource();
-        _screenshots.SaveFinishes = saving.Task;
+        // Configure keeps this setup from counting as a save.
+        _screenshots.Configure()
+            .SaveAsync(Arg.Any<CapturedImage>(), Arg.Any<DateTime>(), Arg.Any<ScreenshotEncoding>(), Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                await saving.Task.WaitAsync(call.Arg<CancellationToken>());
+                return (Screenshot?)null;
+            });
         var captures = 0;
         _capturer.Capture(Arg.Any<nint>()).Returns(_ =>
         {
@@ -330,7 +351,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 
         // Assert
         Assert.Equal([new ActivityEnded(StartTime), new StateEnded(StartTime)], await NextWriteAsync());
-        Assert.True(_sink.IsCompleted);
+        await _sink.Received().CompleteAsync();
     }
 
     private static DateTime At(int seconds) => StartTime.AddSeconds(seconds);
@@ -347,25 +368,5 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         return await NextWriteAsync();
     }
 
-    private Task<IReadOnlyList<TrackingChange>> NextWriteAsync() => BackgroundWork.ReadNextAsync(_sink.Writes);
-
-    private sealed class FakeSink : ITrackingSink
-    {
-        public Channel<IReadOnlyList<TrackingChange>> Writes { get; } =
-            Channel.CreateUnbounded<IReadOnlyList<TrackingChange>>();
-
-        public bool IsStarted { get; private set; }
-
-        public bool IsCompleted { get; private set; }
-
-        public void Start() => IsStarted = true;
-
-        public void Write(IReadOnlyList<TrackingChange> changes) => Writes.Writer.TryWrite(changes);
-
-        public Task CompleteAsync()
-        {
-            IsCompleted = true;
-            return Task.CompletedTask;
-        }
-    }
+    private Task<IReadOnlyList<TrackingChange>> NextWriteAsync() => BackgroundWork.ReadNextAsync(_writes);
 }

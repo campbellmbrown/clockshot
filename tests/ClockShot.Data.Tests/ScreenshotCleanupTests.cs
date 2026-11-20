@@ -1,9 +1,14 @@
+using System.Threading.Channels;
+
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 using ClockShot.Data.Settings;
 
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
+
+using NSubstitute;
+using NSubstitute.Extensions;
 
 namespace ClockShot.Data.Tests;
 
@@ -12,12 +17,18 @@ public sealed class ScreenshotCleanupTests : IAsyncDisposable
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
 
     private readonly FakeTimeProvider _clock = new(Start);
-    private readonly FakeScreenshotStore _screenshots = new();
+    private readonly IScreenshotStore _screenshots = Substitute.For<IScreenshotStore>();
+    private readonly Channel<DateTime> _deleteCutoffs = Channel.CreateUnbounded<DateTime>();
     private readonly JsonSettingsStore _settings = MemorySettingsStore.Create();
     private readonly ScreenshotCleanup _cleanup;
 
     public ScreenshotCleanupTests()
     {
+        // Deletes run in the background, so the tests await each delete's cutoff.
+        _screenshots
+            .When(store => store.DeleteTakenBeforeAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>()))
+            .Do(call => _deleteCutoffs.Writer.TryWrite(call.Arg<DateTime>()));
+
         _settings.Save(new AppSettings { Screenshots = new ScreenshotSettings { KeepForDays = 7 } });
         _cleanup = new ScreenshotCleanup(_screenshots, _settings, _clock, NullLogger<ScreenshotCleanup>.Instance);
     }
@@ -52,7 +63,10 @@ public sealed class ScreenshotCleanupTests : IAsyncDisposable
     public async Task AFailedCleanupDoesNotStopTheNextOne()
     {
         // Arrange
-        _screenshots.DeleteFinishes = Task.FromException(new IOException("The disk is busy."));
+        // Configure keeps this setup from counting as a delete.
+        _screenshots.Configure()
+            .DeleteTakenBeforeAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<int>(new IOException("The disk is busy.")));
         _cleanup.Start();
         await NextCutoffAsync();
 
@@ -63,5 +77,5 @@ public sealed class ScreenshotCleanupTests : IAsyncDisposable
         Assert.Equal(Start.AddHours(1).AddDays(-7), await NextCutoffAsync());
     }
 
-    private Task<DateTime> NextCutoffAsync() => BackgroundWork.ReadNextAsync(_screenshots.DeleteCutoffs);
+    private Task<DateTime> NextCutoffAsync() => BackgroundWork.ReadNextAsync(_deleteCutoffs);
 }

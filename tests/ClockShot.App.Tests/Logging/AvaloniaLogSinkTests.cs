@@ -3,12 +3,13 @@ using Avalonia.Logging;
 using ClockShot.App.Logging;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace ClockShot.App.Tests.Logging;
 
 public sealed class AvaloniaLogSinkTests
 {
-    private readonly RecordingLogger<AvaloniaLogSinkTests> _logger = new();
+    private readonly FakeLogger<AvaloniaLogSinkTests> _logger = new();
 
     [Theory]
     [InlineData(LogEventLevel.Warning, LogLevel.Warning)]
@@ -23,7 +24,8 @@ public sealed class AvaloniaLogSinkTests
         sink.Log(level, "Binding", null, "Error in binding to {Target}: {Message}", "Button", "not found");
 
         // Assert
-        Assert.Equal((expected, "Binding: Error in binding to Button: not found", null), Assert.Single(_logger.Entries));
+        var entry = Assert.Single(_logger.Collector.GetSnapshot());
+        Assert.Equal((expected, "Binding: Error in binding to Button: not found", null), (entry.Level, entry.Message, entry.Exception));
     }
 
     [Theory]
@@ -40,6 +42,6 @@ public sealed class AvaloniaLogSinkTests
 
         // Assert
         Assert.False(sink.IsEnabled(level, "Layout"));
-        Assert.Empty(_logger.Entries);
+        Assert.Empty(_logger.Collector.GetSnapshot());
     }
 }
