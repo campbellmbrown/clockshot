@@ -11,8 +11,8 @@ It needs no account and sends nothing over the internet.
 
 ClockShot is a work in progress, and there are no releases yet.
 It already records your activity and takes screenshots, and the Timeline tab shows them.
-You can tag time with a project.
-Tasks, notes and editing tags are still being built.
+You can tag time with a project, a task and a note.
+Editing tags is still being built.
 
 ## What it does
 
@@ -33,8 +33,10 @@ Tasks, notes and editing tags are still being built.
   Right-clicking the timeline opens a menu to zoom to the selection, clear it, or fit the view to the working day or the whole day.
   Right-clicking a block outside the selection selects it first.
   Escape clears the selection.
-- The details panel can tag the selected block or time range with a project, or add a new project.
+- The details panel can tag the selected block or time range with a project, a task and a note, or add a new project.
   The project box finds a project by every word typed, from its name, its client or the projects it sits inside.
+  A blank task means the project in general, and a new task name creates the task.
+  Enter on the timeline jumps to the project box, and Enter in the editor tags the time.
   Tagged time shows on the Tags lane, in a colour picked from the project's name.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.

@@ -118,6 +118,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             RedrawNeeded?.Invoke();
             ZoomToSelectionCommand.NotifyCanExecuteChanged();
             ClearSelectionCommand.NotifyCanExecuteChanged();
+            FocusTagEditorCommand.NotifyCanExecuteChanged();
         };
         preview.PauseChanged += () =>
         {
@@ -550,6 +551,13 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void ClearSelection() => Selection.Clear();
+
+    /// <summary>
+    /// Gives the tag editor's project box keyboard focus.
+    /// It runs from Enter on the Timeline tab or from the menus.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void FocusTagEditor() => Details.TagEditor.RequestFocus();
 
     /// <summary>
     /// Finds the selection's edge within <see cref="EdgeGrabPixels"/> of <paramref name="time"/> and returns the

@@ -35,6 +35,9 @@ public static class Shortcuts
     public static KeyModifiers ScrollModifier { get; } = KeyModifiers.Shift;
     public static KeyModifiers NoSnapModifier { get; } = KeyModifiers.Alt;
 
+    // ---- Tagging ----
+    public static KeyGesture TagSelection { get; } = KeyGesture.Parse("Enter");
+
     // ---- Screenshots ----
     public static KeyGesture SwitchPreview { get; } = KeyGesture.Parse("Ctrl+P");
     public static KeyGesture PausePreview { get; } = KeyGesture.Parse("Ctrl+L");
@@ -64,6 +67,8 @@ public static class Shortcuts
         MouseOnly("Timeline", "Drag the ruler", "Scroll"),
         MouseOnly("Timeline", "Drag across the rows", "Select a time range"),
         MouseOnly("Timeline", "Drag an edge of the selection", "Make it longer or shorter"),
+
+        Key("Tagging", TagSelection, "Tag the selected time (goes to the project box)", ShortcutScope.Timeline),
 
         Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
         Key("Screenshots", PausePreview, "Pause the preview where it is / resume"),

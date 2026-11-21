@@ -4,12 +4,24 @@
              xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.Tagging.TagEditorView"
              x:DataType="tagging:TagEditorViewModel">
+  <!--
+    Enter in any box tags the time.
+    When the project list is open, Enter picks the highlighted project instead.
+  -->
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="Enter" Command="{Binding ApplyCommand}" />
+  </UserControl.KeyBindings>
+
   <StackPanel Spacing="8">
     <TextBlock Classes="h3" Text="Tag this time" />
 
-    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+    <Grid ColumnDefinitions="Auto,*,Auto"
+          RowDefinitions="Auto,Auto,Auto"
+          ColumnSpacing="6"
+          RowSpacing="6">
       <TextBlock Text="Project" VerticalAlignment="Center" />
-      <AutoCompleteBox Grid.Column="1"
+      <AutoCompleteBox x:Name="ProjectBox"
+                       Grid.Column="1"
                        ItemsSource="{Binding ProjectOptions}"
                        SelectedItem="{Binding SelectedProject}"
                        Text="{Binding ProjectText}"
@@ -35,7 +47,35 @@
               AutomationProperties.AutomationId="TagNewProjectButton">
         <controls:Icon Kind="{x:Static controls:Icons.NewProject}" />
       </Button>
+
+      <TextBlock Grid.Row="1"
+                 Text="Task"
+                 VerticalAlignment="Center" />
+      <AutoCompleteBox Grid.Row="1"
+                       Grid.Column="1"
+                       Grid.ColumnSpan="2"
+                       ItemsSource="{Binding TaskOptions}"
+                       Text="{Binding TaskText}"
+                       FilterMode="Contains"
+                       MinimumPrefixLength="0"
+                       PlaceholderText="Blank = General"
+                       ToolTip.Tip="Leave blank to tag the project in general. A new name creates the task."
+                       AutomationProperties.AutomationId="TagTaskBox" />
+
+      <TextBlock Grid.Row="2"
+                 Text="Note"
+                 VerticalAlignment="Center" />
+      <TextBox Grid.Row="2"
+               Grid.Column="1"
+               Grid.ColumnSpan="2"
+               Text="{Binding Note}"
+               PlaceholderText="Optional"
+               AutomationProperties.AutomationId="TagNoteBox" />
     </Grid>
+
+    <TextBlock Text="{Binding Error}"
+               Classes="error"
+               IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
     <Button Classes="accent"
             Command="{Binding ApplyCommand}"

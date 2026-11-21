@@ -25,6 +25,14 @@
                   AutomationProperties.AutomationId="ExitMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}" />
       </MenuItem>
+      <MenuItem Header="_Edit" AutomationProperties.AutomationId="EditMenu">
+        <MenuItem Header="_Tag the selected time..."
+                  InputGesture="{x:Static input:Shortcuts.TagSelection}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.FocusTagEditorCommand}"
+                  AutomationProperties.AutomationId="TagSelectionMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Tag}" />
+      </MenuItem>
       <MenuItem Header="_View" AutomationProperties.AutomationId="ViewMenu">
         <MenuItem Header="_Timeline"
                   InputGesture="{x:Static input:Shortcuts.ShowTimeline}"

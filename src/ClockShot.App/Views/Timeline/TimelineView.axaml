@@ -8,6 +8,7 @@
              x:DataType="timeline:TimelineViewModel">
   <UserControl.KeyBindings>
     <KeyBinding Gesture="{x:Static input:Shortcuts.ClearSelection}" Command="{Binding ClearSelectionCommand}" />
+    <KeyBinding Gesture="{x:Static input:Shortcuts.TagSelection}" Command="{Binding FocusTagEditorCommand}" />
   </UserControl.KeyBindings>
 
   <!--
@@ -118,6 +119,11 @@
                                   PointerMoved="OnTimelinePointerMoved">
           <controls:TimelineControl.ContextMenu>
             <ContextMenu>
+              <MenuItem Header="Tag this time..."
+                        InputGesture="{x:Static input:Shortcuts.TagSelection}"
+                        Command="{Binding FocusTagEditorCommand}"
+                        controls:MenuIcon.Kind="{x:Static controls:Icons.Tag}" />
+              <Separator />
               <MenuItem Header="Zoom to selection"
                         Command="{Binding ZoomToSelectionCommand}"
                         controls:MenuIcon.Kind="{x:Static controls:Icons.ZoomToSelection}" />
