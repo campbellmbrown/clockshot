@@ -7,14 +7,34 @@
   <StackPanel Spacing="8">
     <TextBlock Classes="h3" Text="Tag this time" />
 
-    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
       <TextBlock Text="Project" VerticalAlignment="Center" />
       <AutoCompleteBox Grid.Column="1"
                        ItemsSource="{Binding ProjectOptions}"
                        SelectedItem="{Binding SelectedProject}"
+                       Text="{Binding ProjectText}"
+                       FilterMode="Custom"
+                       ItemFilter="{x:Static tagging:ProjectOptionViewModel.Filter}"
                        MinimumPrefixLength="0"
                        PlaceholderText="Type to search projects"
-                       AutomationProperties.AutomationId="TagProjectBox" />
+                       AutomationProperties.AutomationId="TagProjectBox">
+        <AutoCompleteBox.ItemTemplate>
+          <DataTemplate DataType="tagging:ProjectOptionViewModel">
+            <StackPanel Margin="0,2">
+              <TextBlock Text="{Binding Name}" />
+              <TextBlock Classes="secondary small"
+                         Text="{Binding Context}"
+                         IsVisible="{Binding HasContext}" />
+            </StackPanel>
+          </DataTemplate>
+        </AutoCompleteBox.ItemTemplate>
+      </AutoCompleteBox>
+      <Button Grid.Column="2"
+              Command="{Binding NewProjectCommand}"
+              ToolTip.Tip="New project..."
+              AutomationProperties.AutomationId="TagNewProjectButton">
+        <controls:Icon Kind="{x:Static controls:Icons.NewProject}" />
+      </Button>
     </Grid>
 
     <Button Classes="accent"

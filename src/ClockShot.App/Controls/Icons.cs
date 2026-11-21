@@ -49,5 +49,6 @@ public static class Icons
     public const string PreviewInWindow = "app-window";
 
     // ---- Clients, projects and tags ----
+    public const string NewProject = "folder-plus";
     public const string Tag = "tag";
 }

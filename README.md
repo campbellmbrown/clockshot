@@ -33,7 +33,8 @@ Tasks, notes and editing tags are still being built.
   Right-clicking the timeline opens a menu to zoom to the selection, clear it, or fit the view to the working day or the whole day.
   Right-clicking a block outside the selection selects it first.
   Escape clears the selection.
-- The details panel can tag the selected block or time range with a project.
+- The details panel can tag the selected block or time range with a project, or add a new project.
+  The project box finds a project by every word typed, from its name, its client or the projects it sits inside.
   Tagged time shows on the Tags lane, in a colour picked from the project's name.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.

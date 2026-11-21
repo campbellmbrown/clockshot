@@ -1,10 +1,14 @@
+using ClockShot.App.Services;
 using ClockShot.App.ViewModels.Tagging;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Models;
 using ClockShot.Core.Projects;
 using ClockShot.Core.Tagging;
 using ClockShot.Core.Timeline;
+using ClockShot.Data.Projects;
 using ClockShot.Data.Tagging;
+
+using NSubstitute;
 
 namespace ClockShot.App.Tests.ViewModels.Timeline;
 
@@ -19,9 +23,14 @@ public sealed class TimelineSelectionTests
 
     public TimelineSelectionTests()
     {
-        // These tests never load or save tags.
-        var entries = new TimeEntryRepository(UnopenedDatabase.Create());
-        _details = new SelectionDetailsViewModel(new TagEditorViewModel(new Tagger(entries)));
+        // These tests never load or save projects or tags.
+        var database = UnopenedDatabase.Create();
+        var entries = new TimeEntryRepository(database);
+        var tagEditor = new TagEditorViewModel(
+            new ProjectRepository(database),
+            new Tagger(entries),
+            Substitute.For<IDialogService>());
+        _details = new SelectionDetailsViewModel(tagEditor);
         var catalog = new ProjectCatalog([], [new Project(Tag.ProjectId, ClientId: null, ParentId: null, "Website", IsArchived: false)], []);
         _details.SetDay(ActivityRecords.Empty, catalog, TimeZoneInfo.Utc);
         _selection = new TimelineSelection(_details);

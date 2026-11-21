@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:projects="using:ClockShot.App.ViewModels.Projects"
+             x:Class="ClockShot.App.Views.Projects.ProjectDialogView"
+             x:DataType="projects:ProjectDialogViewModel">
+  <StackPanel Spacing="14" Width="420">
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+      <TextBlock Text="Name" VerticalAlignment="Center" />
+      <TextBox Grid.Column="1"
+               Text="{Binding Name}"
+               AutomationProperties.AutomationId="ProjectDialogName" />
+    </Grid>
+
+    <TextBlock Text="{Binding Error}"
+               Classes="error"
+               IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+  </StackPanel>
+</UserControl>

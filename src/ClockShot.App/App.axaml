@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ClockShot.App.ViewModels"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+             xmlns:projects="using:ClockShot.App.ViewModels.Projects"
              xmlns:views="using:ClockShot.App.Views"
              xmlns:timelineViews="using:ClockShot.App.Views.Timeline"
+             xmlns:projectViews="using:ClockShot.App.Views.Projects"
              x:Class="ClockShot.App.App"
              RequestedThemeVariant="Dark">
   <!-- Explicit view-model to view mapping: no reflection-based view locator. -->
@@ -19,6 +21,9 @@
     </DataTemplate>
     <DataTemplate DataType="vm:KeyboardShortcutsViewModel">
       <views:KeyboardShortcutsView />
+    </DataTemplate>
+    <DataTemplate DataType="projects:ProjectDialogViewModel">
+      <projectViews:ProjectDialogView />
     </DataTemplate>
   </Application.DataTemplates>
 

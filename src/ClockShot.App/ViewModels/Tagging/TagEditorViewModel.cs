@@ -1,7 +1,10 @@
+using ClockShot.App.Services;
+using ClockShot.App.ViewModels.Projects;
 using ClockShot.Core.Models;
 using ClockShot.Core.Projects;
 using ClockShot.Core.Tagging;
 using ClockShot.Core.Timeline;
+using ClockShot.Data.Projects;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,7 +14,10 @@ namespace ClockShot.App.ViewModels.Tagging;
 /// <summary>
 /// Tags the selected time with a project.
 /// </summary>
-public sealed partial class TagEditorViewModel(Tagger tagger) : ViewModelBase
+public sealed partial class TagEditorViewModel(
+    ProjectRepository projects,
+    Tagger tagger,
+    IDialogService dialogs) : ViewModelBase
 {
     private TimeZoneInfo _zone = TimeZoneInfo.Utc;
 
@@ -35,13 +41,19 @@ public sealed partial class TagEditorViewModel(Tagger tagger) : ViewModelBase
     public partial ProjectOptionViewModel? SelectedProject { get; set; }
 
     /// <summary>
+    /// What's typed in the project box.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? ProjectText { get; set; }
+
+    /// <summary>
     /// Called when the projects change.
     /// </summary>
     public void SetCatalog(ProjectCatalog catalog, TimeZoneInfo zone)
     {
         _zone = zone;
         var selectedId = SelectedProject?.Project.Id;
-        ProjectOptions = [.. catalog.UnarchivedProjects().Select(p => new ProjectOptionViewModel(p))];
+        ProjectOptions = [.. catalog.UnarchivedProjects().Select(p => ProjectOptionViewModel.From(p, catalog))];
         SelectedProject = ProjectOptions.FirstOrDefault(o => o.Project.Id == selectedId);
     }
 
@@ -74,6 +86,25 @@ public sealed partial class TagEditorViewModel(Tagger tagger) : ViewModelBase
     }
 
     private bool CanApply() => Target is not null && SelectedProject is not null;
+
+    /// <summary>
+    /// Opens the project form for a new project, starting with whatever was typed in the project box.
+    /// </summary>
+    [RelayCommand]
+    private Task NewProjectAsync() =>
+        ShowProjectFormAsync(ProjectDialogViewModel.ForNew(projects, SelectedProject is null ? ProjectText : null));
+
+    private async Task ShowProjectFormAsync(ProjectDialogViewModel form)
+    {
+        await dialogs.ShowAsync(form);
+        if (form.Saved is not { } saved)
+        {
+            return;
+        }
+
+        SetCatalog(await projects.LoadCatalogAsync(), _zone);
+        SelectedProject = ProjectOptions.FirstOrDefault(o => o.Project.Id == saved.Id);
+    }
 
     private string RangeText(TimeRange range) => LocalTime.FormatRange(range, _zone);
 }

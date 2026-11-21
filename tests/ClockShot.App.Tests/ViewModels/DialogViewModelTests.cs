@@ -1,4 +1,6 @@
 using ClockShot.App.ViewModels;
+using ClockShot.App.ViewModels.Projects;
+using ClockShot.Data.Projects;
 
 namespace ClockShot.App.Tests.ViewModels;
 
@@ -8,7 +10,7 @@ public sealed class DialogViewModelTests
     public void CloseAsksForTheWindowToClose()
     {
         // Arrange
-        var dialog = new TestDialog();
+        var dialog = new AboutViewModel();
         var isCloseRequested = false;
         dialog.CloseRequested += () => isCloseRequested = true;
 
@@ -19,5 +21,25 @@ public sealed class DialogViewModelTests
         Assert.True(isCloseRequested);
     }
 
-    private sealed class TestDialog() : DialogViewModel("Test");
+    [Fact]
+    public void ADialogWithNothingToConfirmClosesOnEnter()
+    {
+        // Act
+        var dialog = new AboutViewModel();
+
+        // Assert
+        Assert.Equal("Close", dialog.CloseText);
+        Assert.True(dialog.ClosesOnEnter);
+    }
+
+    [Fact]
+    public void ADialogWithSomethingToConfirmOffersCancelAndDoesNotCloseOnEnter()
+    {
+        // Act
+        var dialog = ProjectDialogViewModel.ForNew(new ProjectRepository(UnopenedDatabase.Create()));
+
+        // Assert
+        Assert.Equal("Cancel", dialog.CloseText);
+        Assert.False(dialog.ClosesOnEnter);
+    }
 }
