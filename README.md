@@ -44,7 +44,7 @@ The Projects and Timesheet tabs are still being built.
   Tagged time shows on the Tags lane, in a colour picked from its project and task, or one you choose.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.
-- The status bar shows today's active time.
+- The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
 - A day starts at midnight.

@@ -14,6 +14,11 @@ public sealed class TagTotals
     public static TagTotals Empty { get; } = new([]);
 
     /// <summary>
+    /// All the tagged time, whatever its project and task.
+    /// </summary>
+    public TimeSpan Total => _byTag.Values.Sum();
+
+    /// <summary>
     /// Totals of the parts of <paramref name="entries"/> inside <paramref name="range"/>.
     /// </summary>
     public static TagTotals Of(IEnumerable<TimeEntry> entries, TimeRange range) =>

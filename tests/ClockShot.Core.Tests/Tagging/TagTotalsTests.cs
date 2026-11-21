@@ -31,6 +31,23 @@ public sealed class TagTotalsTests
     }
 
     [Fact]
+    public void TheTotalIsAllTaggedTimeInsideTheRange()
+    {
+        // Arrange
+        TimeEntry[] entries =
+        [
+            new(Id: 1, Minutes(0, 30), ProjectA, TaskId: null, Note: null),
+            new(Id: 2, Minutes(40, 90), ProjectB, TaskId: null, Note: null),
+        ];
+
+        // Act
+        var total = TagTotals.Of(entries, Minutes(0, 60)).Total;
+
+        // Assert
+        Assert.Equal(TimeSpan.FromMinutes(50), total);
+    }
+
+    [Fact]
     public void EmptyHasNoTime()
     {
         // Act
