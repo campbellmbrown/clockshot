@@ -68,7 +68,7 @@ public static class Shortcuts
         MouseOnly("Timeline", "Mouse wheel", "Zoom around the pointer"),
         MouseOnly("Timeline", "Drag the ruler", "Scroll"),
         MouseOnly("Timeline", "Drag across the rows", "Select a time range"),
-        MouseOnly("Timeline", "Drag an edge of the selection", "Make it longer or shorter"),
+        MouseOnly("Timeline", "Drag an edge of the selection", "Make it longer or shorter (on a tag: changes the tag)"),
 
         Key("Tagging", TagSelection, "Tag the selected time (goes to the project box)", ShortcutScope.Timeline),
         Key("Tagging", DeleteTag, "Delete the selected tag", ShortcutScope.Timeline),

@@ -23,6 +23,7 @@ namespace ClockShot.App.Controls;
 /// Shift with the wheel, or dragging the ruler, scrolls.
 /// Clicking a block selects it, and dragging across lanes selects a time range.
 /// Dragging an edge of the selection moves that edge.
+/// Dragging an edge of a tag resizes the tag.
 /// Drags snap to block edges unless Alt is held.
 /// See <see cref="SelectionDrag"/>.
 /// </remarks>
@@ -269,7 +270,7 @@ public sealed class TimelineControl : Control
         {
             _gesture = Gesture.Pan;
         }
-        else if (timeline.TryGrabEdge(TimeAt(timeline, point)))
+        else if (timeline.TryGrabEdge(TimeAt(timeline, point), KindOf(timeline, _pressLane)))
         {
             _gesture = Gesture.Drag;
         }
@@ -304,7 +305,7 @@ public sealed class TimelineControl : Control
                 timeline.DragTo(TimeAt(timeline, point), snap: Snaps(e.KeyModifiers));
                 break;
             case Gesture.None:
-                var isOverEdge = timeline.IsOverEdge(TimeAt(timeline, point));
+                var isOverEdge = timeline.IsOverEdge(TimeAt(timeline, point), KindOf(timeline, LaneAt(point.Y)));
                 Cursor = isOverEdge ? ResizeCursor : ArrowCursor;
                 break;
         }

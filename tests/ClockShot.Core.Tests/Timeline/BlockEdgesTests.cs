@@ -18,10 +18,10 @@ public sealed class BlockEdgesTests
         // Arrange
         var pointer = NineAm.AddSeconds(15);
         var nearerEdge = NineAm.AddSeconds(20);
-        var applications = new TimelineLane(LaneKind.Applications, title: "Applications", [Block(nearerEdge, NineAm.AddHours(1))]);
+        var tags = new TimelineLane(LaneKind.Tags, title: "Tags", [Block(nearerEdge, NineAm.AddHours(1))]);
 
         // Act
-        var snapped = BlockEdges.Snap([Lane, applications], pointer, Tolerance);
+        var snapped = BlockEdges.Snap([Lane, tags], pointer, Tolerance);
 
         // Assert
         Assert.Equal(nearerEdge, snapped);
@@ -91,6 +91,41 @@ public sealed class BlockEdgesTests
 
         // Assert
         Assert.Null(anchor);
+    }
+
+    [Fact]
+    public void FindsTheBlockWithAnEdgeNear()
+    {
+        // Act
+        var edge = BlockEdges.BlockWithEdgeNear(Lane, Second.Range.Start.AddSeconds(-30), Tolerance);
+
+        // Assert
+        Assert.Equal((Second.Range.End, Second), edge);
+    }
+
+    [Fact]
+    public void FindsTheEarlierOfTwoTouchingBlocks()
+    {
+        // Arrange
+        var earlier = Block(NineAm, NineAm.AddHours(1));
+        var later = Block(NineAm.AddHours(1), NineAm.AddHours(2));
+        var tags = new TimelineLane(LaneKind.Tags, title: "Tags", [earlier, later]);
+
+        // Act
+        var edge = BlockEdges.BlockWithEdgeNear(tags, NineAm.AddHours(1), Tolerance);
+
+        // Assert
+        Assert.Equal((NineAm, earlier), edge);
+    }
+
+    [Fact]
+    public void FindsNoBlockWhenNoEdgeIsNear()
+    {
+        // Act
+        var edge = BlockEdges.BlockWithEdgeNear(Lane, NineAm.AddMinutes(90), Tolerance);
+
+        // Assert
+        Assert.Null(edge);
     }
 
     private static TimelineBlock Block(DateTime start, DateTime end) =>

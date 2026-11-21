@@ -123,12 +123,22 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
     /// <summary>
     /// Starts a new selection from the anchor, after the pointer moved far enough while pressed.
     /// </summary>
-    public void StartDrag(DateTime anchor) => _drag = new SelectionDrag(anchor);
+    public void StartDrag(DateTime anchor) => _drag = new SelectionDrag(anchor, ResizedTag: null);
 
     /// <summary>
-    /// Starts dragging an edge of the selection, with the anchor as the end that stays put.
+    /// Starts dragging an edge of the selection, or of a tag, with the anchor as the end that stays put.
+    /// Dragging a tag's edge selects the tag and resizes it.
     /// </summary>
-    public void GrabEdge(DateTime anchor) => _drag = new SelectionDrag(anchor);
+    public void GrabEdge(DateTime anchor, TimelineBlock? tagBlock)
+    {
+        if (tagBlock is not null)
+        {
+            SelectBlock(LaneKind.Tags, tagBlock);
+        }
+
+        var resizedTag = Lane == LaneKind.Tags ? details.TagEditor.Editing : null;
+        _drag = new SelectionDrag(anchor, resizedTag);
+    }
 
     /// <summary>
     /// Moves the dragged end to the pointer's time, while the anchor stays put.
@@ -140,16 +150,39 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
             return;
         }
 
-        SelectTime(range);
+        if (_drag.ResizedTag is null)
+        {
+            SelectTime(range);
+        }
+        else
+        {
+            // The tag is saved when the drag ends.
+            Range = range;
+        }
     }
 
-    public void EndDrag() => _drag = null;
+    /// <summary>
+    /// Ends the drag.
+    /// Returns the tag and its new range when the drag resized a tag, so the caller can save it.
+    /// </summary>
+    public (TimeEntry Tag, TimeRange Range)? EndDrag()
+    {
+        var drag = _drag;
+        _drag = null;
+        if (drag?.ResizedTag is { } tag && Range is { } range && range != tag.Range)
+        {
+            return (tag, range);
+        }
+
+        return null;
+    }
 
     private void ShowAgain(LaneKind lane, TimelineBlock block)
     {
         // Editing an unchanged tag again would put its saved values over unsaved changes in the tag editor.
         if (block.Payload is TagBlock tag && tag.Entry == details.TagEditor.Editing)
         {
+            // A resize that wasn't saved would otherwise leave the dragged range showing.
             Range = block.Range;
             details.ShowBlock(block);
         }

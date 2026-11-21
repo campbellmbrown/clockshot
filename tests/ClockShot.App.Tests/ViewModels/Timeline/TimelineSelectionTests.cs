@@ -241,6 +241,37 @@ public sealed class TimelineSelectionTests
     }
 
     [Fact]
+    public void RefreshingDuringATagResizeKeepsTheDraggedRange()
+    {
+        // Arrange
+        var earlier = new TimeRange(Hour.Start.AddMinutes(-30), Hour.End);
+        _selection.GrabEdge(anchor: Hour.End, Block(new TagBlock(Tag)));
+        _selection.DragTo(earlier.Start);
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(Tag)))]);
+
+        // Assert
+        Assert.Equal(earlier, _selection.Range);
+        Assert.Equal(LaneKind.Tags, _selection.Lane);
+    }
+
+    [Fact]
+    public void RefreshingAfterAResizeThatWasNotSavedShowsTheTagsRange()
+    {
+        // Arrange
+        _selection.GrabEdge(anchor: Hour.Start, Block(new TagBlock(Tag)));
+        _selection.DragTo(Hour.End.AddMinutes(30));
+        _selection.EndDrag();
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(Tag)))]);
+
+        // Assert
+        Assert.Equal(Hour, _selection.Range);
+    }
+
+    [Fact]
     public void ChangesTellTheTimelineToRedraw()
     {
         // Arrange
@@ -293,6 +324,65 @@ public sealed class TimelineSelectionTests
 
         // Assert
         Assert.False(_selection.HasSelection);
+    }
+
+    [Fact]
+    public void DraggingATagsEdgeResizesItWithoutTaggingNewTime()
+    {
+        // Arrange
+        var longer = new TimeRange(Hour.Start, Hour.End.AddMinutes(30));
+        _selection.GrabEdge(anchor: Hour.Start, Block(new TagBlock(Tag)));
+
+        // Act
+        _selection.DragTo(longer.End);
+
+        // Assert
+        Assert.Equal(longer, _selection.Range);
+        Assert.Equal(LaneKind.Tags, _selection.Lane);
+        Assert.Equal(Tag, _details.TagEditor.Editing);
+    }
+
+    [Fact]
+    public void EndingATagResizeGivesTheTagAndItsNewRange()
+    {
+        // Arrange
+        var longer = new TimeRange(Hour.Start, Hour.End.AddMinutes(30));
+        _selection.GrabEdge(anchor: Hour.Start, Block(new TagBlock(Tag)));
+        _selection.DragTo(longer.End);
+
+        // Act
+        var resize = _selection.EndDrag();
+
+        // Assert
+        Assert.Equal((Tag, longer), resize);
+        Assert.False(_selection.IsDragging);
+    }
+
+    [Fact]
+    public void EndingATagDragThatChangedNothingGivesNoResize()
+    {
+        // Arrange
+        _selection.GrabEdge(anchor: Hour.Start, Block(new TagBlock(Tag)));
+
+        // Act
+        var resize = _selection.EndDrag();
+
+        // Assert
+        Assert.Null(resize);
+    }
+
+    [Fact]
+    public void EndingAPlainDragGivesNoResize()
+    {
+        // Arrange
+        _selection.StartDrag(anchor: Hour.Start);
+        _selection.DragTo(Hour.End);
+
+        // Act
+        var resize = _selection.EndDrag();
+
+        // Assert
+        Assert.Null(resize);
     }
 
     [Fact]

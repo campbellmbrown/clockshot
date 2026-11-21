@@ -6,7 +6,7 @@ namespace ClockShot.Core.Tests.Timeline;
 public sealed class SelectionDragTests
 {
     private static readonly DateTime NineAm = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
-    private static readonly SelectionDrag Drag = new(Anchor: NineAm);
+    private static readonly SelectionDrag Drag = new(Anchor: NineAm, ResizedTag: null);
 
     [Fact]
     public void RangeRunsFromTheAnchorToAPointerAfterIt()

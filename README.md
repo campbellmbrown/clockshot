@@ -12,7 +12,7 @@ It needs no account and sends nothing over the internet.
 ClockShot is a work in progress, and there are no releases yet.
 It already records your activity and takes screenshots, and the Timeline tab shows them.
 You can tag time with a project, a task and a note, and edit, delete or undo tags.
-Resizing tags, tag colours and the Projects and Timesheet tabs are still being built.
+Tag colours and the Projects and Timesheet tabs are still being built.
 
 ## What it does
 
@@ -38,6 +38,7 @@ Resizing tags, tag colours and the Projects and Timesheet tabs are still being b
   A blank task means the project in general, and a new task name creates the task.
   Enter on the timeline jumps to the project box, and Enter in the editor tags the time.
   Clicking a tag edits it, Delete deletes it, and Ctrl+Z undoes the last change.
+  Dragging a tag's edge makes it longer or shorter, and trims any tag it now overlaps.
   Tagged time shows on the Tags lane, in a colour picked from the project's name.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.

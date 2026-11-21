@@ -51,6 +51,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private readonly IActivityHistory _history;
     private readonly ProjectRepository _projects;
     private readonly ITimeEntryRepository _entries;
+    private readonly Tagger _tagger;
     private readonly TrackingLoop _tracking;
     private readonly DayClock _days;
     private readonly ILogger<TimelineViewModel> _logger;
@@ -98,6 +99,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         _history = history;
         _projects = projects;
         _entries = entries;
+        _tagger = tagger;
         _tracking = tracking;
         _days = days;
         _logger = logger;
@@ -131,7 +133,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             ShowHover();
             RedrawNeeded?.Invoke();
         };
-        tagger.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
+        _tagger.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
         _projects.Changed += () =>
         {
             Interlocked.Increment(ref _projectChangeCount);
@@ -330,20 +332,20 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// <summary>
     /// True when pressing at the time would grab an edge, so the control shows the resize cursor.
     /// </summary>
-    public bool IsOverEdge(DateTime time) => FindEdge(time) is not null;
+    public bool IsOverEdge(DateTime time, LaneKind? lane) => FindEdge(time, lane) is not null;
 
     /// <summary>
-    /// A press on an edge of the selection starts dragging that edge.
+    /// A press on an edge of the selection, or of a tag on the Tags lane, starts dragging that edge.
     /// Returns false when there's no edge under the pointer.
     /// </summary>
-    public bool TryGrabEdge(DateTime time)
+    public bool TryGrabEdge(DateTime time, LaneKind? lane)
     {
-        if (FindEdge(time) is not { } anchor)
+        if (FindEdge(time, lane) is not var (anchor, tagBlock))
         {
             return false;
         }
 
-        Selection.GrabEdge(anchor);
+        Selection.GrabEdge(anchor, tagBlock);
         return true;
     }
 
@@ -354,7 +356,18 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     public void DragTo(DateTime time, bool snap) => Selection.DragTo(SnapIf(snap, time));
 
-    public void EndDrag() => Selection.EndDrag();
+    /// <summary>
+    /// Ends the drag.
+    /// A resized tag is saved in the background, and time it now covers is taken from neighbouring tags.
+    /// </summary>
+    public void EndDrag()
+    {
+        if (Selection.EndDrag() is { } resize)
+        {
+            var undoText = $"Undo resizing the tag to {LocalTime.FormatRange(resize.Range, TimeZone)}";
+            _background.Run(() => _tagger.ResizeAsync(resize.Tag, resize.Range, undoText));
+        }
+    }
 
     public void Dispose()
     {
@@ -566,12 +579,26 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private void FocusTagEditor() => Details.TagEditor.RequestFocus();
 
     /// <summary>
-    /// Finds the selection's edge within <see cref="EdgeGrabPixels"/> of <paramref name="time"/> and returns the
-    /// opposite end, which stays put while that edge is dragged.
-    /// It returns null when no edge is near.
+    /// Finds the edge within <see cref="EdgeGrabPixels"/> of <paramref name="time"/> and returns the opposite end,
+    /// which stays put while that edge is dragged.
+    /// It also returns the tag that edge belongs to, if any, and null when no edge is near.
+    /// The selection's edges come first, then the edges of tags, but only when the pointer is on the Tags lane.
     /// </summary>
-    private DateTime? FindEdge(DateTime time) =>
-        Selection.Range is { } selection ? BlockEdges.AnchorNear(selection, time, Pixels(EdgeGrabPixels)) : null;
+    private (DateTime Anchor, TimelineBlock? TagBlock)? FindEdge(DateTime time, LaneKind? lane)
+    {
+        var tolerance = Pixels(EdgeGrabPixels);
+        if (Selection.Range is { } selection && BlockEdges.AnchorNear(selection, time, tolerance) is { } anchor)
+        {
+            return (anchor, null);
+        }
+
+        if (lane != LaneKind.Tags || Lane(LaneKind.Tags) is not { } tags)
+        {
+            return null;
+        }
+
+        return BlockEdges.BlockWithEdgeNear(tags, time, tolerance);
+    }
 
     private DateTime SnapIf(bool snap, DateTime time) => Clamp(snap ? SnapToEdge(time) : time);
 

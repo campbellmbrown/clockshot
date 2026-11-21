@@ -37,6 +37,26 @@ public static class BlockEdges
         return null;
     }
 
+    /// <summary>
+    /// The first block with an edge near the time, and the end of it that stays put while that edge is dragged.
+    /// Returns null when no edge is within the tolerance.
+    /// </summary>
+    public static (DateTime Anchor, TimelineBlock Block)? BlockWithEdgeNear(
+        TimelineLane lane,
+        DateTime time,
+        TimeSpan tolerance)
+    {
+        foreach (var block in lane.Blocks)
+        {
+            if (AnchorNear(block.Range, time, tolerance) is { } anchor)
+            {
+                return (anchor, block);
+            }
+        }
+
+        return null;
+    }
+
     private static bool IsNear(DateTime edge, DateTime time, TimeSpan tolerance) =>
         (edge - time).Duration() <= tolerance;
 }
