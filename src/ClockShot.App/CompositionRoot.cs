@@ -6,12 +6,15 @@ using ClockShot.App.ViewModels;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Tagging;
 using ClockShot.Core.Timeline;
 using ClockShot.Core.Tracking;
 using ClockShot.Data;
+using ClockShot.Data.Projects;
 using ClockShot.Data.Screenshots;
 using ClockShot.Data.Settings;
 using ClockShot.Data.Sqlite;
+using ClockShot.Data.Tagging;
 using ClockShot.Data.Tracking;
 using ClockShot.Platform.Windows;
 
@@ -53,6 +56,10 @@ internal static class CompositionRoot
         services.AddSingleton<TrackingLoop>();
         services.AddSingleton<ScreenshotCleanup>();
         services.AddSingleton<IActivityHistory, ActivityHistory>();
+
+        // Projects and tagging
+        services.AddSingleton<ProjectRepository>();
+        services.AddSingleton<ITimeEntryRepository, TimeEntryRepository>();
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();

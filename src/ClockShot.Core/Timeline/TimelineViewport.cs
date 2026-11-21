@@ -66,7 +66,15 @@ public readonly record struct TimelineViewport
 
     public double XOf(DateTime timeUtc) => (timeUtc - VisibleStart).TotalSeconds / SecondsPerPixel;
 
-    public DateTime TimeAt(double x) => VisibleStart.AddSeconds(x * SecondsPerPixel);
+    /// <summary>
+    /// Gives the time at <paramref name="x"/>, cut to the millisecond.
+    /// The database keeps times to the millisecond, so a finer time wouldn't match a tag saved from it.
+    /// </summary>
+    public DateTime TimeAt(double x)
+    {
+        var time = VisibleStart.AddSeconds(x * SecondsPerPixel);
+        return time.AddTicks(-(time.Ticks % TimeSpan.TicksPerMillisecond));
+    }
 
     /// <summary>
     /// Zooms by <paramref name="factor"/>, keeping the time under <paramref name="x"/> in place.

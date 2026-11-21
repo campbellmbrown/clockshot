@@ -1,9 +1,12 @@
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
 using ClockShot.Core.Models;
+using ClockShot.Core.Projects;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Tagging;
 using ClockShot.Core.Timeline;
 using ClockShot.Core.Tracking;
+using ClockShot.Data.Projects;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -46,6 +49,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         TrackingTimings.SaveInterval + TickInterval * TicksPerRefresh + TimeSpan.FromSeconds(15);
 
     private readonly IActivityHistory _history;
+    private readonly ProjectRepository _projects;
+    private readonly ITimeEntryRepository _entries;
     private readonly TrackingLoop _tracking;
     private readonly DayClock _days;
     private readonly ILogger<TimelineViewModel> _logger;
@@ -58,6 +63,16 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private int _dayStartHour;
 
     private ActivityRecords _records = ActivityRecords.Empty;
+    private IReadOnlyList<TimeEntry> _tags = [];
+    private ProjectCatalog _catalog = ProjectCatalog.Empty;
+
+    // Counted on the repository's thread, before the UI thread hears of the change.
+    // A running load can then tell that its project list is out of date.
+    private int _projectChangeCount;
+
+    // The project list is reloaded only when this differs from the change count, not on every refresh.
+    private int _catalogLoadedAtChange = -1;
+
     private ScreenshotIndex _screenshots = ScreenshotIndex.Empty;
     private CancellationTokenSource? _loading;
 
@@ -67,6 +82,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     public TimelineViewModel(
         IActivityHistory history,
+        ProjectRepository projects,
+        ITimeEntryRepository entries,
         TrackingLoop tracking,
         ISettingsStore settings,
         TimeProvider time,
@@ -78,6 +95,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         : base("Timeline", Icons.Timeline)
     {
         _history = history;
+        _projects = projects;
+        _entries = entries;
         _tracking = tracking;
         _days = days;
         _logger = logger;
@@ -85,7 +104,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
         Preview = preview;
         Details = details;
-        Details.SetDay(ActivityRecords.Empty, TimeZone);
+        Details.SetDay(ActivityRecords.Empty, ProjectCatalog.Empty, TimeZone);
         Zoom = new TimelineZoom();
         Layout = new TimelineLayout(settings);
         Selection = new TimelineSelection(details);
@@ -106,6 +125,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         {
             ShowHover();
             RedrawNeeded?.Invoke();
+        };
+        _projects.Changed += () =>
+        {
+            Interlocked.Increment(ref _projectChangeCount);
+            OnUiThread(() => _background.Run(() => LoadAsync()));
         };
         _dayStartHour = settings.Current.General.DayStartHour;
         settings.Changed += changed => OnUiThread(() => OnSettingsChanged(changed));
@@ -209,23 +233,41 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private bool IsToday => Day == Today();
 
     /// <summary>
-    /// Loads the day's records.
+    /// Loads the day's records, tags and projects.
     /// A newer load cancels an unfinished older one.
     /// </summary>
     public async Task LoadAsync()
     {
         var loading = Restart();
+        var projectChangesAtStart = Volatile.Read(ref _projectChangeCount);
         try
         {
-            var records = await _history.LoadAsync(DayRange, loading.Token);
-            if (loading.IsCancellationRequested)
+            var recordsTask = _history.LoadAsync(DayRange, loading.Token);
+            var tagsTask = _entries.GetAsync(DayRange, loading.Token);
+            var reloadCatalog = projectChangesAtStart != _catalogLoadedAtChange;
+            var catalogTask = reloadCatalog ? _projects.LoadCatalogAsync(loading.Token) : Task.FromResult(_catalog);
+
+            // Waiting for all three first means a failure in any of them is seen.
+            await Task.WhenAll(recordsTask, tagsTask, catalogTask);
+            var records = await recordsTask;
+            var tags = await tagsTask;
+            var catalog = await catalogTask;
+
+            if (IsOutOfDate(loading, projectChangesAtStart))
             {
                 return;
             }
 
+            if (reloadCatalog)
+            {
+                _catalogLoadedAtChange = projectChangesAtStart;
+                _catalog = catalog;
+            }
+
             _records = records;
+            _tags = tags;
             _screenshots = new ScreenshotIndex(records.Screenshots);
-            Details.SetDay(_records, TimeZone);
+            Details.SetDay(_records, _catalog, TimeZone);
             ShowRecords();
             Selection.Refresh(Lanes);
         }
@@ -557,7 +599,14 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         SummaryText = Summarize(records);
     }
 
-    private void ShowLanes(ActivityRecords records) => Lanes = TimelineLanes.Build(records);
+    /// <summary>
+    /// Whether a newer load has taken over, or a project changed since this load started.
+    /// After a project change, the load that the change started shows the day instead.
+    /// </summary>
+    private bool IsOutOfDate(CancellationTokenSource loading, int projectChangesAtStart) =>
+        loading.IsCancellationRequested || Volatile.Read(ref _projectChangeCount) != projectChangesAtStart;
+
+    private void ShowLanes(ActivityRecords records) => Lanes = TimelineLanes.Build(records, _tags, _catalog);
 
     private ActivityRecords WithOpenBlocksUpToNow(ActivityRecords records) =>
         IsToday && !_tracking.Status.IsPaused ? OpenBlocks.UpTo(records, NowUtc, StillOpenWithin) : records;

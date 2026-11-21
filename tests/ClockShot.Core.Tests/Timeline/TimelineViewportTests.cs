@@ -50,6 +50,19 @@ public sealed class TimelineViewportTests
     }
 
     [Fact]
+    public void TimeAtCutsToTheMillisecond()
+    {
+        // Arrange
+        var viewport = Fitted();
+
+        // Act
+        var time = viewport.TimeAt(x: 0.123456);
+
+        // Assert
+        Assert.Equal(Midnight.AddMilliseconds(7407), time);
+    }
+
+    [Fact]
     public void ZoomKeepsTimeUnderPointerInPlace()
     {
         // Act

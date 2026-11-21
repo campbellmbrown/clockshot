@@ -36,6 +36,8 @@ public sealed class ProjectCatalog
         _tasks = tasks.ToDictionary(t => t.Id);
     }
 
+    public static ProjectCatalog Empty { get; } = new([], [], []);
+
     /// <summary>
     /// A tag's label built from names, for a task that's typed but not created yet.
     /// A blank task name means the project's General bucket.
@@ -94,6 +96,12 @@ public sealed class ProjectCatalog
     public string TagLabel(long projectId, long? taskId) =>
         // The project is never missing, because a project with tagged time can't be deleted.
         LabelOf(_projects[projectId].Name, TaskById(taskId)?.Name);
+
+    /// <summary>
+    /// A tag's colour, which comes from its label.
+    /// The same label always gets the same colour, as application names do.
+    /// </summary>
+    public string ColorOf(long projectId, long? taskId) => NameColor.For(TagLabel(projectId, taskId));
 
     public IReadOnlyList<Project> ChildrenOf(Project parent) =>
         [.. _projects.Values.Where(p => p.ParentId == parent.Id).OrderBy(p => p.Name, DisplayOrder)];

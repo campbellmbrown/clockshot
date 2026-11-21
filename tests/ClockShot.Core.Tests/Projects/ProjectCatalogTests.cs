@@ -73,6 +73,18 @@ public sealed class ProjectCatalogTests
     }
 
     [Fact]
+    public void TagsWithoutAChosenColourGetTheColourOfTheirLabel()
+    {
+        // Act
+        var general = Catalog.ColorOf(WebsiteId, taskId: null);
+        var task = Catalog.ColorOf(WebsiteId, ArchivedTaskId);
+
+        // Assert
+        Assert.Equal(NameColor.For("Website"), general);
+        Assert.Equal(NameColor.For("Website > Archived task"), task);
+    }
+
+    [Fact]
     public void LabelsFromNamesMatchLabelsFromIds()
     {
         // Act

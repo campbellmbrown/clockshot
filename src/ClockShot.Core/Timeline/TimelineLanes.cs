@@ -1,3 +1,6 @@
+using ClockShot.Core.Models;
+using ClockShot.Core.Projects;
+
 namespace ClockShot.Core.Timeline;
 
 /// <summary>
@@ -5,11 +8,25 @@ namespace ClockShot.Core.Timeline;
 /// </summary>
 public static class TimelineLanes
 {
-    public static IReadOnlyList<TimelineLane> Build(ActivityRecords records) =>
+    public static IReadOnlyList<TimelineLane> Build(
+        ActivityRecords records,
+        IReadOnlyList<TimeEntry> tags,
+        ProjectCatalog catalog) =>
     [
+        Tags(tags, catalog),
         Computer(records),
         Applications(records),
     ];
+
+    /// <summary>
+    /// Tagged time, in the tag's colour, labelled with the project and task.
+    /// </summary>
+    private static TimelineLane Tags(IReadOnlyList<TimeEntry> tags, ProjectCatalog catalog) =>
+        new(LaneKind.Tags, "Tags", [.. tags.Select(t => new TimelineBlock(
+            t.Range,
+            catalog.TagLabel(t.ProjectId, t.TaskId),
+            new HexColor(catalog.ColorOf(t.ProjectId, t.TaskId)),
+            new TagBlock(t)))]);
 
     private static TimelineLane Computer(ActivityRecords records) =>
         new(LaneKind.Computer, "Computer", [.. records.States.Select(s => new TimelineBlock(

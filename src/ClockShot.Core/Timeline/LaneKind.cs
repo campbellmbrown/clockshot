@@ -5,6 +5,7 @@ namespace ClockShot.Core.Timeline;
 /// </summary>
 public enum LaneKind
 {
+    Tags,
     Computer,
     Applications,
 }

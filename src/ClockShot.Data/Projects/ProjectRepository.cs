@@ -16,6 +16,10 @@ public sealed class ProjectRepository(SqliteDatabase database)
 {
     private const int SqliteUniqueConstraintFailed = 2067;   // SQLITE_CONSTRAINT_UNIQUE
 
+    /// <summary>
+    /// Raised after any change, so screens showing projects can reload.
+    /// It may be raised on a background thread, so a listener that updates the UI moves to the UI thread first.
+    /// </summary>
     public event Action? Changed;
 
     public Task<ProjectCatalog> LoadCatalogAsync(CancellationToken cancellationToken = default) =>
@@ -33,6 +37,7 @@ public sealed class ProjectRepository(SqliteDatabase database)
                     .Select(t => new ProjectTask(t.Id, t.ProjectId, t.Name, t.IsArchived)));
         }, cancellationToken);
 
+    /// <exception cref="DuplicateNameException">A client with that name exists.</exception>
     public async Task<Client> AddClientAsync(string name)
     {
         name = name.Trim();
@@ -43,6 +48,11 @@ public sealed class ProjectRepository(SqliteDatabase database)
         return new Client(id, name, IsArchived: false);
     }
 
+    /// <summary>
+    /// Adds a project.
+    /// A sub-project takes its client from the top-level project.
+    /// </summary>
+    /// <exception cref="DuplicateNameException">The parent or client already has a project with that name.</exception>
     public async Task<Project> AddProjectAsync(string name, long? clientId, long? parentId)
     {
         name = name.Trim();
@@ -54,6 +64,7 @@ public sealed class ProjectRepository(SqliteDatabase database)
         return new Project(id, ownClientId, parentId, name, IsArchived: false);
     }
 
+    /// <exception cref="DuplicateNameException">The project already has a task with that name.</exception>
     public async Task<ProjectTask> AddTaskAsync(long projectId, string name)
     {
         name = name.Trim();

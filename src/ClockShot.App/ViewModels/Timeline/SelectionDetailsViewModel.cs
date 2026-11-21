@@ -1,4 +1,5 @@
 using ClockShot.Core.Models;
+using ClockShot.Core.Projects;
 using ClockShot.Core.Timeline;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,13 +12,14 @@ namespace ClockShot.App.ViewModels.Timeline;
 public sealed partial class SelectionDetailsViewModel : ViewModelBase
 {
     private ActivityRecords _records = ActivityRecords.Empty;
+    private ProjectCatalog _catalog = ProjectCatalog.Empty;
     private TimeZoneInfo _zone = TimeZoneInfo.Utc;
 
     [ObservableProperty]
     public partial bool HasSelection { get; private set; }
 
     /// <summary>
-    /// What was selected, which is an application, a computer state or "Selected time".
+    /// What was selected, which is a tag, an application, a computer state or "Selected time".
     /// </summary>
     [ObservableProperty]
     public partial string Heading { get; private set; } = "";
@@ -41,15 +43,16 @@ public sealed partial class SelectionDetailsViewModel : ViewModelBase
     public partial IReadOnlyList<ApplicationTotalViewModel> Applications { get; private set; } = [];
 
     /// <summary>
-    /// Sets the loaded day's records and time zone, which every selection on that day uses.
+    /// Sets the loaded day's records, projects and time zone, which every selection on that day uses.
     /// </summary>
-    public void SetDay(ActivityRecords records, TimeZoneInfo zone)
+    public void SetDay(ActivityRecords records, ProjectCatalog catalog, TimeZoneInfo zone)
     {
         _records = records;
+        _catalog = catalog;
         _zone = zone;
     }
 
-    public void ShowBlock(TimelineBlock block) => Show(block.Range, BlockHeading.For(block));
+    public void ShowBlock(TimelineBlock block) => Show(block.Range, BlockHeading.For(block, _catalog));
 
     /// <summary>
     /// Shows a stretch of time that isn't exactly one block.
