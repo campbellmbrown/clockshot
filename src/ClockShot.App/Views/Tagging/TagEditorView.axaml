@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tagging="using:ClockShot.App.ViewModels.Tagging"
+             xmlns:controls="using:ClockShot.App.Controls"
+             x:Class="ClockShot.App.Views.Tagging.TagEditorView"
+             x:DataType="tagging:TagEditorViewModel">
+  <StackPanel Spacing="8">
+    <TextBlock Classes="h3" Text="Tag this time" />
+
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+      <TextBlock Text="Project" VerticalAlignment="Center" />
+      <AutoCompleteBox Grid.Column="1"
+                       ItemsSource="{Binding ProjectOptions}"
+                       SelectedItem="{Binding SelectedProject}"
+                       MinimumPrefixLength="0"
+                       PlaceholderText="Type to search projects"
+                       AutomationProperties.AutomationId="TagProjectBox" />
+    </Grid>
+
+    <Button Classes="accent"
+            Command="{Binding ApplyCommand}"
+            AutomationProperties.AutomationId="TagApplyButton">
+      <controls:IconText Kind="{x:Static controls:Icons.Tag}" Text="Tag" />
+    </Button>
+  </StackPanel>
+</UserControl>

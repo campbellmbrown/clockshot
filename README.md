@@ -11,7 +11,8 @@ It needs no account and sends nothing over the internet.
 
 ClockShot is a work in progress, and there are no releases yet.
 It already records your activity and takes screenshots, and the Timeline tab shows them.
-Tagging time is still being built.
+You can tag time with a project.
+Tasks, notes and editing tags are still being built.
 
 ## What it does
 
@@ -32,6 +33,8 @@ Tagging time is still being built.
   Right-clicking the timeline opens a menu to zoom to the selection, clear it, or fit the view to the working day or the whole day.
   Right-clicking a block outside the selection selects it first.
   Escape clears the selection.
+- The details panel can tag the selected block or time range with a project.
+  Tagged time shows on the Tags lane, in a colour picked from the project's name.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.
 - The status bar shows today's active time.

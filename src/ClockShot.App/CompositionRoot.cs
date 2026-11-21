@@ -3,6 +3,7 @@ using System.IO.Abstractions;
 using ClockShot.App.Logging;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
+using ClockShot.App.ViewModels.Tagging;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
@@ -60,6 +61,7 @@ internal static class CompositionRoot
         // Projects and tagging
         services.AddSingleton<ProjectRepository>();
         services.AddSingleton<ITimeEntryRepository, TimeEntryRepository>();
+        services.AddSingleton<Tagger>();
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
@@ -77,6 +79,7 @@ internal static class CompositionRoot
         services.AddSingleton<TimelineViewModel>();
         services.AddTransient<ScreenshotPreviewViewModel>();
         services.AddTransient<SelectionDetailsViewModel>();
+        services.AddTransient<TagEditorViewModel>();
         services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<SettingsViewModel>();
 

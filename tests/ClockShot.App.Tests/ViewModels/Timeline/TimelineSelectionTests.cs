@@ -1,6 +1,10 @@
+using ClockShot.App.ViewModels.Tagging;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Models;
+using ClockShot.Core.Projects;
+using ClockShot.Core.Tagging;
 using ClockShot.Core.Timeline;
+using ClockShot.Data.Tagging;
 
 namespace ClockShot.App.Tests.ViewModels.Timeline;
 
@@ -8,18 +12,23 @@ public sealed class TimelineSelectionTests
 {
     private static readonly DateTime NineAm = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
     private static readonly TimeRange Hour = new(NineAm, NineAm.AddHours(1));
+    private static readonly TimeEntry Tag = new(Id: 1, Hour, ProjectId: 10, TaskId: null, Note: null);
 
     private readonly SelectionDetailsViewModel _details;
     private readonly TimelineSelection _selection;
 
     public TimelineSelectionTests()
     {
-        _details = new SelectionDetailsViewModel();
+        // These tests never load or save tags.
+        var entries = new TimeEntryRepository(UnopenedDatabase.Create());
+        _details = new SelectionDetailsViewModel(new TagEditorViewModel(new Tagger(entries)));
+        var catalog = new ProjectCatalog([], [new Project(Tag.ProjectId, ClientId: null, ParentId: null, "Website", IsArchived: false)], []);
+        _details.SetDay(ActivityRecords.Empty, catalog, TimeZoneInfo.Utc);
         _selection = new TimelineSelection(_details);
     }
 
     [Fact]
-    public void SelectingABlockShowsIt()
+    public void SelectingABlockShowsItAndGetsReadyToTagIt()
     {
         // Arrange
         var block = Block(new ComputerStateBlock(ComputerState.Away));
@@ -33,6 +42,7 @@ public sealed class TimelineSelectionTests
         Assert.Equal("Away", _details.Heading);
         Assert.Equal("09:00 - 10:00", _details.TimeRangeText);
         Assert.Equal("1 h", _details.TimeText);
+        Assert.Equal(Hour, _details.TagEditor.Target);
     }
 
     [Fact]
@@ -62,6 +72,7 @@ public sealed class TimelineSelectionTests
         // Assert
         Assert.False(_selection.HasSelection);
         Assert.False(_details.HasSelection);
+        Assert.Null(_details.TagEditor.Target);
     }
 
     [Fact]
@@ -96,10 +107,24 @@ public sealed class TimelineSelectionTests
     }
 
     [Fact]
+    public void RefreshingFindsATagThatNowCoversTheSelectedTime()
+    {
+        // Arrange
+        _selection.SelectTime(Hour);
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(Tag)))]);
+
+        // Assert
+        Assert.Equal(LaneKind.Tags, _selection.Lane);
+    }
+
+    [Fact]
     public void RefreshingKeepsTimeThatNoBlockCovers()
     {
         // Arrange
         _selection.SelectTime(Hour);
+        _details.TagEditor.Clear();
 
         // Act
         _selection.Refresh([]);
@@ -107,6 +132,7 @@ public sealed class TimelineSelectionTests
         // Assert
         Assert.Equal(Hour, _selection.Range);
         Assert.Null(_selection.Lane);
+        Assert.Equal(Hour, _details.TagEditor.Target);
     }
 
     [Fact]
@@ -178,6 +204,21 @@ public sealed class TimelineSelectionTests
 
         // Assert
         Assert.Equal(2, changes);
+    }
+
+    [Fact]
+    public void ExpectingATagTellsTheTimelineToRedrawTheOutline()
+    {
+        // Arrange
+        _selection.SelectTime(Hour);
+        var changes = 0;
+        _selection.Changed += () => changes++;
+
+        // Act
+        _selection.ExpectTag();
+
+        // Assert
+        Assert.Equal(1, changes);
     }
 
     [Fact]

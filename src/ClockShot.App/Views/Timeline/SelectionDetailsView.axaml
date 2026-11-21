@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
              xmlns:views="using:ClockShot.App.Views.Timeline"
+             xmlns:tagViews="using:ClockShot.App.Views.Tagging"
              x:Class="ClockShot.App.Views.Timeline.SelectionDetailsView"
              x:DataType="timeline:SelectionDetailsViewModel">
   <ScrollViewer>
@@ -9,7 +10,7 @@
       <TextBlock Classes="secondary"
                  TextWrapping="Wrap"
                  IsVisible="{Binding !HasSelection}"
-                 Text="Click a block to see details here."
+                 Text="Click a block, or drag across the timeline, to see details here."
                  AutomationProperties.AutomationId="DetailsEmptyText" />
 
       <StackPanel Spacing="16" IsVisible="{Binding HasSelection}">
@@ -29,6 +30,8 @@
                        AutomationProperties.AutomationId="DetailsDuration" />
           </StackPanel>
         </StackPanel>
+
+        <tagViews:TagEditorView DataContext="{Binding TagEditor}" />
 
         <StackPanel Spacing="6">
           <TextBlock Classes="h3" Text="Applications" />

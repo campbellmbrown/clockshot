@@ -47,4 +47,7 @@ public static class Icons
     public const string PreviewBesidePointer = "picture-in-picture-2";
     public const string PreviewBelowTimeline = "panel-bottom";
     public const string PreviewInWindow = "app-window";
+
+    // ---- Clients, projects and tags ----
+    public const string Tag = "tag";
 }

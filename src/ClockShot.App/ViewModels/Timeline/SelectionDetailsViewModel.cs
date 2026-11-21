@@ -1,3 +1,4 @@
+using ClockShot.App.ViewModels.Tagging;
 using ClockShot.Core.Models;
 using ClockShot.Core.Projects;
 using ClockShot.Core.Timeline;
@@ -7,13 +8,18 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace ClockShot.App.ViewModels.Timeline;
 
 /// <summary>
-/// The details panel, which shows what the selected block or time range is and the applications used in it.
+/// The details panel, which shows what the selected block or time range is, its tag and the applications used in it.
 /// </summary>
-public sealed partial class SelectionDetailsViewModel : ViewModelBase
+public sealed partial class SelectionDetailsViewModel(TagEditorViewModel tagEditor) : ViewModelBase
 {
     private ActivityRecords _records = ActivityRecords.Empty;
     private ProjectCatalog _catalog = ProjectCatalog.Empty;
     private TimeZoneInfo _zone = TimeZoneInfo.Utc;
+
+    /// <summary>
+    /// Tags the selection.
+    /// </summary>
+    public TagEditorViewModel TagEditor { get; } = tagEditor;
 
     [ObservableProperty]
     public partial bool HasSelection { get; private set; }

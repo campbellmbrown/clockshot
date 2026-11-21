@@ -84,6 +84,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         IActivityHistory history,
         ProjectRepository projects,
         ITimeEntryRepository entries,
+        Tagger tagger,
         TrackingLoop tracking,
         ISettingsStore settings,
         TimeProvider time,
@@ -109,6 +110,9 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         Layout = new TimelineLayout(settings);
         Selection = new TimelineSelection(details);
 
+        // Tagging selects the new tag, instead of the window or state block the tag was made from.
+        details.TagEditor.Applied += Selection.ExpectTag;
+
         Selection.Changed += () =>
         {
             RedrawNeeded?.Invoke();
@@ -126,6 +130,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             ShowHover();
             RedrawNeeded?.Invoke();
         };
+        tagger.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
         _projects.Changed += () =>
         {
             Interlocked.Increment(ref _projectChangeCount);
@@ -260,6 +265,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
             if (reloadCatalog)
             {
+                Details.TagEditor.SetCatalog(catalog, TimeZone);
                 _catalogLoadedAtChange = projectChangesAtStart;
                 _catalog = catalog;
             }

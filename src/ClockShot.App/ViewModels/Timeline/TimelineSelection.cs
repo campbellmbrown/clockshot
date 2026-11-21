@@ -7,7 +7,7 @@ namespace ClockShot.App.ViewModels.Timeline;
 
 /// <summary>
 /// What's selected on the timeline, which is one block or a stretch of time, and the drag that changes it.
-/// It keeps the details panel showing the selection.
+/// It keeps the details panel and the tag editor showing the selection.
 /// </summary>
 public sealed partial class TimelineSelection(SelectionDetailsViewModel details) : ViewModelBase
 {
@@ -51,29 +51,37 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
         Lane = lane;
         Range = block.Range;
         details.ShowBlock(block);
+        details.TagEditor.TagNew(block.Range);
     }
 
     /// <summary>
-    /// Selects a stretch of time that isn't exactly one block.
+    /// Selects a stretch of time that isn't exactly one block, ready to tag.
     /// </summary>
     public void SelectTime(TimeRange range)
     {
         Lane = null;
         Range = range;
         details.ShowTime(range);
+        details.TagEditor.TagNew(range);
     }
+
+    /// <summary>
+    /// Looks for the selection on the Tags lane at the next refresh, because tagging it has just made a tag there.
+    /// </summary>
+    public void ExpectTag() => Lane = LaneKind.Tags;
 
     public void Clear()
     {
         Lane = null;
         Range = null;
         details.Clear();
+        details.TagEditor.Clear();
     }
 
     /// <summary>
     /// Shows the selection again after the lanes reload.
     /// A block on the same lane that starts at the same time is the same block, even if it has grown.
-    /// Otherwise the same stretch of time stays selected.
+    /// Otherwise it's a tag that now covers exactly that time, or else the same stretch of time stays selected.
     /// </summary>
     public void Refresh(IReadOnlyList<TimelineLane> lanes)
     {
@@ -87,6 +95,10 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
         {
             SelectBlock(lane, sameBlock);
         }
+        else if (BlockIn(LaneKind.Tags) is { } tag)
+        {
+            SelectBlock(LaneKind.Tags, tag);
+        }
         else
         {
             SelectTime(range);
@@ -94,6 +106,9 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
 
         TimelineBlock? BlockStartingAt(LaneKind kind) =>
             lanes.FirstOrDefault(l => l.Kind == kind)?.Blocks.FirstOrDefault(b => b.Range.Start == range.Start);
+
+        TimelineBlock? BlockIn(LaneKind kind) =>
+            lanes.FirstOrDefault(l => l.Kind == kind)?.Blocks.FirstOrDefault(b => b.Range == range);
     }
 
     public void ShowSnapPreview(DateTime? edge) => SnapPreviewUtc = edge;
