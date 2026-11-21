@@ -2,6 +2,8 @@ using System.IO.Abstractions.TestingHelpers;
 
 using ClockShot.App.Services;
 using ClockShot.Core.Models;
+using ClockShot.Data;
+using ClockShot.Data.Screenshots;
 
 namespace ClockShot.App.Tests.Services;
 
@@ -18,7 +20,8 @@ public sealed class ScreenshotImageLoaderTests
     public async Task AMissingFileGivesNoImage()
     {
         // Arrange
-        var loader = new ScreenshotImageLoader(new FullPathScreenshotStore(), new MockFileSystem());
+        var files = new MockFileSystem();
+        var loader = new ScreenshotImageLoader(Store(files), files);
 
         // Act
         var image = await loader.LoadAsync(Screenshot, TestContext.Current.CancellationToken);
@@ -32,8 +35,11 @@ public sealed class ScreenshotImageLoaderTests
     {
         // Arrange
         var files = new MockFileSystem();
-        files.AddFile(Screenshot.ImagePath, new MockFileData([1, 2, 3]) { AllowedFileShare = FileShare.None });
-        var loader = new ScreenshotImageLoader(new FullPathScreenshotStore(), files);
+        var store = Store(files);
+        files.AddFile(
+            store.FullPath(Screenshot.ImagePath),
+            new MockFileData([1, 2, 3]) { AllowedFileShare = FileShare.None });
+        var loader = new ScreenshotImageLoader(store, files);
 
         // Act
         var image = await loader.LoadAsync(Screenshot, TestContext.Current.CancellationToken);
@@ -41,4 +47,7 @@ public sealed class ScreenshotImageLoaderTests
         // Assert
         Assert.Null(image);
     }
+
+    private static ScreenshotStore Store(MockFileSystem files) =>
+        new(files, new DataPaths("data"), UnopenedDatabase.Create(), TimeProvider.System);
 }

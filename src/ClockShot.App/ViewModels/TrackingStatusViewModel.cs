@@ -12,9 +12,9 @@ namespace ClockShot.App.ViewModels;
 /// </summary>
 public sealed partial class TrackingStatusViewModel : ViewModelBase
 {
-    private readonly ITrackingController _tracking;
+    private readonly TrackingLoop _tracking;
 
-    public TrackingStatusViewModel(ITrackingController tracking)
+    public TrackingStatusViewModel(TrackingLoop tracking)
     {
         _tracking = tracking;
         _tracking.StatusChanged += () => OnUiThread(() =>

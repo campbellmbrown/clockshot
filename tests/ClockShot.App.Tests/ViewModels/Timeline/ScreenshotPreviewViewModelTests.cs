@@ -5,6 +5,7 @@ using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Models;
 using ClockShot.Core.Settings;
 using ClockShot.Data;
+using ClockShot.Data.Screenshots;
 using ClockShot.Data.Settings;
 
 using Microsoft.Extensions.Logging.Abstractions;
@@ -119,6 +120,10 @@ public sealed class ScreenshotPreviewViewModelTests
         Assert.Equal("This screenshot couldn't be opened.", preview.Message);
     }
 
-    private ScreenshotPreviewViewModel Preview() =>
-        new(new ScreenshotImageLoader(new FullPathScreenshotStore(), new MockFileSystem()), _settings);
+    private ScreenshotPreviewViewModel Preview()
+    {
+        var files = new MockFileSystem();
+        var store = new ScreenshotStore(files, new DataPaths("data"), UnopenedDatabase.Create(), TimeProvider.System);
+        return new ScreenshotPreviewViewModel(new ScreenshotImageLoader(store, files), _settings);
+    }
 }

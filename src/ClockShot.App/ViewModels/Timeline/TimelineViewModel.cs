@@ -46,7 +46,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
         TrackingTimings.SaveInterval + TickInterval * TicksPerRefresh + TimeSpan.FromSeconds(15);
 
     private readonly IActivityHistory _history;
-    private readonly ITrackingController _tracking;
+    private readonly TrackingLoop _tracking;
     private readonly DayClock _days;
     private readonly ILogger<TimelineViewModel> _logger;
     private readonly BackgroundWork _background;
@@ -67,7 +67,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
     public TimelineViewModel(
         IActivityHistory history,
-        ITrackingController tracking,
+        TrackingLoop tracking,
         ISettingsStore settings,
         TimeProvider time,
         DayClock days,

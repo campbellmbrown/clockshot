@@ -16,7 +16,7 @@ public sealed class TrackingLoop(
     IScreenshotStore screenshots,
     ISettingsStore settings,
     TimeProvider time,
-    ILogger<TrackingLoop> logger) : ITrackingController, IAsyncDisposable
+    ILogger<TrackingLoop> logger) : IAsyncDisposable
 {
     private static readonly TimeSpan SampleInterval = TimeSpan.FromSeconds(1);
 
@@ -39,6 +39,10 @@ public sealed class TrackingLoop(
     private readonly Lock _statusLock = new();
     private volatile TrackingStatus _status = TrackingStatus.NotStarted;
 
+    /// <summary>
+    /// Raised when <see cref="Status"/> changes.
+    /// May be raised on any thread.
+    /// </summary>
     public event Action? StatusChanged;
 
     public TrackingStatus Status => _status;
@@ -51,6 +55,10 @@ public sealed class TrackingLoop(
         _loop ??= Task.Run(RunAsync, CancellationToken.None);
     }
 
+    /// <summary>
+    /// Stops recording until <see cref="Resume"/>.
+    /// The open segments end at the next sample, so paused time has none.
+    /// </summary>
     public void Pause()
     {
         if (ChangeStatus(_ => TrackingStatus.Paused))
@@ -59,6 +67,9 @@ public sealed class TrackingLoop(
         }
     }
 
+    /// <summary>
+    /// Starts recording again from the next sample.
+    /// </summary>
     public void Resume()
     {
         // The tracker belongs to the loop, so its next tick fills in the state and window.

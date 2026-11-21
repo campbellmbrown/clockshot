@@ -53,7 +53,6 @@ internal static class CompositionRoot
         services.AddSingleton<TrackingLoop>();
         services.AddSingleton<ScreenshotCleanup>();
         services.AddSingleton<IActivityHistory, ActivityHistory>();
-        services.AddSingleton<ITrackingController>(sp => sp.GetRequiredService<TrackingLoop>());
 
         // App services
         services.AddSingleton<IAppLifetime, DesktopAppLifetime>();
