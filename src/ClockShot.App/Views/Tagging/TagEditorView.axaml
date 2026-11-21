@@ -95,5 +95,40 @@
         <controls:IconText Kind="{x:Static controls:Icons.Delete}" Text="Delete tag" />
       </Button>
     </StackPanel>
+
+    <StackPanel Spacing="4" IsVisible="{Binding HasRecentTags}">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <controls:Icon Kind="{x:Static controls:Icons.RecentTags}"
+                       Width="14"
+                       Height="14"
+                       Opacity="0.7" />
+        <TextBlock Classes="secondary" Text="Recently used" />
+      </StackPanel>
+      <ItemsControl ItemsSource="{Binding RecentTags}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="tagging:RecentTagViewModel">
+            <Button Margin="0,0,6,6"
+                    Padding="8,3"
+                    ToolTip.Tip="Use this project and task"
+                    Command="{Binding $parent[ItemsControl].((tagging:TagEditorViewModel)DataContext).UseRecentTagCommand}"
+                    CommandParameter="{Binding}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Border Width="8"
+                        Height="8"
+                        CornerRadius="2"
+                        Background="{Binding ColorHex, Converter={x:Static controls:ThemeBrushes.FromHex}}"
+                        VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Label}" Classes="small" />
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
   </StackPanel>
 </UserControl>

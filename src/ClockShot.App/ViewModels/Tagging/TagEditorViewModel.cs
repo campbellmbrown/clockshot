@@ -17,9 +17,12 @@ namespace ClockShot.App.ViewModels.Tagging;
 /// </summary>
 public sealed partial class TagEditorViewModel(
     ProjectRepository projects,
+    ITimeEntryRepository entries,
     Tagger tagger,
     IDialogService dialogs) : ViewModelBase
 {
+    private const int RecentTagCount = 6;
+
     private ProjectCatalog _catalog = ProjectCatalog.Empty;
     private TimeZoneInfo _zone = TimeZoneInfo.Utc;
 
@@ -82,6 +85,12 @@ public sealed partial class TagEditorViewModel(
     [ObservableProperty]
     public partial string? Note { get; set; }
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRecentTags))]
+    public partial IReadOnlyList<RecentTagViewModel> RecentTags { get; private set; } = [];
+
+    public bool HasRecentTags => RecentTags.Count > 0;
+
     /// <summary>
     /// Why the last action didn't work, such as a name that's already taken.
     /// It's empty when the last action worked.
@@ -94,13 +103,14 @@ public sealed partial class TagEditorViewModel(
     /// <summary>
     /// Called when the projects change.
     /// </summary>
-    public void SetCatalog(ProjectCatalog catalog, TimeZoneInfo zone)
+    public async Task SetCatalogAsync(ProjectCatalog catalog, TimeZoneInfo zone)
     {
         _catalog = catalog;
         _zone = zone;
         var selectedId = SelectedProject?.Project.Id;
         ProjectOptions = [.. catalog.UnarchivedProjects().Select(p => ProjectOptionViewModel.From(p, catalog))];
         SelectedProject = ProjectOptions.FirstOrDefault(o => o.Project.Id == selectedId);
+        await RefreshRecentTagsAsync();
     }
 
     /// <summary>
@@ -139,6 +149,23 @@ public sealed partial class TagEditorViewModel(
         Editing = null;
     }
 
+    /// <summary>
+    /// Reloads the recently used tags, such as after tagging.
+    /// </summary>
+    public async Task RefreshRecentTagsAsync()
+    {
+        // Twice as many, so enough are left once the tags of archived projects are dropped.
+        var recent = await entries.GetRecentTagsAsync(RecentTagCount * 2);
+        RecentTags = [.. recent
+            .Where(tag => _catalog.ProjectById(tag.ProjectId) is { } project && !_catalog.IsArchived(project))
+            .Take(RecentTagCount)
+            .Select(tag => new RecentTagViewModel(
+                tag.ProjectId,
+                tag.TaskId,
+                _catalog.TagLabel(tag.ProjectId, tag.TaskId),
+                _catalog.ColorOf(tag.ProjectId, tag.TaskId)))];
+    }
+
     partial void OnSelectedProjectChanged(ProjectOptionViewModel? value)
     {
         TaskOptions = value is null ? [] : [.. _catalog.TasksOf(value.Project.Id).Select(t => t.Name)];
@@ -150,6 +177,13 @@ public sealed partial class TagEditorViewModel(
         {
             TaskText = null;
         }
+    }
+
+    [RelayCommand]
+    private void UseRecentTag(RecentTagViewModel recent)
+    {
+        SelectedProject = ProjectOptions.FirstOrDefault(o => o.Project.Id == recent.ProjectId);
+        TaskText = _catalog.TaskById(recent.TaskId)?.Name;
     }
 
     /// <summary>
@@ -227,7 +261,7 @@ public sealed partial class TagEditorViewModel(
             return;
         }
 
-        SetCatalog(await projects.LoadCatalogAsync(), _zone);
+        await SetCatalogAsync(await projects.LoadCatalogAsync(), _zone);
         SelectedProject = ProjectOptions.FirstOrDefault(o => o.Project.Id == saved.Id);
     }
 

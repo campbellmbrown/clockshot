@@ -54,4 +54,5 @@ public static class Icons
     // ---- Clients, projects and tags ----
     public const string NewProject = "folder-plus";
     public const string Tag = "tag";
+    public const string RecentTags = "rotate-ccw-clock";
 }

@@ -28,6 +28,7 @@ public sealed class TimelineSelectionTests
         var entries = new TimeEntryRepository(database);
         var tagEditor = new TagEditorViewModel(
             new ProjectRepository(database),
+            entries,
             new Tagger(entries),
             Substitute.For<IDialogService>());
         _details = new SelectionDetailsViewModel(tagEditor);

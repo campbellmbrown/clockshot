@@ -39,6 +39,7 @@ Tag colours and the Projects and Timesheet tabs are still being built.
   A blank task means the project in general, and a new task name creates the task.
   Enter on the timeline jumps to the project box, and Enter in the editor tags the time.
   Clicking a tag edits it, Delete deletes it, and Ctrl+Z undoes the last change.
+  Buttons for the six most recently used project and task pairs fill in the editor in one click.
   Dragging a tag's edge makes it longer or shorter, and trims any tag it now overlaps.
   Tagged time shows on the Tags lane, in a colour picked from the project's name.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.

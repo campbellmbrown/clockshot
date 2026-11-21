@@ -133,7 +133,11 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             ShowHover();
             RedrawNeeded?.Invoke();
         };
-        _tagger.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
+        _tagger.Changed += () => OnUiThread(() => _background.Run(async () =>
+        {
+            await LoadAsync();
+            await Details.TagEditor.RefreshRecentTagsAsync();
+        }));
         _projects.Changed += () =>
         {
             Interlocked.Increment(ref _projectChangeCount);
@@ -268,7 +272,13 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
 
             if (reloadCatalog)
             {
-                Details.TagEditor.SetCatalog(catalog, TimeZone);
+                // The tag editor loads its recent tags, so a newer load may take over meanwhile.
+                await Details.TagEditor.SetCatalogAsync(catalog, TimeZone);
+                if (IsOutOfDate(loading, projectChangesAtStart))
+                {
+                    return;
+                }
+
                 _catalogLoadedAtChange = projectChangesAtStart;
                 _catalog = catalog;
             }
