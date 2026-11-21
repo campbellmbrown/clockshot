@@ -26,6 +26,8 @@ public static class Icons
     // ---- Common actions ----
     public const string Add = "plus";
     public const string Remove = "x";
+    public const string Delete = "trash";
+    public const string Undo = "undo-2";
 
     // ---- Days and zoom ----
     public const string PreviousDay = "chevron-left";

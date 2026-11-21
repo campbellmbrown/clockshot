@@ -553,6 +553,12 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private void ClearSelection() => Selection.Clear();
 
     /// <summary>
+    /// Deletes the selected tag, from the Delete key or the menus.
+    /// The selected tag is the one the tag editor is editing, so the editor deletes it.
+    /// </summary>
+    public IAsyncRelayCommand DeleteSelectedTagCommand => Details.TagEditor.DeleteCommand;
+
+    /// <summary>
     /// Gives the tag editor's project box keyboard focus.
     /// It runs from Enter on the Timeline tab or from the menus.
     /// </summary>

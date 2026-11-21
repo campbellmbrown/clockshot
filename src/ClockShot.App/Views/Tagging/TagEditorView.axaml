@@ -5,7 +5,7 @@
              x:Class="ClockShot.App.Views.Tagging.TagEditorView"
              x:DataType="tagging:TagEditorViewModel">
   <!--
-    Enter in any box tags the time.
+    Enter in any box tags the time or saves the changes.
     When the project list is open, Enter picks the highlighted project instead.
   -->
   <UserControl.KeyBindings>
@@ -13,7 +13,7 @@
   </UserControl.KeyBindings>
 
   <StackPanel Spacing="8">
-    <TextBlock Classes="h3" Text="Tag this time" />
+    <TextBlock Classes="h3" Text="{Binding Title}" />
 
     <Grid ColumnDefinitions="Auto,*,Auto"
           RowDefinitions="Auto,Auto,Auto"
@@ -77,10 +77,17 @@
                Classes="error"
                IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-    <Button Classes="accent"
-            Command="{Binding ApplyCommand}"
-            AutomationProperties.AutomationId="TagApplyButton">
-      <controls:IconText Kind="{x:Static controls:Icons.Tag}" Text="Tag" />
-    </Button>
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Classes="accent"
+              Command="{Binding ApplyCommand}"
+              AutomationProperties.AutomationId="TagApplyButton">
+        <controls:IconText Kind="{x:Static controls:Icons.Tag}" Text="{Binding ApplyText}" />
+      </Button>
+      <Button Command="{Binding DeleteCommand}"
+              IsVisible="{Binding IsEditing}"
+              AutomationProperties.AutomationId="TagDeleteButton">
+        <controls:IconText Kind="{x:Static controls:Icons.Delete}" Text="Delete tag" />
+      </Button>
+    </StackPanel>
   </StackPanel>
 </UserControl>

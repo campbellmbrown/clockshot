@@ -1,6 +1,7 @@
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Settings;
+using ClockShot.Core.Tagging;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,6 +15,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly ISettingsStore _settings;
     private readonly AppPaths _paths;
+    private readonly Tagger _tagger;
 
     public MainWindowViewModel(
         TimelineViewModel timeline,
@@ -24,7 +26,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IShell shell,
         IDialogService dialogs,
         ISettingsStore settings,
-        AppPaths paths)
+        AppPaths paths,
+        Tagger tagger)
     {
         Timeline = timeline;
         Settings = settingsPage;
@@ -37,7 +40,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _dialogs = dialogs;
         _settings = settings;
         _paths = paths;
+        _tagger = tagger;
         OnTimeline = new ShowPageFirstCommand(() => SelectedPage = Timeline);
+        tagger.Changed += () => OnUiThread(OnTagsChanged);
     }
 
     public TimelineViewModel Timeline { get; }
@@ -63,10 +68,27 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     public ShowPageFirstCommand OnTimeline { get; }
 
+    /// <summary>
+    /// The text of the Edit > Undo menu item, which names the change it would undo.
+    /// Tagging happens on several tabs, so undo lives here.
+    /// </summary>
+    public string UndoText => _tagger.UndoDescription ?? "Undo last change";
+
     partial void OnSelectedPageChanged(PageViewModel value) => value.OnShown();
 
     [RelayCommand]
     private void ShowPage(PageViewModel page) => SelectedPage = page;
+
+    [RelayCommand(CanExecute = nameof(CanUndo))]
+    private Task UndoAsync() => _tagger.UndoAsync();
+
+    private bool CanUndo() => _tagger.CanUndo;
+
+    private void OnTagsChanged()
+    {
+        OnPropertyChanged(nameof(UndoText));
+        UndoCommand.NotifyCanExecuteChanged();
+    }
 
     [RelayCommand]
     private void OpenLogFolder() => _shell.OpenFolder(_paths.Logs);

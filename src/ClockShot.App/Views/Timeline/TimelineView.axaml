@@ -9,6 +9,7 @@
   <UserControl.KeyBindings>
     <KeyBinding Gesture="{x:Static input:Shortcuts.ClearSelection}" Command="{Binding ClearSelectionCommand}" />
     <KeyBinding Gesture="{x:Static input:Shortcuts.TagSelection}" Command="{Binding FocusTagEditorCommand}" />
+    <KeyBinding Gesture="{x:Static input:Shortcuts.DeleteTag}" Command="{Binding DeleteSelectedTagCommand}" />
   </UserControl.KeyBindings>
 
   <!--
@@ -123,6 +124,10 @@
                         InputGesture="{x:Static input:Shortcuts.TagSelection}"
                         Command="{Binding FocusTagEditorCommand}"
                         controls:MenuIcon.Kind="{x:Static controls:Icons.Tag}" />
+              <MenuItem Header="Delete tag"
+                        InputGesture="{x:Static input:Shortcuts.DeleteTag}"
+                        Command="{Binding DeleteSelectedTagCommand}"
+                        controls:MenuIcon.Kind="{x:Static controls:Icons.Delete}" />
               <Separator />
               <MenuItem Header="Zoom to selection"
                         Command="{Binding ZoomToSelectionCommand}"

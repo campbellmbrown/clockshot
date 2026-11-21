@@ -37,6 +37,8 @@ public static class Shortcuts
 
     // ---- Tagging ----
     public static KeyGesture TagSelection { get; } = KeyGesture.Parse("Enter");
+    public static KeyGesture DeleteTag { get; } = KeyGesture.Parse("Delete");
+    public static KeyGesture Undo { get; } = KeyGesture.Parse("Ctrl+Z");
 
     // ---- Screenshots ----
     public static KeyGesture SwitchPreview { get; } = KeyGesture.Parse("Ctrl+P");
@@ -69,6 +71,8 @@ public static class Shortcuts
         MouseOnly("Timeline", "Drag an edge of the selection", "Make it longer or shorter"),
 
         Key("Tagging", TagSelection, "Tag the selected time (goes to the project box)", ShortcutScope.Timeline),
+        Key("Tagging", DeleteTag, "Delete the selected tag", ShortcutScope.Timeline),
+        Key("Tagging", Undo, "Undo the last change"),
 
         Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
         Key("Screenshots", PausePreview, "Pause the preview where it is / resume"),

@@ -51,7 +51,14 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
         Lane = lane;
         Range = block.Range;
         details.ShowBlock(block);
-        details.TagEditor.TagNew(block.Range);
+        if (block.Payload is TagBlock tag)
+        {
+            details.TagEditor.Edit(tag.Entry);
+        }
+        else
+        {
+            details.TagEditor.TagNew(block.Range);
+        }
     }
 
     /// <summary>
@@ -93,7 +100,7 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
 
         if (Lane is { } lane && BlockStartingAt(lane) is { } sameBlock)
         {
-            SelectBlock(lane, sameBlock);
+            ShowAgain(lane, sameBlock);
         }
         else if (BlockIn(LaneKind.Tags) is { } tag)
         {
@@ -137,6 +144,20 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
     }
 
     public void EndDrag() => _drag = null;
+
+    private void ShowAgain(LaneKind lane, TimelineBlock block)
+    {
+        // Editing an unchanged tag again would put its saved values over unsaved changes in the tag editor.
+        if (block.Payload is TagBlock tag && tag.Entry == details.TagEditor.Editing)
+        {
+            Range = block.Range;
+            details.ShowBlock(block);
+        }
+        else
+        {
+            SelectBlock(lane, block);
+        }
+    }
 
     partial void OnRangeChanged(TimeRange? value) => Changed?.Invoke();
 

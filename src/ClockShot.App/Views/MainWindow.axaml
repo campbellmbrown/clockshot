@@ -26,12 +26,25 @@
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Exit}" />
       </MenuItem>
       <MenuItem Header="_Edit" AutomationProperties.AutomationId="EditMenu">
+        <MenuItem Header="{Binding UndoText}"
+                  InputGesture="{x:Static input:Shortcuts.Undo}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding UndoCommand}"
+                  AutomationProperties.AutomationId="UndoMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Undo}" />
+        <Separator />
         <MenuItem Header="_Tag the selected time..."
                   InputGesture="{x:Static input:Shortcuts.TagSelection}"
                   Command="{Binding OnTimeline}"
                   CommandParameter="{Binding Timeline.FocusTagEditorCommand}"
                   AutomationProperties.AutomationId="TagSelectionMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Tag}" />
+        <MenuItem Header="_Delete the selected tag"
+                  InputGesture="{x:Static input:Shortcuts.DeleteTag}"
+                  Command="{Binding OnTimeline}"
+                  CommandParameter="{Binding Timeline.DeleteSelectedTagCommand}"
+                  AutomationProperties.AutomationId="DeleteTagMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Delete}" />
       </MenuItem>
       <MenuItem Header="_View" AutomationProperties.AutomationId="ViewMenu">
         <MenuItem Header="_Timeline"

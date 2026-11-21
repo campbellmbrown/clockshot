@@ -52,6 +52,17 @@ public sealed class TimelineSelectionTests
         Assert.Equal("09:00 - 10:00", _details.TimeRangeText);
         Assert.Equal("1 h", _details.TimeText);
         Assert.Equal(Hour, _details.TagEditor.Target);
+        Assert.Null(_details.TagEditor.Editing);
+    }
+
+    [Fact]
+    public void SelectingATagEditsIt()
+    {
+        // Act
+        _selection.SelectBlock(LaneKind.Tags, Block(new TagBlock(Tag)));
+
+        // Assert
+        Assert.Equal(Tag, _details.TagEditor.Editing);
     }
 
     [Fact]
@@ -126,6 +137,7 @@ public sealed class TimelineSelectionTests
 
         // Assert
         Assert.Equal(LaneKind.Tags, _selection.Lane);
+        Assert.Equal(Tag, _details.TagEditor.Editing);
     }
 
     [Fact]
@@ -198,6 +210,34 @@ public sealed class TimelineSelectionTests
         // Assert
         Assert.Equal(grown.Range, _selection.Range);
         Assert.Equal(LaneKind.Computer, _selection.Lane);
+    }
+
+    [Fact]
+    public void RefreshingKeepsUnsavedChangesToAnUnchangedTag()
+    {
+        // Arrange
+        _selection.SelectBlock(LaneKind.Tags, Block(new TagBlock(Tag)));
+        _details.TagEditor.Note = "Not saved yet";
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(Tag)))]);
+
+        // Assert
+        Assert.Equal("Not saved yet", _details.TagEditor.Note);
+    }
+
+    [Fact]
+    public void RefreshingShowsATagThatWasSaved()
+    {
+        // Arrange
+        _selection.SelectBlock(LaneKind.Tags, Block(new TagBlock(Tag)));
+        var saved = Tag with { Note = "Saved" };
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(saved)))]);
+
+        // Assert
+        Assert.Equal(saved, _details.TagEditor.Editing);
     }
 
     [Fact]

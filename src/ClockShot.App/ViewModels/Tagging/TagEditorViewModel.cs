@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace ClockShot.App.ViewModels.Tagging;
 
 /// <summary>
-/// Tags the selected time with a project and a task.
+/// Tags the selected time with a project and a task, or edits or deletes an existing tag.
 /// A blank task puts the time in the project's General bucket, and a new task name creates the task.
 /// </summary>
 public sealed partial class TagEditorViewModel(
@@ -29,7 +29,7 @@ public sealed partial class TagEditorViewModel(
     public event Action? FocusRequested;
 
     /// <summary>
-    /// Raised after tagging succeeds.
+    /// Raised after tagging or saving changes succeeds.
     /// </summary>
     public event Action? Applied;
 
@@ -39,6 +39,20 @@ public sealed partial class TagEditorViewModel(
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
     public partial TimeRange? Target { get; private set; }
+
+    /// <summary>
+    /// The existing tag being edited, or null when tagging new time.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEditing), nameof(ApplyText), nameof(Title))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
+    public partial TimeEntry? Editing { get; private set; }
+
+    public bool IsEditing => Editing is not null;
+
+    public string Title => IsEditing ? "Tag" : "Tag this time";
+
+    public string ApplyText => IsEditing ? "Save changes" : "Tag";
 
     [ObservableProperty]
     public partial IReadOnlyList<ProjectOptionViewModel> ProjectOptions { get; private set; } = [];
@@ -95,11 +109,35 @@ public sealed partial class TagEditorViewModel(
     /// </summary>
     public void TagNew(TimeRange range)
     {
+        // A note describes one tag, so the tag that was being edited keeps its note to itself.
+        if (Editing is not null)
+        {
+            Note = null;
+        }
+
         Target = range;
+        Editing = null;
         Error = "";
     }
 
-    public void Clear() => Target = null;
+    /// <summary>
+    /// Prepares to edit an existing tag.
+    /// </summary>
+    public void Edit(TimeEntry entry)
+    {
+        Target = entry.Range;
+        Editing = entry;
+        SelectedProject = ProjectOptions.FirstOrDefault(o => o.Project.Id == entry.ProjectId);
+        TaskText = _catalog.TaskById(entry.TaskId)?.Name;
+        Note = entry.Note;
+        Error = "";
+    }
+
+    public void Clear()
+    {
+        Target = null;
+        Editing = null;
+    }
 
     partial void OnSelectedProjectChanged(ProjectOptionViewModel? value)
     {
@@ -115,7 +153,7 @@ public sealed partial class TagEditorViewModel(
     }
 
     /// <summary>
-    /// Tags the target time.
+    /// Tags the target time, or saves changes to the tag being edited.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanApply))]
     private async Task ApplyAsync()
@@ -129,10 +167,23 @@ public sealed partial class TagEditorViewModel(
         try
         {
             var taskId = await TaskIdAsync(option.Project.Id);
-            await tagger.TagAsync(range, option.Project.Id, taskId, Note, $"Undo tagging {RangeText(range)}");
+            if (Editing is { } entry)
+            {
+                await tagger.RetagAsync(
+                    entry,
+                    option.Project.Id,
+                    taskId,
+                    Note,
+                    $"Undo changing the tag {RangeText(entry.Range)}");
+            }
+            else
+            {
+                await tagger.TagAsync(range, option.Project.Id, taskId, Note, $"Undo tagging {RangeText(range)}");
 
-            // The next tag starts without this one's note.
-            Note = null;
+                // The next tag starts without this one's note.
+                Note = null;
+            }
+
             Applied?.Invoke();
         }
         catch (DuplicateNameException ex)
@@ -142,6 +193,15 @@ public sealed partial class TagEditorViewModel(
     }
 
     private bool CanApply() => Target is not null && SelectedProject is not null;
+
+    [RelayCommand(CanExecute = nameof(IsEditing))]
+    private async Task DeleteAsync()
+    {
+        if (Editing is { } entry)
+        {
+            await tagger.DeleteAsync(entry, $"Undo deleting the tag {RangeText(entry.Range)}");
+        }
+    }
 
     /// <summary>
     /// Opens the project form for a new project, starting with whatever was typed in the project box.

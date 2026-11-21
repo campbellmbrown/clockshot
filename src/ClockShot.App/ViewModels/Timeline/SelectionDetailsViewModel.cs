@@ -17,7 +17,7 @@ public sealed partial class SelectionDetailsViewModel(TagEditorViewModel tagEdit
     private TimeZoneInfo _zone = TimeZoneInfo.Utc;
 
     /// <summary>
-    /// Tags the selection.
+    /// Tags the selection, or edits the selected tag.
     /// </summary>
     public TagEditorViewModel TagEditor { get; } = tagEditor;
 
