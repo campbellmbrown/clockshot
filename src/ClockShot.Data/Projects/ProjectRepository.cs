@@ -76,10 +76,45 @@ public sealed class ProjectRepository(SqliteDatabase database)
     }
 
     /// <summary>
+    /// Saves a project's name and place (client and parent).
+    /// Moving it under another project gives it that project's client.
+    /// </summary>
+    /// <exception cref="DuplicateNameException">The new parent or client already has a project with that name.</exception>
+    /// <exception cref="ArgumentException">The new parent is the project itself or one of its sub-projects.</exception>
+    public Task UpdateProjectAsync(Project project)
+    {
+        var name = project.Name.Trim();
+        return WriteRowsAsync(RefuseDuplicateNames(name, connection =>
+        {
+            ThrowIfInsideItself(connection, project);
+            return connection.Execute(
+                "UPDATE project SET name = @Name, client_id = @Client, parent_id = @Parent WHERE id = @Id",
+                new { project.Id, Name = name, Client = OwnClientId(project.ClientId, project.ParentId), Parent = project.ParentId });
+        }));
+    }
+
+    /// <summary>
     /// The client stored on a project.
     /// Sub-projects store none, because they take their client from the top-level project.
     /// </summary>
     private static long? OwnClientId(long? clientId, long? parentId) => parentId is null ? clientId : null;
+
+    /// <summary>
+    /// Walks up from the project's new parent, to stop a project being moved inside itself.
+    /// </summary>
+    private static void ThrowIfInsideItself(SqliteConnection connection, Project project)
+    {
+        var ancestorId = project.ParentId;
+        while (ancestorId is { } id)
+        {
+            if (id == project.Id)
+            {
+                throw new ArgumentException("A project can't be inside itself or one of its sub-projects.", nameof(project));
+            }
+
+            ancestorId = connection.ExecuteScalar<long?>("SELECT parent_id FROM project WHERE id = @Id", new { Id = id });
+        }
+    }
 
     /// <summary>
     /// Wraps a write so a name clash becomes a <see cref="DuplicateNameException"/> for <paramref name="name"/>.
@@ -111,6 +146,20 @@ public sealed class ProjectRepository(SqliteDatabase database)
         })).ConfigureAwait(false);
         Changed?.Invoke();
         return id;
+    }
+
+    /// <summary>
+    /// Runs a write that returns how many rows it changed, and announces the change only when there was one.
+    /// </summary>
+    private async Task<bool> WriteRowsAsync(Func<SqliteConnection, int> write)
+    {
+        var changed = await RunAsync(write).ConfigureAwait(false) > 0;
+        if (changed)
+        {
+            Changed?.Invoke();
+        }
+
+        return changed;
     }
 
     private Task<T> RunAsync<T>(Func<SqliteConnection, T> write) =>

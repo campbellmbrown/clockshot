@@ -33,7 +33,8 @@ Tag colours and the Projects and Timesheet tabs are still being built.
   Right-clicking the timeline opens a menu to zoom to the selection, clear it, or fit the view to the working day or the whole day.
   Right-clicking a block outside the selection selects it first.
   Escape clears the selection.
-- The details panel can tag the selected block or time range with a project, a task and a note, or add a new project.
+- The details panel can tag the selected block or time range with a project, a task and a note.
+  It can also add or edit a project, with its client and the project it sits inside.
   The project box finds a project by every word typed, from its name, its client or the projects it sits inside.
   A blank task means the project in general, and a new task name creates the task.
   Enter on the timeline jumps to the project box, and Enter in the editor tags the time.

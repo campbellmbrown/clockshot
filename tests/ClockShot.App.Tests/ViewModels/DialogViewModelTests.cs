@@ -1,5 +1,6 @@
 using ClockShot.App.ViewModels;
 using ClockShot.App.ViewModels.Projects;
+using ClockShot.Core.Projects;
 using ClockShot.Data.Projects;
 
 namespace ClockShot.App.Tests.ViewModels;
@@ -36,7 +37,7 @@ public sealed class DialogViewModelTests
     public void ADialogWithSomethingToConfirmOffersCancelAndDoesNotCloseOnEnter()
     {
         // Act
-        var dialog = ProjectDialogViewModel.ForNew(new ProjectRepository(UnopenedDatabase.Create()));
+        var dialog = ProjectDialogViewModel.ForNew(new ProjectRepository(UnopenedDatabase.Create()), ProjectCatalog.Empty);
 
         // Assert
         Assert.Equal("Cancel", dialog.CloseText);

@@ -38,6 +38,10 @@ public sealed class ProjectCatalog
 
     public static ProjectCatalog Empty { get; } = new([], [], []);
 
+    public IReadOnlyCollection<Client> Clients => _clients.Values;
+
+    public IReadOnlyCollection<Project> Projects => _projects.Values;
+
     /// <summary>
     /// A tag's label built from names, for a task that's typed but not created yet.
     /// A blank task name means the project's General bucket.
@@ -47,7 +51,7 @@ public sealed class ProjectCatalog
 
     public Client? ClientById(long? id) => id is { } key ? _clients.GetValueOrDefault(key) : null;
 
-    public Project? ProjectById(long id) => _projects.GetValueOrDefault(id);
+    public Project? ProjectById(long? id) => id is { } key ? _projects.GetValueOrDefault(key) : null;
 
     public ProjectTask? TaskById(long? id) => id is { } key ? _tasks.GetValueOrDefault(key) : null;
 

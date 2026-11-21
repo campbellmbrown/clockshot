@@ -26,6 +26,7 @@ public static class Icons
     // ---- Common actions ----
     public const string Add = "plus";
     public const string Remove = "x";
+    public const string Edit = "pencil";
     public const string Delete = "trash";
     public const string Undo = "undo-2";
 

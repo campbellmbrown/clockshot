@@ -51,6 +51,16 @@ public sealed class ProjectCatalogTests
     }
 
     [Fact]
+    public void NoIdFindsNoProject()
+    {
+        // Act
+        var project = Catalog.ProjectById(id: null);
+
+        // Assert
+        Assert.Null(project);
+    }
+
+    [Fact]
     public void ATopLevelProjectWithoutAClientIsItsOwnPath()
     {
         // Act

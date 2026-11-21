@@ -58,7 +58,7 @@ public sealed partial class TagEditorViewModel(
     public partial IReadOnlyList<ProjectOptionViewModel> ProjectOptions { get; private set; } = [];
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand), nameof(EditProjectCommand))]
     public partial ProjectOptionViewModel? SelectedProject { get; set; }
 
     /// <summary>
@@ -208,7 +208,16 @@ public sealed partial class TagEditorViewModel(
     /// </summary>
     [RelayCommand]
     private Task NewProjectAsync() =>
-        ShowProjectFormAsync(ProjectDialogViewModel.ForNew(projects, SelectedProject is null ? ProjectText : null));
+        ShowProjectFormAsync(ProjectDialogViewModel.ForNew(projects, _catalog, SelectedProject is null ? ProjectText : null));
+
+    /// <summary>
+    /// Opens the project form for the chosen project.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasProject))]
+    private Task EditProjectAsync() =>
+        ShowProjectFormAsync(ProjectDialogViewModel.ForEdit(projects, _catalog, SelectedProject!.Project));
+
+    private bool HasProject() => SelectedProject is not null;
 
     private async Task ShowProjectFormAsync(ProjectDialogViewModel form)
     {

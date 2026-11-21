@@ -104,6 +104,54 @@ public sealed class ProjectRepositoryTests : IDisposable
         Assert.IsNotType<DuplicateNameException>(error);
     }
 
+    [Fact]
+    public async Task UpdateMovesAndRenamesAProject()
+    {
+        // Arrange
+        var client = await _projects.AddClientAsync("Client A");
+        var website = await _projects.AddProjectAsync("Website", client.Id, parentId: null);
+        var checkout = await _projects.AddProjectAsync("Checkout", clientId: null, website.Id);
+
+        // Act
+        await _projects.UpdateProjectAsync(checkout with { ParentId = null, ClientId = null, Name = "Shop" });
+
+        // Assert
+        var moved = (await _projects.LoadCatalogAsync(CancellationToken)).ProjectById(checkout.Id)!;
+        Assert.Equal((null, null, "Shop"), (moved.ParentId, moved.ClientId, moved.Name));
+    }
+
+    [Fact]
+    public async Task MovingAProjectUnderAnotherGivesItThatProjectsClient()
+    {
+        // Arrange
+        var client = await _projects.AddClientAsync("Client A");
+        var website = await _projects.AddProjectAsync("Website", client.Id, parentId: null);
+        var shop = await AddTopLevelProjectAsync("Shop");
+
+        // Act
+        await _projects.UpdateProjectAsync(shop with { ParentId = website.Id });
+
+        // Assert
+        var catalog = await _projects.LoadCatalogAsync(CancellationToken);
+        var moved = catalog.ProjectById(shop.Id)!;
+        Assert.Equal((website.Id, null), (moved.ParentId, moved.ClientId));
+        Assert.Equal("Client A", catalog.ClientOf(moved)?.Name);
+    }
+
+    [Fact]
+    public async Task UpdateRefusesToMoveAProjectInsideItsOwnSubProject()
+    {
+        // Arrange
+        var website = await AddTopLevelProjectAsync("Website");
+        var checkout = await _projects.AddProjectAsync("Checkout", clientId: null, website.Id);
+
+        // Act
+        var moving = _projects.UpdateProjectAsync(website with { ParentId = checkout.Id });
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => moving);
+    }
+
     private Task<Project> AddTopLevelProjectAsync(string name) =>
         _projects.AddProjectAsync(name, clientId: null, parentId: null);
 }
