@@ -27,6 +27,7 @@ public sealed class SqliteDatabaseTests
                 "computer_state_segment",
                 "project",
                 "screenshot",
+                "tag_color",
                 "task",
                 "time_entry",
             ],

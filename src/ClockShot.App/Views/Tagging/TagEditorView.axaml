@@ -16,7 +16,7 @@
     <TextBlock Classes="h3" Text="{Binding Title}" />
 
     <Grid ColumnDefinitions="Auto,*,Auto,Auto"
-          RowDefinitions="Auto,Auto,Auto"
+          RowDefinitions="Auto,Auto,Auto,Auto"
           ColumnSpacing="6"
           RowSpacing="6">
       <TextBlock Text="Project" VerticalAlignment="Center" />
@@ -77,6 +77,27 @@
                Text="{Binding Note}"
                PlaceholderText="Optional"
                AutomationProperties.AutomationId="TagNoteBox" />
+
+      <!--
+        Each project and task pair has one colour.
+        Picking a colour unticks Automatic, and ticking it goes back to the colour from the name.
+      -->
+      <TextBlock Grid.Row="3"
+                 Text="Colour"
+                 VerticalAlignment="Center" />
+      <StackPanel Grid.Row="3"
+                  Grid.Column="1"
+                  Grid.ColumnSpan="3"
+                  Orientation="Horizontal"
+                  Spacing="12"
+                  ToolTip.Tip="Every tag with this project and task has this colour">
+        <ColorPicker Color="{Binding ColorHex, Converter={x:Static controls:HexColorConverter.Instance}}"
+                     IsAlphaVisible="False"
+                     AutomationProperties.AutomationId="TagColor" />
+        <CheckBox Content="Automatic"
+                  IsChecked="{Binding UseAutomaticColor}"
+                  AutomationProperties.AutomationId="TagAutomaticColor" />
+      </StackPanel>
     </Grid>
 
     <TextBlock Text="{Binding Error}"

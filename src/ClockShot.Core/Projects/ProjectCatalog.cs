@@ -28,12 +28,14 @@ public sealed class ProjectCatalog
     private readonly Dictionary<long, Client> _clients;
     private readonly Dictionary<long, Project> _projects;
     private readonly Dictionary<long, ProjectTask> _tasks;
+    private readonly Dictionary<(long ProjectId, long? TaskId), string> _chosenColors;
 
-    public ProjectCatalog(IEnumerable<Client> clients, IEnumerable<Project> projects, IEnumerable<ProjectTask> tasks)
+    public ProjectCatalog(IEnumerable<Client> clients, IEnumerable<Project> projects, IEnumerable<ProjectTask> tasks, IEnumerable<TagColor>? tagColors = null)
     {
         _clients = clients.ToDictionary(c => c.Id);
         _projects = projects.ToDictionary(p => p.Id);
         _tasks = tasks.ToDictionary(t => t.Id);
+        _chosenColors = (tagColors ?? []).ToDictionary(c => (c.ProjectId, c.TaskId), c => c.ColorHex);
     }
 
     public static ProjectCatalog Empty { get; } = new([], [], []);
@@ -48,6 +50,12 @@ public sealed class ProjectCatalog
     /// </summary>
     public static string LabelOf(string projectName, string? taskName) =>
         string.IsNullOrWhiteSpace(taskName) ? projectName : projectName + Separator + taskName.Trim();
+
+    /// <summary>
+    /// The automatic colour for a tag label.
+    /// The same label always gets the same colour, as application names do.
+    /// </summary>
+    public static string AutomaticColorOf(string tagLabel) => NameColor.For(tagLabel);
 
     public Client? ClientById(long? id) => id is { } key ? _clients.GetValueOrDefault(key) : null;
 
@@ -102,10 +110,15 @@ public sealed class ProjectCatalog
         LabelOf(_projects[projectId].Name, TaskById(taskId)?.Name);
 
     /// <summary>
-    /// A tag's colour, which comes from its label.
-    /// The same label always gets the same colour, as application names do.
+    /// The colour chosen for a tag, or null when it uses the automatic one.
     /// </summary>
-    public string ColorOf(long projectId, long? taskId) => NameColor.For(TagLabel(projectId, taskId));
+    public string? ChosenColorOf(long projectId, long? taskId) => _chosenColors.GetValueOrDefault((projectId, taskId));
+
+    /// <summary>
+    /// A tag's chosen colour, or the automatic colour of its label when none was chosen.
+    /// </summary>
+    public string ColorOf(long projectId, long? taskId) =>
+        ChosenColorOf(projectId, taskId) ?? AutomaticColorOf(TagLabel(projectId, taskId));
 
     public IReadOnlyList<Project> ChildrenOf(Project parent) =>
         [.. _projects.Values.Where(p => p.ParentId == parent.Id).OrderBy(p => p.Name, DisplayOrder)];

@@ -14,6 +14,7 @@ namespace ClockShot.App.ViewModels.Tagging;
 /// <summary>
 /// Tags the selected time with a project and a task, or edits or deletes an existing tag.
 /// A blank task puts the time in the project's General bucket, and a new task name creates the task.
+/// The colour belongs to the project and task pair, so every tag with that pair shares it.
 /// </summary>
 public sealed partial class TagEditorViewModel(
     ProjectRepository projects,
@@ -85,6 +86,35 @@ public sealed partial class TagEditorViewModel(
     [ObservableProperty]
     public partial string? Note { get; set; }
 
+    /// <summary>
+    /// Whether the tag uses the colour from its name, the way applications do, instead of a chosen one.
+    /// </summary>
+    public bool UseAutomaticColor
+    {
+        get => ChosenColorHex is null;
+
+        // Unticking keeps the colour shown, which becomes the chosen one.
+        set => ChosenColorHex = value ? null : ColorHex;
+    }
+
+    /// <summary>
+    /// The colour in the colour picker, which is the chosen colour or else the automatic one.
+    /// Picking a different colour chooses it.
+    /// </summary>
+    public string ColorHex
+    {
+        get => ChosenColorHex ?? AutomaticColor();
+        set
+        {
+            // The picker also writes back the colour it was shown, which isn't the user choosing it.
+            // With no project there's no tag to colour, and the picker writes back grey.
+            if (SelectedProject is not null && !string.Equals(value, ColorHex, StringComparison.OrdinalIgnoreCase))
+            {
+                ChosenColorHex = value;
+            }
+        }
+    }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasRecentTags))]
     public partial IReadOnlyList<RecentTagViewModel> RecentTags { get; private set; } = [];
@@ -97,6 +127,14 @@ public sealed partial class TagEditorViewModel(
     /// </summary>
     [ObservableProperty]
     public partial string Error { get; private set; } = "";
+
+    /// <summary>
+    /// The colour chosen for the project and task pair, or null to use the automatic one.
+    /// It's saved when the tag is.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UseAutomaticColor), nameof(ColorHex))]
+    private partial string? ChosenColorHex { get; set; }
 
     public void RequestFocus() => FocusRequested?.Invoke();
 
@@ -166,6 +204,8 @@ public sealed partial class TagEditorViewModel(
                 _catalog.ColorOf(tag.ProjectId, tag.TaskId)))];
     }
 
+    partial void OnTaskTextChanged(string? value) => ShowStoredColor();
+
     partial void OnSelectedProjectChanged(ProjectOptionViewModel? value)
     {
         TaskOptions = value is null ? [] : [.. _catalog.TasksOf(value.Project.Id).Select(t => t.Name)];
@@ -177,7 +217,31 @@ public sealed partial class TagEditorViewModel(
         {
             TaskText = null;
         }
+
+        ShowStoredColor();
     }
+
+    /// <summary>
+    /// Shows the colour already chosen for the project and task in the boxes, or the automatic one.
+    /// </summary>
+    private void ShowStoredColor()
+    {
+        ChosenColorHex = SelectedProject is { } option
+            ? _catalog.ChosenColorOf(option.Project.Id, _catalog.TaskNamed(option.Project.Id, TaskText)?.Id)
+            : null;
+
+        // The automatic colour comes from the names, so it can change even when the chosen one doesn't.
+        OnPropertyChanged(nameof(ColorHex));
+    }
+
+    /// <summary>
+    /// The colour from the tag's name.
+    /// It's empty when no project is chosen, which the colour picker shows as grey.
+    /// </summary>
+    private string AutomaticColor() =>
+        SelectedProject is { } option
+            ? ProjectCatalog.AutomaticColorOf(ProjectCatalog.LabelOf(option.Project.Name, TaskText))
+            : "";
 
     [RelayCommand]
     private void UseRecentTag(RecentTagViewModel recent)
@@ -201,6 +265,11 @@ public sealed partial class TagEditorViewModel(
         try
         {
             var taskId = await TaskIdAsync(option.Project.Id);
+            if (ChosenColorHex != _catalog.ChosenColorOf(option.Project.Id, taskId))
+            {
+                await projects.SetTagColorAsync(option.Project.Id, taskId, ChosenColorHex);
+            }
+
             if (Editing is { } entry)
             {
                 await tagger.RetagAsync(
@@ -242,7 +311,8 @@ public sealed partial class TagEditorViewModel(
     /// </summary>
     [RelayCommand]
     private Task NewProjectAsync() =>
-        ShowProjectFormAsync(ProjectDialogViewModel.ForNew(projects, _catalog, SelectedProject is null ? ProjectText : null));
+        ShowProjectFormAsync(
+            ProjectDialogViewModel.ForNew(projects, _catalog, SelectedProject is null ? ProjectText : null));
 
     /// <summary>
     /// Opens the project form for the chosen project.

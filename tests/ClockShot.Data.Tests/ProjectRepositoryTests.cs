@@ -105,6 +105,70 @@ public sealed class ProjectRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task ClearingAColourThatWasNeverChosenDoesNotAnnounceAChange()
+    {
+        // Arrange
+        var website = await AddTopLevelProjectAsync("Website");
+        var changes = 0;
+        _projects.Changed += () => changes++;
+
+        // Act
+        await _projects.SetTagColorAsync(website.Id, taskId: null, colorHex: null);
+
+        // Assert
+        Assert.Equal(0, changes);
+    }
+
+    [Fact]
+    public async Task TagColoursAreSavedPerProjectAndTask()
+    {
+        // Arrange
+        var website = await AddTopLevelProjectAsync("Website");
+        var login = await _projects.AddTaskAsync(website.Id, "Login page");
+
+        // Act
+        await _projects.SetTagColorAsync(website.Id, login.Id, "#C0453F");
+        await _projects.SetTagColorAsync(website.Id, taskId: null, "#3B82C4");
+
+        // Assert
+        var catalog = await _projects.LoadCatalogAsync(CancellationToken);
+        Assert.Equal("#C0453F", catalog.ColorOf(website.Id, login.Id));
+        Assert.Equal("#3B82C4", catalog.ColorOf(website.Id, taskId: null));
+    }
+
+    [Fact]
+    public async Task ChoosingATagColourAgainReplacesIt()
+    {
+        // Arrange
+        var website = await AddTopLevelProjectAsync("Website");
+        await _projects.SetTagColorAsync(website.Id, taskId: null, "#3B82C4");
+
+        // Act
+        await _projects.SetTagColorAsync(website.Id, taskId: null, "#2E9E8F");
+
+        // Assert
+        var catalog = await _projects.LoadCatalogAsync(CancellationToken);
+        Assert.Equal("#2E9E8F", catalog.ColorOf(website.Id, taskId: null));
+    }
+
+    [Fact]
+    public async Task ClearingATagColourGoesBackToTheAutomaticOne()
+    {
+        // Arrange
+        var website = await AddTopLevelProjectAsync("Website");
+        var login = await _projects.AddTaskAsync(website.Id, "Login page");
+        await _projects.SetTagColorAsync(website.Id, login.Id, "#C0453F");
+
+        // Act
+        await _projects.SetTagColorAsync(website.Id, login.Id, colorHex: null);
+
+        // Assert
+        var catalog = await _projects.LoadCatalogAsync(CancellationToken);
+        Assert.Null(catalog.ChosenColorOf(website.Id, login.Id));
+        Assert.Equal(NameColor.For("Website > Login page"), catalog.ColorOf(website.Id, login.Id));
+    }
+
+    [Fact]
     public async Task UpdateMovesAndRenamesAProject()
     {
         // Arrange

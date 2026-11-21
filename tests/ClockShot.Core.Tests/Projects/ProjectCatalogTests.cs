@@ -31,7 +31,8 @@ public sealed class ProjectCatalogTests
         [
             new ProjectTask(LoginPageId, WebsiteId, "Login page", IsArchived: false),
             new ProjectTask(ArchivedTaskId, WebsiteId, "Archived task", IsArchived: true),
-        ]);
+        ],
+        [new TagColor(WebsiteId, LoginPageId, "#123456")]);
 
     [Fact]
     public void SubProjectsUseTheirParentsClientAndShowTheirPath()
@@ -80,6 +81,18 @@ public sealed class ProjectCatalogTests
         // Assert
         Assert.Equal("Website > Login page", taskLabel);
         Assert.Equal("Website", generalLabel);
+    }
+
+    [Fact]
+    public void AChosenColourIsUsedForItsTagOnly()
+    {
+        // Act
+        var chosen = Catalog.ColorOf(WebsiteId, LoginPageId);
+        var general = Catalog.ChosenColorOf(WebsiteId, taskId: null);
+
+        // Assert
+        Assert.Equal("#123456", chosen);
+        Assert.Null(general);
     }
 
     [Fact]

@@ -34,7 +34,9 @@ public sealed class ProjectRepository(SqliteDatabase database)
                     .Select(p => new Project(p.Id, p.ClientId, p.ParentId, p.Name, p.IsArchived)),
                 connection.Query<(long Id, long ProjectId, string Name, bool IsArchived)>(
                         "SELECT id, project_id, name, is_archived FROM task")
-                    .Select(t => new ProjectTask(t.Id, t.ProjectId, t.Name, t.IsArchived)));
+                    .Select(t => new ProjectTask(t.Id, t.ProjectId, t.Name, t.IsArchived)),
+                connection.Query<(long ProjectId, long? TaskId, string Color)>("SELECT project_id, task_id, color FROM tag_color")
+                    .Select(c => new TagColor(c.ProjectId, c.TaskId, c.Color)));
         }, cancellationToken);
 
     /// <exception cref="DuplicateNameException">A client with that name exists.</exception>
@@ -92,6 +94,25 @@ public sealed class ProjectRepository(SqliteDatabase database)
                 new { project.Id, Name = name, Client = OwnClientId(project.ClientId, project.ParentId), Parent = project.ParentId });
         }));
     }
+
+    /// <summary>
+    /// Chooses a tag's colour.
+    /// A null <paramref name="taskId"/> means the project's General bucket.
+    /// A null <paramref name="colorHex"/> goes back to the automatic colour.
+    /// </summary>
+    public Task SetTagColorAsync(long projectId, long? taskId, string? colorHex) => WriteRowsAsync(connection =>
+    {
+        using var transaction = connection.BeginTransaction();
+        var tag = new { ProjectId = projectId, TaskId = taskId, Color = colorHex };
+        var changed = connection.Execute("DELETE FROM tag_color WHERE project_id = @ProjectId AND task_id IS @TaskId", tag, transaction);
+        if (colorHex is not null)
+        {
+            changed += connection.Execute("INSERT INTO tag_color (project_id, task_id, color) VALUES (@ProjectId, @TaskId, @Color)", tag, transaction);
+        }
+
+        transaction.Commit();
+        return changed;
+    });
 
     /// <summary>
     /// The client stored on a project.

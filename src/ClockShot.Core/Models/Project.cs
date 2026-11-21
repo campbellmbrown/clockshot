@@ -6,4 +6,5 @@ namespace ClockShot.Core.Models;
 /// Sub-projects use their parent's client.
 /// Time tagged without a task goes to the project's General bucket.
 /// </summary>
+/// <remarks>Projects have no colour, because tags have them (see <see cref="TagColor"/>).</remarks>
 public sealed record Project(long Id, long? ClientId, long? ParentId, string Name, bool IsArchived);
