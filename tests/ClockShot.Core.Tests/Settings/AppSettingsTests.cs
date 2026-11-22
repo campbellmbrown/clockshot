@@ -1,4 +1,5 @@
 using ClockShot.Core.Settings;
+using ClockShot.Core.Timesheets;
 
 namespace ClockShot.Core.Tests.Settings;
 
@@ -18,6 +19,7 @@ public sealed class AppSettingsTests
         Assert.Equal(defaults.Tracking, normalized.Tracking);
         Assert.Equal(defaults.Screenshots, normalized.Screenshots);
         Assert.Equal(defaults.Layout, normalized.Layout);
+        Assert.Equal(defaults.Timesheet, normalized.Timesheet);
     }
 
     [Fact]
@@ -105,6 +107,7 @@ public sealed class AppSettingsTests
                 Quality = 0,
                 KeepForDays = 0,
             },
+            Timesheet = new TimesheetSettings { RoundingMinutes = 0 },
         };
 
         // Act
@@ -119,6 +122,7 @@ public sealed class AppSettingsTests
         Assert.Equal(SettingLimits.ScreenshotMaxWidthPixels.Max, normalized.Screenshots.MaxWidthPixels);
         Assert.Equal(SettingLimits.ScreenshotQuality.Min, normalized.Screenshots.Quality);
         Assert.Equal(SettingLimits.KeepScreenshotsForDays.Min, normalized.Screenshots.KeepForDays);
+        Assert.Equal(SettingLimits.RoundingMinutes.Min, normalized.Timesheet.RoundingMinutes);
     }
 
     [Fact]
@@ -128,6 +132,7 @@ public sealed class AppSettingsTests
         var settings = new AppSettings
         {
             Screenshots = new ScreenshotSettings { PreviewMode = (ScreenshotPreviewMode)99 },
+            Timesheet = new TimesheetSettings { Rounding = (RoundingMode)99 },
         };
 
         // Act
@@ -135,5 +140,6 @@ public sealed class AppSettingsTests
 
         // Assert
         Assert.Equal(new ScreenshotSettings().PreviewMode, normalized.Screenshots.PreviewMode);
+        Assert.Equal(RoundingMode.None, normalized.Timesheet.Rounding);
     }
 }

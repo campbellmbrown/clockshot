@@ -13,11 +13,13 @@ namespace ClockShot.App.ViewModels.Timesheets;
 /// <summary>
 /// The Timesheet tab shows the tagged time in a range of days, by client, project, sub-project and task.
 /// Each column is a day, or a week for long ranges.
+/// The time can be rounded.
 /// </summary>
 public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
 {
     private readonly ITimeEntryRepository _entries;
     private readonly ProjectRepository _projects;
+    private readonly ISettingsStore _settings;
     private readonly DayClock _days;
     private readonly BackgroundWork _background;
     private readonly NewestLoad _newestLoad = new();
@@ -30,15 +32,25 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
         ITimeEntryRepository entries,
         ProjectRepository projects,
         Tagger tagger,
+        ISettingsStore settings,
         DayClock days,
         BackgroundWork background)
         : base("Timesheet", Icons.Timesheet)
     {
         _entries = entries;
         _projects = projects;
+        _settings = settings;
         _days = days;
         _background = background;
 
+        SelectedRounding = RoundingChoice.For(settings.Current.Timesheet);
+
+        // Rounding can change here or on the Settings tab, and a new day start hour moves the days.
+        settings.Changed += s => OnUiThread(() =>
+        {
+            SelectedRounding = RoundingChoice.For(s.Timesheet);
+            _background.Run(() => LoadAsync());
+        });
         SelectedPeriod = DatePeriod.ThisWeek;
 
         tagger.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
@@ -121,6 +133,28 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
         _isSettingDates = false;
     }
 
+    // ---- Rounding ----
+
+    public IReadOnlyList<RoundingChoice> RoundingChoices { get; } = RoundingChoice.All;
+
+    /// <summary>
+    /// How each task-and-day cell is rounded.
+    /// It's remembered in settings.
+    /// </summary>
+    [ObservableProperty]
+    public partial RoundingChoice SelectedRounding { get; set; }
+
+    // Saving raises the settings Changed event, whose handler reloads the timesheet.
+    partial void OnSelectedRoundingChanged(RoundingChoice value)
+    {
+        var current = _settings.Current;
+        var timesheet = value.ApplyTo(current.Timesheet);
+        if (timesheet != current.Timesheet)
+        {
+            _settings.Save(current with { Timesheet = timesheet });
+        }
+    }
+
     // ---- Report ----
 
     [ObservableProperty]
@@ -167,7 +201,9 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
                 return;
             }
 
-            Report = TimesheetBuilder.Build(entries, catalog, (from, to), _days, new TimesheetSettings());
+            // The rounding box can't show a hand-edited step, so the timesheet uses the rounding the box shows.
+            var rounding = SelectedRounding.ApplyTo(_settings.Current.Timesheet);
+            Report = TimesheetBuilder.Build(entries, catalog, (from, to), _days, rounding);
             _allRows = [.. Flatten(Report.Rows, parent: null, depth: 0)];
             RefreshVisibleRows();
         }

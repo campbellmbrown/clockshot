@@ -55,6 +55,7 @@ public sealed class TimesheetViewModelTests
             _entries,
             new ProjectRepository(database),
             new Tagger(_entries),
+            settings,
             new DayClock(TimeProvider.System, settings),
             new BackgroundWork(NullLogger<BackgroundWork>.Instance));
     }

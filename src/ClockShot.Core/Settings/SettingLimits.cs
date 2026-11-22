@@ -32,4 +32,7 @@ public static class SettingLimits
     // At least a day, so the cleanup never deletes a screenshot file that's still being written.
     // Ten years is longer than anyone keeps them.
     public static IntRange KeepScreenshotsForDays { get; } = new(1, 3650);
+
+    // Up to an hour, the coarsest rounding a timesheet needs.
+    public static IntRange RoundingMinutes { get; } = new(1, 60);
 }

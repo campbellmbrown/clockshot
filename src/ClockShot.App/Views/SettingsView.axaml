@@ -4,6 +4,7 @@
              xmlns:core="using:ClockShot.Core"
              xmlns:settings="using:ClockShot.Core.Settings"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
+             xmlns:timesheets="using:ClockShot.App.ViewModels.Timesheets"
              xmlns:controls="using:ClockShot.App.Controls"
              x:Class="ClockShot.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -212,6 +213,29 @@
               <controls:IconText Kind="{x:Static controls:Icons.OpenFolder}" Text="Open folder" />
             </Button>
           </StackPanel>
+        </Grid>
+      </StackPanel>
+
+      <!-- Timesheet -->
+      <StackPanel Classes="section">
+        <TextBlock Classes="h2"
+                   Text="Timesheet"
+                   Margin="0,0,0,6" />
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="Round each task's time on each day.">
+          <TextBlock Text="Rounding" />
+          <ComboBox Grid.Column="1"
+                    ItemsSource="{Binding RoundingChoices}"
+                    SelectedItem="{Binding Rounding}"
+                    Width="220"
+                    AutomationProperties.AutomationId="SettingRounding">
+            <ComboBox.ItemTemplate>
+              <DataTemplate DataType="timesheets:RoundingChoice">
+                <TextBlock Text="{Binding Label}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
         </Grid>
       </StackPanel>
     </StackPanel>

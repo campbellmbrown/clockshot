@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels.Timeline;
+using ClockShot.App.ViewModels.Timesheets;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Timeline;
@@ -205,6 +206,16 @@ public sealed partial class SettingsViewModel : PageViewModel
 
     [RelayCommand]
     private void OpenScreenshotFolder() => _shell.OpenFolder(_paths.Screenshots);
+
+    // ---- Timesheet ----
+
+    public IReadOnlyList<RoundingChoice> RoundingChoices { get; } = RoundingChoice.All;
+
+    public RoundingChoice Rounding
+    {
+        get => RoundingChoice.For(Current.Timesheet);
+        set => Update(s => s with { Timesheet = value.ApplyTo(s.Timesheet) });
+    }
 
     // ---- Loading ----
 

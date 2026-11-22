@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 
 using ClockShot.Core.Settings;
+using ClockShot.Core.Timesheets;
 using ClockShot.Data.Settings;
 
 using Microsoft.Extensions.Logging.Abstractions;
@@ -74,6 +75,24 @@ public sealed class JsonSettingsStoreTests
         // Assert
         Assert.Contains("\"PreviewMode\": \"BelowTimeline\"", _fileSystem.File.ReadAllText(SettingsPath));
         Assert.Equal(ScreenshotPreviewMode.BelowTimeline, CreateStore().Current.Screenshots.PreviewMode);
+    }
+
+    [Fact]
+    public void TheRoundingIsSavedByItsName()
+    {
+        // Arrange
+        var store = CreateStore();
+        var changed = store.Current with
+        {
+            Timesheet = store.Current.Timesheet with { Rounding = RoundingMode.Nearest },
+        };
+
+        // Act
+        store.Save(changed);
+
+        // Assert
+        Assert.Contains("\"Rounding\": \"Nearest\"", _fileSystem.File.ReadAllText(SettingsPath));
+        Assert.Equal(RoundingMode.Nearest, CreateStore().Current.Timesheet.Rounding);
     }
 
     [Fact]

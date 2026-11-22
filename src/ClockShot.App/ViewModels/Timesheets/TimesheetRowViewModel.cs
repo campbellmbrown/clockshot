@@ -42,6 +42,8 @@ public sealed partial class TimesheetRowViewModel(TimesheetRow row, TimesheetRow
 
     public string TotalText => Format(Row.Total);
 
+    public string Notes => Row.Notes;
+
     public bool HasChildren => Row.Children.Count > 0;
 
     /// <summary>

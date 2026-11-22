@@ -74,6 +74,10 @@ The Timesheet tab shows your tagged time by day or week, and is still being buil
   A range longer than 31 days has a column for each week instead.
   Time that crosses the start of a day is split between the days.
   The arrow beside a client or project hides or shows what's inside it.
+  A Notes column lists the notes on each task's tagged time.
+  Rounding rounds each task's time on each day to the nearest 6, 15 or 30 minutes, or up to the next one.
+  The totals add up the rounded times, and the choice is remembered.
+  It can also be set on the Settings tab.
 - The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
