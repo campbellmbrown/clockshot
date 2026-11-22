@@ -20,7 +20,7 @@ dotnet format --verify-no-changes     # fails if anything needs fixing
 - The build checks compiler warnings, the SDK's code analysis, and [Sonar's rules](https://rules.sonarsource.com/csharp/).
   Rules that don't fit this app are turned off in [.editorconfig](.editorconfig), each with its reason.
 - `dotnet format` checks code style, naming, and layout against the rules in [.editorconfig](.editorconfig).
-- [CI](.github/workflows/ci.yml) runs the build, all the tests, and the format check on every push and pull request.
+- [CI](.github/workflows/ci.yml) runs the build, all the tests, the format check, and the third-party notices check on every push and pull request.
 - The same commands are available as [VS Code tasks](.vscode/tasks.json).
 
 ## Run the app
@@ -42,6 +42,8 @@ This keeps dev runs away from the data of the copy you use every day.
 - Update the docs in the same commit as the change they describe.
 - When you copy files from another project into the repo, such as icons, add that project's licence file next to them.
 - When you add a package or a third-party asset, credit it in the About dialog, in [AboutViewModel.cs](src/ClockShot.App/ViewModels/AboutViewModel.cs).
+  Also add its licence to [THIRD-PARTY-NOTICES.txt](src/ClockShot.App/THIRD-PARTY-NOTICES.txt), with a `Package:` line for each package that ships.
+  [check-third-party-notices.ps1](.github/scripts/check-third-party-notices.ps1) fails in CI when a shipped package has no `Package:` line, or a listed one no longer ships.
 
 ## Unit tests
 

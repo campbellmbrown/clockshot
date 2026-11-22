@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" Exclude="Assets\Icons\LICENSE;Assets\AppIcon\*.svg;Assets\AppIcon\README.md" />
+    <None Update="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ClockShot.Core\ClockShot.Core.csproj" />
