@@ -20,6 +20,13 @@
           DockPanel.Dock="Top"
           AutomationProperties.AutomationId="MainMenu">
       <MenuItem Header="_File" AutomationProperties.AutomationId="FileMenu">
+        <MenuItem Header="_Export timesheet..."
+                  InputGesture="{x:Static input:Shortcuts.ExportTimesheet}"
+                  Command="{Binding OnTimesheet}"
+                  CommandParameter="{Binding Timesheet.SaveCsvCommand}"
+                  AutomationProperties.AutomationId="ExportTimesheetMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Export}" />
+        <Separator />
         <MenuItem Header="E_xit"
                   Command="{Binding ExitCommand}"
                   AutomationProperties.AutomationId="ExitMenuItem"

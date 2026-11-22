@@ -7,13 +7,14 @@ using ClockShot.Core.Timesheets;
 using ClockShot.Data.Projects;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ClockShot.App.ViewModels.Timesheets;
 
 /// <summary>
 /// The Timesheet tab shows the tagged time in a range of days, by client, project, sub-project and task.
 /// Each column is a day, or a week for long ranges.
-/// The time can be rounded.
+/// The time can be rounded, copied as a table and saved as CSV.
 /// </summary>
 public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
 {
@@ -21,6 +22,8 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
     private readonly ProjectRepository _projects;
     private readonly ISettingsStore _settings;
     private readonly DayClock _days;
+    private readonly IClipboardService _clipboard;
+    private readonly IFileSaveService _files;
     private readonly BackgroundWork _background;
     private readonly NewestLoad _newestLoad = new();
     private List<TimesheetRowViewModel> _allRows = [];
@@ -34,6 +37,8 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
         Tagger tagger,
         ISettingsStore settings,
         DayClock days,
+        IClipboardService clipboard,
+        IFileSaveService files,
         BackgroundWork background)
         : base("Timesheet", Icons.Timesheet)
     {
@@ -41,6 +46,8 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
         _projects = projects;
         _settings = settings;
         _days = days;
+        _clipboard = clipboard;
+        _files = files;
         _background = background;
 
         SelectedRounding = RoundingChoice.For(settings.Current.Timesheet);
@@ -159,6 +166,7 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ColumnLabels), nameof(ColumnTotals), nameof(TotalText), nameof(IsEmpty))]
+    [NotifyCanExecuteChangedFor(nameof(CopyTableCommand), nameof(SaveCsvCommand))]
     public partial TimesheetReport? Report { get; private set; }
 
     public IReadOnlyList<string> ColumnLabels => [.. Report?.Columns.Select(c => c.Label) ?? []];
@@ -234,6 +242,52 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
             }
         }
     }
+
+    // ---- Export ----
+
+    /// <summary>
+    /// Copies the timesheet as a tab-separated table, ready to paste into a spreadsheet or a web timesheet.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasRows))]
+    private Task CopyTableAsync() => _clipboard.SetTextAsync(TimesheetExport.ToTabSeparated(Report!));
+
+    /// <summary>
+    /// Saves the timesheet as a CSV file, asking where.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasRows))]
+    private async Task SaveCsvAsync()
+    {
+        var report = Report!;
+        try
+        {
+            await _files.SaveTextAsync(
+                title: "Save timesheet",
+                suggestedName: TimesheetExport.FileName(report),
+                fileTypeName: "CSV (comma-separated)",
+                extension: "csv",
+                content: TimesheetExport.ToCsv(report));
+            SaveError = "";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Another app can have the file open, or the folder can be read-only.
+            SaveError = $"Couldn't save the file: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Why the last Save as CSV failed, or empty.
+    /// </summary>
+    [ObservableProperty]
+    public partial string SaveError { get; private set; } = "";
+
+    /// <summary>
+    /// Copies one row's name, hours per column, total and notes as tab-separated text.
+    /// </summary>
+    [RelayCommand]
+    private Task CopyRowAsync(TimesheetRowViewModel row) => _clipboard.SetTextAsync(TimesheetExport.ToTabSeparatedRow(row.Row));
+
+    private bool HasRows() => Report is { IsEmpty: false };
 
     public void Dispose()
     {

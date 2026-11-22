@@ -48,6 +48,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _paths = paths;
         _tagger = tagger;
         OnTimeline = new ShowPageFirstCommand(() => SelectedPage = Timeline);
+        OnTimesheet = new ShowPageFirstCommand(() => SelectedPage = Timesheet);
         tagger.Changed += () => OnUiThread(OnTagsChanged);
     }
 
@@ -75,6 +76,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// Runs the Timeline command given as the parameter, showing the Timeline tab first.
     /// </summary>
     public ShowPageFirstCommand OnTimeline { get; }
+
+    /// <summary>
+    /// Runs the Timesheet command given as the parameter, showing the Timesheet tab first.
+    /// </summary>
+    public ShowPageFirstCommand OnTimesheet { get; }
 
     /// <summary>
     /// The text of the Edit > Undo menu item, which names the change it would undo.

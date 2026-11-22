@@ -14,7 +14,7 @@ It already records your activity and takes screenshots, and the Timeline tab sho
 You can tag time with a project, a task and a note, and edit, delete or undo tags.
 The Projects tab shows how much time you tagged to each project.
 You can add, rename, archive and delete clients, projects and tasks there.
-The Timesheet tab shows your tagged time by day or week, and is still being built.
+The Timesheet tab shows your tagged time by day or week, and copies or saves it for a timesheet system.
 
 ## What it does
 
@@ -78,6 +78,10 @@ The Timesheet tab shows your tagged time by day or week, and is still being buil
   Rounding rounds each task's time on each day to the nearest 6, 15 or 30 minutes, or up to the next one.
   The totals add up the rounded times, and the choice is remembered.
   It can also be set on the Settings tab.
+  Copy table copies the timesheet as a table to paste into a spreadsheet or a web timesheet.
+  Save as CSV, or File > Export timesheet (Ctrl+E), saves it as a CSV file.
+  Both have a line for each task, or General for time without a task, with times in decimal hours such as 1.25.
+  Right-clicking a row offers Copy this row, which copies just that row.
 - The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.

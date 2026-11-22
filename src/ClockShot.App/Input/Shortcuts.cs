@@ -47,6 +47,7 @@ public static class Shortcuts
     public static KeyGesture PausePreview { get; } = KeyGesture.Parse("Ctrl+L");
 
     // ---- Other ----
+    public static KeyGesture ExportTimesheet { get; } = KeyGesture.Parse("Ctrl+E");
     public static KeyGesture CloseWindow { get; } = KeyGesture.Parse("Alt+F4");
 
     /// <summary>
@@ -81,6 +82,7 @@ public static class Shortcuts
         Key("Screenshots", SwitchPreview, "Switch where the hover preview appears"),
         Key("Screenshots", PausePreview, "Pause the preview where it is / resume"),
 
+        Key("Other", ExportTimesheet, "Save the timesheet as CSV"),
         Key(
             "Other",
             CloseWindow,

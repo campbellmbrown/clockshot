@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:input="using:ClockShot.App.Input"
              xmlns:timesheets="using:ClockShot.App.ViewModels.Timesheets"
              xmlns:controls="using:ClockShot.App.Controls"
              xmlns:timeline="using:ClockShot.Core.Timeline"
@@ -38,7 +39,7 @@
   </UserControl.Styles>
 
   <DockPanel Margin="12,8,12,12">
-    <!-- The toolbar holds the range and rounding, and wraps in narrow windows. -->
+    <!-- The toolbar holds the range, rounding and export, and wraps in narrow windows. -->
     <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10">
       <StackPanel Orientation="Horizontal"
                   Spacing="8"
@@ -86,6 +87,26 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
+      <StackPanel Orientation="Horizontal"
+                  Spacing="8"
+                  Margin="0,0,0,6">
+        <Button Command="{Binding CopyTableCommand}"
+                ToolTip.Tip="Copy as a table, ready to paste into a spreadsheet or a web timesheet"
+                AutomationProperties.AutomationId="TimesheetCopy">
+          <controls:IconText Kind="{x:Static controls:Icons.Copy}" Text="Copy table" />
+        </Button>
+        <Button Command="{Binding SaveCsvCommand}"
+                ToolTip.Tip="{input:WithKeys 'Save as a CSV file ({0})',
+                                             {x:Static input:Shortcuts.ExportTimesheet}}"
+                AutomationProperties.AutomationId="TimesheetSaveCsv">
+          <controls:IconText Kind="{x:Static controls:Icons.Export}" Text="Save as CSV..." />
+        </Button>
+        <TextBlock Text="{Binding SaveError}"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   AutomationProperties.AutomationId="TimesheetSaveError"
+                   IsVisible="{Binding SaveError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
     </WrapPanel>
 
     <Panel>
@@ -126,7 +147,17 @@
           <ItemsControl ItemsSource="{Binding VisibleRows}" AutomationProperties.AutomationId="TimesheetRows">
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="timesheets:TimesheetRowViewModel">
-                <StackPanel Orientation="Horizontal" Height="30">
+                <StackPanel Orientation="Horizontal"
+                            Height="30"
+                            Background="Transparent">
+                  <StackPanel.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Copy this row"
+                                Command="{Binding $parent[UserControl].((timesheets:TimesheetViewModel)DataContext).CopyRowCommand}"
+                                CommandParameter="{Binding}"
+                                controls:MenuIcon.Kind="{x:Static controls:Icons.Copy}" />
+                    </ContextMenu>
+                  </StackPanel.ContextMenu>
                   <StackPanel Orientation="Horizontal"
                               Width="{StaticResource NameColumnWidth}"
                               Spacing="6">

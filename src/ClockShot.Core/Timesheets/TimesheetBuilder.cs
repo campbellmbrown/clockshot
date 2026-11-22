@@ -33,7 +33,7 @@ public static class TimesheetBuilder
         var times = TimeByTag(entries, columns, dayClock);
         var rows = new RowBuilder(catalog, times, settings).BuildRows();
         var columnTotals = SumPerColumn(rows, columns.Count);
-        return new TimesheetReport(columns, rows, columnTotals, columnTotals.Sum());
+        return new TimesheetReport(days.First, days.Last, columns, rows, columnTotals, columnTotals.Sum());
     }
 
     /// <summary>

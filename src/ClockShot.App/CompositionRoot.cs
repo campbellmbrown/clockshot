@@ -71,6 +71,8 @@ internal static class CompositionRoot
         services.AddSingleton<ScreenshotImageLoader>();
         services.AddSingleton<MainWindowHost>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<IFileSaveService, FileSaveService>();
         services.AddSingleton<BackgroundWork>();
         services.AddSingleton<AwayPrompter>();
         services.AddSingleton<DayClock>();

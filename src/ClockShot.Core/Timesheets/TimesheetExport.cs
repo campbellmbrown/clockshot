@@ -27,7 +27,23 @@ public static class TimesheetExport
     /// </summary>
     public static string ToTabSeparated(TimesheetReport report) => Write(report, separator: '\t', EscapeTabSeparated);
 
+    /// <summary>
+    /// Writes one row's name, hours per column, total and notes as a tab-separated line, for pasting.
+    /// </summary>
+    public static string ToTabSeparatedRow(TimesheetRow row)
+    {
+        string[] fields = [row.Name, .. row.Cells.Select(Hours), Hours(row.Total), row.Notes];
+        return string.Join('\t', fields.Select(EscapeTabSeparated));
+    }
+
+    /// <summary>
+    /// The name suggested for the timesheet's CSV file, with its first and last day.
+    /// </summary>
+    public static string FileName(TimesheetReport report) => $"Timesheet {Date(report.From)} to {Date(report.To)}.csv";
+
     private static string Hours(TimeSpan duration) => duration.TotalHours.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static string Date(DateOnly day) => day.ToString(DateFormat, CultureInfo.InvariantCulture);
 
     private static string Write(TimesheetReport report, char separator, Func<string, string> escape) =>
         string.Concat(Lines(report).Select(fields => string.Join(separator, fields.Select(escape)) + LineEnd));
@@ -67,11 +83,8 @@ public static class TimesheetExport
         }
     }
 
-    private static string ColumnHeader(TimesheetColumn column)
-    {
-        var from = column.From.ToString(DateFormat, CultureInfo.InvariantCulture);
-        return column.From == column.To ? from : $"{from} to {column.To.ToString(DateFormat, CultureInfo.InvariantCulture)}";
-    }
+    private static string ColumnHeader(TimesheetColumn column) =>
+        column.From == column.To ? Date(column.From) : $"{Date(column.From)} to {Date(column.To)}";
 
     /// <summary>
     /// Quotes a field that holds a comma, a quote or a line break, and doubles the quotes inside it.

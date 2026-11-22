@@ -8,6 +8,8 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\src\ClockShot.App\ClockShot.App.csproj" />
+    <!-- Shared with the Data tests, so both make test databases the same way. -->
+    <Compile Include="..\ClockShot.Data.Tests\MemoryDatabase.cs" Link="MemoryDatabase.cs" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" />

@@ -31,6 +31,8 @@ public static class Icons
     public const string Edit = "pencil";
     public const string Delete = "trash";
     public const string Undo = "undo-2";
+    public const string Copy = "copy";
+    public const string Export = "download";
     public const string Search = "search";
     public const string Archive = "archive";
 
