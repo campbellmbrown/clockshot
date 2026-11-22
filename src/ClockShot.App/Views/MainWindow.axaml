@@ -53,6 +53,12 @@
                   CommandParameter="{Binding Timeline}"
                   AutomationProperties.AutomationId="TimelineMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Timeline}" />
+        <MenuItem Header="Time_sheet"
+                  InputGesture="{x:Static input:Shortcuts.ShowTimesheet}"
+                  Command="{Binding ShowPageCommand}"
+                  CommandParameter="{Binding Timesheet}"
+                  AutomationProperties.AutomationId="TimesheetMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Timesheet}" />
         <MenuItem Header="_Projects"
                   InputGesture="{x:Static input:Shortcuts.ShowProjects}"
                   Command="{Binding ShowPageCommand}"

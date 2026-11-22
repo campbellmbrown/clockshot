@@ -3,6 +3,8 @@
              xmlns:vm="using:ClockShot.App.ViewModels"
              xmlns:timeline="using:ClockShot.App.ViewModels.Timeline"
              xmlns:projects="using:ClockShot.App.ViewModels.Projects"
+             xmlns:timesheets="using:ClockShot.App.ViewModels.Timesheets"
+             xmlns:timesheetViews="using:ClockShot.App.Views.Timesheets"
              xmlns:projectViews="using:ClockShot.App.Views.Projects"
              xmlns:tagging="using:ClockShot.App.ViewModels.Tagging"
              xmlns:taggingViews="using:ClockShot.App.Views.Tagging"
@@ -16,6 +18,9 @@
   <Application.DataTemplates>
     <DataTemplate DataType="timeline:TimelineViewModel">
       <timelineViews:TimelineView />
+    </DataTemplate>
+    <DataTemplate DataType="timesheets:TimesheetViewModel">
+      <timesheetViews:TimesheetView />
     </DataTemplate>
     <DataTemplate DataType="projects:ProjectsViewModel">
       <projectViews:ProjectsView />

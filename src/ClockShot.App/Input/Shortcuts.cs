@@ -19,6 +19,7 @@ public static class Shortcuts
 
     // ---- Tabs ----
     public static KeyGesture ShowTimeline { get; } = KeyGesture.Parse("Ctrl+D1");
+    public static KeyGesture ShowTimesheet { get; } = KeyGesture.Parse("Ctrl+D2");
     public static KeyGesture ShowProjects { get; } = KeyGesture.Parse("Ctrl+D3");
     public static KeyGesture ShowSettings { get; } = KeyGesture.Parse("Ctrl+D4");
 
@@ -54,6 +55,7 @@ public static class Shortcuts
     public static IReadOnlyList<Shortcut> All =>
     [
         Key("Tabs", ShowTimeline, "Timeline"),
+        Key("Tabs", ShowTimesheet, "Timesheet"),
         Key("Tabs", ShowProjects, "Projects"),
         Key("Tabs", ShowSettings, "Settings"),
 

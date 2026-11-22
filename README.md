@@ -14,7 +14,7 @@ It already records your activity and takes screenshots, and the Timeline tab sho
 You can tag time with a project, a task and a note, and edit, delete or undo tags.
 The Projects tab shows how much time you tagged to each project.
 You can add, rename, archive and delete clients, projects and tasks there.
-The Timesheet tab is still being built.
+The Timesheet tab shows your tagged time by day or week, and is still being built.
 
 ## What it does
 
@@ -69,6 +69,11 @@ The Timesheet tab is still being built.
   Delete only removes a client with no projects, or a project or task with no tagged time.
   Otherwise ClockShot suggests archiving it instead.
   Task and General rows show a small square in their tag's colour.
+- The Timesheet tab shows the time tagged to each client, project and task, with a column for each day and totals.
+  It opens on this week, and you can pick another period or choose the first and last day.
+  A range longer than 31 days has a column for each week instead.
+  Time that crosses the start of a day is split between the days.
+  The arrow beside a client or project hides or shows what's inside it.
 - The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.

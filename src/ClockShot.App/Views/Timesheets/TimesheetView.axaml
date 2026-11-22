@@ -1,0 +1,188 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:timesheets="using:ClockShot.App.ViewModels.Timesheets"
+             xmlns:controls="using:ClockShot.App.Controls"
+             xmlns:timeline="using:ClockShot.Core.Timeline"
+             x:Class="ClockShot.App.Views.Timesheets.TimesheetView"
+             x:DataType="timesheets:TimesheetViewModel">
+  <UserControl.Resources>
+    <!-- The header, rows and totals share it, so their columns line up. -->
+    <x:Double x:Key="NameColumnWidth">300</x:Double>
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- Cells have fixed widths, so the header, rows and totals line up. -->
+    <Style Selector="TextBlock.cell">
+      <Setter Property="Width" Value="96" />
+      <Setter Property="TextAlignment" Value="Right" />
+      <Setter Property="Padding" Value="0,0,12,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- The expand and collapse arrows stay plain, without the accent colour of a pressed toggle button. -->
+    <Style Selector="ToggleButton.expander /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ToggleButton.expander:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+    </Style>
+    <Style Selector="ToggleButton.expander:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Divider}" />
+    </Style>
+    <Style Selector="ToggleButton.expander:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Divider}" />
+    </Style>
+    <Style Selector="TextBlock.total">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel Margin="12,8,12,12">
+    <!-- The toolbar holds the range, and wraps in narrow windows. -->
+    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+      <StackPanel Orientation="Horizontal"
+                  Spacing="8"
+                  Margin="0,0,24,6">
+        <ComboBox ItemsSource="{Binding Periods}"
+                  SelectedItem="{Binding SelectedPeriod}"
+                  PlaceholderText="Custom"
+                  Width="130"
+                  AutomationProperties.AutomationId="TimesheetPeriod">
+          <ComboBox.ItemTemplate>
+            <DataTemplate DataType="timeline:DatePeriod">
+              <TextBlock Text="{Binding Label}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <controls:DatePickerButton SelectedDate="{Binding FromDate}"
+                                   DateFormat="ddd d MMM yyyy"
+                                   MinWidth="170"
+                                   ToolTip.Tip="First day"
+                                   AutomationProperties.AutomationId="TimesheetFrom" />
+        <TextBlock Classes="secondary"
+                   Text="to"
+                   VerticalAlignment="Center" />
+        <controls:DatePickerButton SelectedDate="{Binding ToDate}"
+                                   DateFormat="ddd d MMM yyyy"
+                                   MinWidth="170"
+                                   ToolTip.Tip="Last day (included)"
+                                   AutomationProperties.AutomationId="TimesheetTo" />
+      </StackPanel>
+    </WrapPanel>
+
+    <Panel>
+      <TextBlock Classes="secondary"
+                 IsVisible="{Binding IsEmpty}"
+                 AutomationProperties.AutomationId="TimesheetEmpty"
+                 Text="No tagged time in this range. Tag time on the Timeline tab and it will show here." />
+
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" IsVisible="{Binding !IsEmpty}">
+        <StackPanel HorizontalAlignment="Left">
+          <!-- Header -->
+          <StackPanel Orientation="Horizontal" Height="32">
+            <TextBlock Width="{StaticResource NameColumnWidth}"
+                       Text="Project and task"
+                       Classes="h3"
+                       VerticalAlignment="Center" />
+            <ItemsControl ItemsSource="{Binding ColumnLabels}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Classes="cell h3" Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="cell h3" Text="Total" />
+          </StackPanel>
+          <Border Height="1" Background="{DynamicResource Divider}" />
+
+          <!-- Rows -->
+          <ItemsControl ItemsSource="{Binding VisibleRows}" AutomationProperties.AutomationId="TimesheetRows">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="timesheets:TimesheetRowViewModel">
+                <StackPanel Orientation="Horizontal" Height="30">
+                  <StackPanel Orientation="Horizontal"
+                              Width="{StaticResource NameColumnWidth}"
+                              Spacing="6">
+                    <Border Width="{Binding IndentWidth}" />
+                    <ToggleButton Classes="expander"
+                                  IsChecked="{Binding IsExpanded}"
+                                  IsVisible="{Binding HasChildren}"
+                                  Padding="2"
+                                  Width="22"
+                                  Height="22"
+                                  BorderThickness="0"
+                                  ToolTip.Tip="Show or hide what's inside">
+                      <Panel>
+                        <controls:Icon Kind="{x:Static controls:Icons.RowExpanded}"
+                                       Width="14"
+                                       Height="14"
+                                       IsVisible="{Binding IsExpanded}" />
+                        <controls:Icon Kind="{x:Static controls:Icons.RowCollapsed}"
+                                       Width="14"
+                                       Height="14"
+                                       IsVisible="{Binding !IsExpanded}" />
+                      </Panel>
+                    </ToggleButton>
+                    <Border Width="22" IsVisible="{Binding !HasChildren}" />
+                    <controls:Icon Kind="{Binding IconKind}"
+                                   Width="14"
+                                   Height="14"
+                                   VerticalAlignment="Center"
+                                   Opacity="0.8" />
+                    <TextBlock Text="{Binding Name}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="220"
+                               Classes.total="{Binding IsGroup}" />
+                  </StackPanel>
+                  <ItemsControl ItemsSource="{Binding Cells}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="x:String">
+                        <TextBlock Classes="cell" Text="{Binding}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Classes="cell total" Text="{Binding TotalText}" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Totals -->
+          <Border Height="1" Background="{DynamicResource Divider}" />
+          <StackPanel Orientation="Horizontal" Height="32">
+            <TextBlock Width="{StaticResource NameColumnWidth}"
+                       Text="Total"
+                       Classes="total"
+                       VerticalAlignment="Center" />
+            <ItemsControl ItemsSource="{Binding ColumnTotals}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Classes="cell total" Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="cell total"
+                       Text="{Binding TotalText}"
+                       AutomationProperties.AutomationId="TimesheetTotal" />
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Panel>
+  </DockPanel>
+</UserControl>

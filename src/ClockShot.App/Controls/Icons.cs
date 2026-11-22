@@ -17,6 +17,7 @@ public static class Icons
 
     // ---- Pages ----
     public const string Timeline = "chart-gantt";
+    public const string Timesheet = "sheet";
     public const string Projects = "folder-tree";
     public const string Settings = "settings";
 
@@ -64,4 +65,8 @@ public static class Icons
     public const string NewTask = "list-plus";
     public const string Tag = "tag";
     public const string RecentTags = "rotate-ccw-clock";
+
+    // ---- Timesheet ----
+    public const string RowExpanded = "chevron-down";
+    public const string RowCollapsed = "chevron-right";
 }

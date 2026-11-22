@@ -19,6 +19,7 @@
       <!-- General -->
       <SolidColorBrush x:Key="Divider" Color="{StaticResource DividerColor}" />
       <SolidColorBrush x:Key="PanelBackground" Color="{StaticResource PanelColor}" />
+      <SolidColorBrush x:Key="PrimaryText" Color="{StaticResource TextColor}" />
       <SolidColorBrush x:Key="PausedBadgeText" Color="#000000" />
 
       <!-- Timeline -->
