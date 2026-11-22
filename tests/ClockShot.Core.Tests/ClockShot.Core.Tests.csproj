@@ -6,8 +6,8 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <ProjectReference Include="..\..\src\ClockShot.Core\ClockShot.Core.csproj" />
-    <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="NSubstitute" />
+    <PackageReference Include="xunit.v3" />
   </ItemGroup>
 </Project>

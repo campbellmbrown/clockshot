@@ -16,7 +16,7 @@ public sealed class ScreenshotCleanupTests : IAsyncDisposable
 {
     private static readonly DateTime Start = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
 
-    private readonly FakeTimeProvider _clock = new(Start);
+    private readonly JumpingClock _clock = new(Start);
     private readonly IScreenshotStore _screenshots = Substitute.For<IScreenshotStore>();
     private readonly Channel<DateTime> _deleteCutoffs = Channel.CreateUnbounded<DateTime>();
     private readonly JsonSettingsStore _settings = MemorySettingsStore.Create();
@@ -77,5 +77,48 @@ public sealed class ScreenshotCleanupTests : IAsyncDisposable
         Assert.Equal(Start.AddHours(1).AddDays(-7), await NextCutoffAsync());
     }
 
+    [Fact]
+    public async Task IgnoresTheClockJumpingForward()
+    {
+        // Arrange
+        _cleanup.Start();
+        await NextCutoffAsync();
+
+        // Act
+        _clock.Jump = TimeSpan.FromDays(40);
+        _clock.Advance(TimeSpan.FromHours(1));
+
+        // Assert
+        Assert.Equal(Start.AddHours(1).AddDays(-7), await NextCutoffAsync());
+    }
+
+    [Fact]
+    public async Task FollowsTheClockMovedBack()
+    {
+        // Arrange
+        _cleanup.Start();
+        await NextCutoffAsync();
+
+        // Act
+        _clock.Jump = TimeSpan.FromDays(-40);
+        _clock.Advance(TimeSpan.FromHours(1));
+
+        // Assert
+        Assert.Equal(Start.AddHours(1).AddDays(-40).AddDays(-7), await NextCutoffAsync());
+    }
+
     private Task<DateTime> NextCutoffAsync() => BackgroundWork.ReadNextAsync(_deleteCutoffs);
+
+    /// <summary>
+    /// A clock that can be moved while the elapsed time and timers carry on.
+    /// </summary>
+    private sealed class JumpingClock(DateTime start) : FakeTimeProvider(start)
+    {
+        public TimeSpan Jump { get; set; }
+
+        public override DateTimeOffset GetUtcNow() => base.GetUtcNow() + Jump;
+
+        // The base class counts its timestamps in ticks from GetUtcNow, which would include the jump.
+        public override long GetTimestamp() => base.GetUtcNow().Ticks;
+    }
 }

@@ -1,3 +1,4 @@
+using ClockShot.Core.Models;
 using ClockShot.Core.Settings;
 
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,10 @@ public sealed class ScreenshotCleanup(
     // Hourly, not daily, because timers don't count the time the computer is asleep.
     // A daily timer could wait several days on a computer that sleeps every night.
     private static readonly TimeSpan Interval = TimeSpan.FromHours(1);
+
+    // Startup time plus elapsed time, so changing the clock can't delete screenshots early.
+    private readonly DateTime _startUtc = time.GetUtcNow().UtcDateTime;
+    private readonly long _startTimestamp = time.GetTimestamp();
 
     private readonly CancellationTokenSource _stopping = new();
     private Task? _loop;
@@ -68,7 +73,9 @@ public sealed class ScreenshotCleanup(
         try
         {
             var keepFor = TimeSpan.FromDays(settings.Current.Screenshots.KeepForDays);
-            var cutoffUtc = time.GetUtcNow().UtcDateTime - keepFor;
+            var sinceStartUtc = _startUtc + time.GetElapsedTime(_startTimestamp);
+            var nowUtc = TimeMath.Min(time.GetUtcNow().UtcDateTime, sinceStartUtc);
+            var cutoffUtc = nowUtc - keepFor;
             var deleted = await screenshots.DeleteTakenBeforeAsync(cutoffUtc, _stopping.Token).ConfigureAwait(false);
             if (deleted > 0)
             {

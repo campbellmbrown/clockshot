@@ -4,7 +4,7 @@ namespace ClockShot.App.Services;
 
 /// <summary>
 /// Holds the main window once it exists, for services that need one.
-/// Dialogs open over it.
+/// Dialogs open over it, and the clipboard and file pickers belong to it.
 /// </summary>
 public sealed class MainWindowHost
 {

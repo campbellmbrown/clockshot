@@ -3,7 +3,7 @@ using ClockShot.Core.Models;
 namespace ClockShot.Core.Timeline;
 
 /// <summary>
-/// The name a computer state is shown with on the timeline.
+/// The name a computer state is shown with on the timeline and in the details panel.
 /// </summary>
 public static class ComputerStateLabel
 {
