@@ -36,9 +36,9 @@ public sealed class DatePeriod
     public (DateOnly First, DateOnly Last)? DaysFrom(DateOnly today) => _days?.Invoke(today);
 
     /// <summary>
-    /// Monday to Sunday, whatever the user's locale.
+    /// The Monday to Sunday week that holds the day, whatever the user's locale.
     /// </summary>
-    private static (DateOnly First, DateOnly Last) WeekOf(DateOnly day)
+    public static (DateOnly First, DateOnly Last) WeekOf(DateOnly day)
     {
         var daysSinceMonday = ((int)day.DayOfWeek - (int)DayOfWeek.Monday + DaysInWeek) % DaysInWeek;
         var monday = day.AddDays(-daysSinceMonday);
