@@ -22,10 +22,9 @@ Everything in it applies to you too.
 - Don't change anything beyond the task without asking first.
   When you report back, list every change the user didn't ask for.
 - Apply the guidelines in CONTRIBUTING.md with judgement.
-  Fix code a newcomer would have to stop and work out.
-  Keep common C# idioms, such as `ex` in a catch or `(_, e)` in an event handler.
 - Before you report back, read your whole diff as a reviewer would, against CONTRIBUTING.md's code style.
   If a newcomer would stop to work out a line, fix it.
+  Keep common C# idioms, such as `ex` in a catch or `(_, e)` in an event handler.
   Passing tests and a clean build don't count as this review.
 
 ## Git

@@ -17,6 +17,7 @@ public static class Icons
 
     // ---- Pages ----
     public const string Timeline = "chart-gantt";
+    public const string Projects = "folder-tree";
     public const string Settings = "settings";
 
     // ---- Tracking ----
@@ -52,6 +53,10 @@ public static class Icons
     public const string PreviewInWindow = "app-window";
 
     // ---- Clients, projects and tags ----
+    public const string Client = "building-complex";
+    public const string Project = "folder";
+    public const string Task = "list-todo";
+    public const string General = "tag";
     public const string NewProject = "folder-plus";
     public const string Tag = "tag";
     public const string RecentTags = "rotate-ccw-clock";

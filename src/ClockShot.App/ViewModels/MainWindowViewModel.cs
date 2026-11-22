@@ -1,4 +1,5 @@
 using ClockShot.App.Services;
+using ClockShot.App.ViewModels.Projects;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Tagging;
@@ -19,6 +20,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(
         TimelineViewModel timeline,
+        ProjectsViewModel projects,
         SettingsViewModel settingsPage,
         TrackingStatusViewModel tracking,
         StatusBarViewModel statusBar,
@@ -30,10 +32,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Tagger tagger)
     {
         Timeline = timeline;
+        Projects = projects;
         Settings = settingsPage;
         Tracking = tracking;
         StatusBar = statusBar;
-        Pages = [timeline, settingsPage];
+        Pages = [timeline, projects, settingsPage];
         SelectedPage = timeline;
         _lifetime = lifetime;
         _shell = shell;
@@ -46,6 +49,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     public TimelineViewModel Timeline { get; }
+    public ProjectsViewModel Projects { get; }
     public SettingsViewModel Settings { get; }
     public TrackingStatusViewModel Tracking { get; }
     public StatusBarViewModel StatusBar { get; }

@@ -3,6 +3,7 @@ using System.IO.Abstractions;
 using ClockShot.App.Logging;
 using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
+using ClockShot.App.ViewModels.Projects;
 using ClockShot.App.ViewModels.Tagging;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.Core.Screenshots;
@@ -83,6 +84,7 @@ internal static class CompositionRoot
         services.AddTransient<TagEditorViewModel>();
         services.AddSingleton<Func<TagEditorViewModel>>(sp => sp.GetRequiredService<TagEditorViewModel>);
         services.AddSingleton<StatusBarViewModel>();
+        services.AddSingleton<ProjectsViewModel>();
         services.AddSingleton<SettingsViewModel>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true });

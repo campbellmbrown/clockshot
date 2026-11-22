@@ -53,6 +53,12 @@
                   CommandParameter="{Binding Timeline}"
                   AutomationProperties.AutomationId="TimelineMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Timeline}" />
+        <MenuItem Header="_Projects"
+                  InputGesture="{x:Static input:Shortcuts.ShowProjects}"
+                  Command="{Binding ShowPageCommand}"
+                  CommandParameter="{Binding Projects}"
+                  AutomationProperties.AutomationId="ProjectsMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.Projects}" />
         <MenuItem Header="_Settings"
                   InputGesture="{x:Static input:Shortcuts.ShowSettings}"
                   Command="{Binding ShowPageCommand}"
@@ -188,7 +194,7 @@
       </MenuItem>
     </Menu>
 
-    <!-- Shows the tracking state, the window being recorded and today's active time. -->
+    <!-- Shows the tracking state, the window being recorded and today's totals. -->
     <Border DockPanel.Dock="Bottom"
             Background="{DynamicResource PanelBackground}"
             BorderBrush="{DynamicResource Divider}"

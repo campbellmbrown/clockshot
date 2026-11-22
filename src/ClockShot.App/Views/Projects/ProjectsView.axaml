@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:projects="using:ClockShot.App.ViewModels.Projects"
+             xmlns:controls="using:ClockShot.App.Controls"
+             x:Class="ClockShot.App.Views.Projects.ProjectsView"
+             x:DataType="projects:ProjectsViewModel">
+  <DockPanel Margin="12,8,12,12">
+    <Panel>
+      <TextBlock Classes="secondary"
+                 TextWrapping="Wrap"
+                 MaxWidth="460"
+                 HorizontalAlignment="Left"
+                 IsVisible="{Binding IsEmpty}"
+                 Text="No projects yet. Add one with New project, or from the tag editor when you tag time on the timeline." />
+
+      <TreeView ItemsSource="{Binding Nodes}"
+                MaxWidth="760"
+                HorizontalAlignment="Left"
+                AutomationProperties.AutomationId="ProjectTree">
+        <TreeView.Styles>
+          <Style Selector="TreeViewItem" x:DataType="projects:CatalogNodeViewModel">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+          </Style>
+        </TreeView.Styles>
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate DataType="projects:CatalogNodeViewModel" ItemsSource="{Binding Children}">
+            <Grid ColumnDefinitions="Auto,*,Auto"
+                  ColumnSpacing="8"
+                  MinWidth="520">
+              <controls:Icon Kind="{Binding IconKind}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1"
+                         Text="{Binding Name}"
+                         VerticalAlignment="Center"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Grid.Column="2"
+                         Classes="secondary"
+                         Text="{Binding TotalText}"
+                         VerticalAlignment="Center" />
+            </Grid>
+          </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+    </Panel>
+  </DockPanel>
+</UserControl>

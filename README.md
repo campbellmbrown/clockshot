@@ -12,7 +12,9 @@ It needs no account and sends nothing over the internet.
 ClockShot is a work in progress, and there are no releases yet.
 It already records your activity and takes screenshots, and the Timeline tab shows them.
 You can tag time with a project, a task and a note, and edit, delete or undo tags.
-The Projects and Timesheet tabs are still being built.
+The Projects tab shows how much time you tagged to each project this week.
+You can't edit anything there yet.
+The Timesheet tab is still being built.
 
 ## What it does
 
@@ -46,6 +48,9 @@ The Projects and Timesheet tabs are still being built.
   Settings can change how long that is, or turn the question off.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.
+- The Projects tab shows each client with its projects, and the time tagged to each one this week.
+  Under each project are the projects inside it, then its tasks.
+  Time tagged with a blank task shows on a General row under its project.
 - The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.

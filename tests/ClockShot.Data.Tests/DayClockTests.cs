@@ -58,6 +58,44 @@ public sealed class DayClockTests
         Assert.Equal(new TimeRange(mondayFourAmLocal, mondayFourAmLocal.AddDays(1)), range);
     }
 
+    [Fact]
+    public void ARunOfDaysCoversTheFirstDayToTheEndOfTheLast()
+    {
+        // Arrange
+        var days = Clock(utcNow: new DateTime(2026, 11, 9, 12, 0, 0, DateTimeKind.Utc), dayStartHour: 4);
+
+        // Act
+        var range = days.RangeOf(first: Monday, last: Monday.AddDays(1));
+
+        // Assert
+        // 04:00 on Monday at UTC+5:30 is 22:30 on Sunday in UTC.
+        var mondayFourAmLocal = new DateTime(2026, 11, 8, 22, 30, 0, DateTimeKind.Utc);
+        Assert.Equal(new TimeRange(mondayFourAmLocal, mondayFourAmLocal.AddDays(2)), range);
+    }
+
+    [Fact]
+    public void AWeekStartsOnMonday()
+    {
+        // Arrange
+        var sunday = Monday.AddDays(6);
+
+        // Act
+        var start = DayClock.StartOfWeek(sunday);
+
+        // Assert
+        Assert.Equal(Monday, start);
+    }
+
+    [Fact]
+    public void MondayStartsItsOwnWeek()
+    {
+        // Act
+        var start = DayClock.StartOfWeek(Monday);
+
+        // Assert
+        Assert.Equal(Monday, start);
+    }
+
     /// <summary>
     /// A clock in a made-up zone half an hour off the hour, so local and UTC dates differ in the evening.
     /// </summary>

@@ -15,6 +15,9 @@
     <DataTemplate DataType="timeline:TimelineViewModel">
       <timelineViews:TimelineView />
     </DataTemplate>
+    <DataTemplate DataType="projects:ProjectsViewModel">
+      <projectViews:ProjectsView />
+    </DataTemplate>
     <DataTemplate DataType="vm:SettingsViewModel">
       <views:SettingsView />
     </DataTemplate>

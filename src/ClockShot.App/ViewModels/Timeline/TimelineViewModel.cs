@@ -57,6 +57,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private readonly ILogger<TimelineViewModel> _logger;
     private readonly BackgroundWork _background;
     private readonly ITimer _timer;
+    private readonly NewestLoad _newestLoad = new();
 
     private int _ticks;
 
@@ -75,7 +76,6 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private int _catalogLoadedAtChange = -1;
 
     private ScreenshotIndex _screenshots = ScreenshotIndex.Empty;
-    private CancellationTokenSource? _loading;
 
     // The pointer's last position and snap flag, kept so the hover follows when the view moves or the day's rows reload.
     private double? _hoverX;
@@ -250,14 +250,14 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// </summary>
     public async Task LoadAsync()
     {
-        var loading = Restart();
+        var token = _newestLoad.Start();
         var projectChangesAtStart = Volatile.Read(ref _projectChangeCount);
         try
         {
-            var recordsTask = _history.LoadAsync(DayRange, loading.Token);
-            var tagsTask = _entries.GetAsync(DayRange, loading.Token);
+            var recordsTask = _history.LoadAsync(DayRange, token);
+            var tagsTask = _entries.GetAsync(DayRange, token);
             var reloadCatalog = projectChangesAtStart != _catalogLoadedAtChange;
-            var catalogTask = reloadCatalog ? _projects.LoadCatalogAsync(loading.Token) : Task.FromResult(_catalog);
+            var catalogTask = reloadCatalog ? _projects.LoadCatalogAsync(token) : Task.FromResult(_catalog);
 
             // Waiting for all three first means a failure in any of them is seen.
             await Task.WhenAll(recordsTask, tagsTask, catalogTask);
@@ -265,7 +265,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             var tags = await tagsTask;
             var catalog = await catalogTask;
 
-            if (IsOutOfDate(loading, projectChangesAtStart))
+            if (IsOutOfDate(projectChangesAtStart, token))
             {
                 return;
             }
@@ -274,7 +274,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
             {
                 // The tag editor loads its recent tags, so a newer load may take over meanwhile.
                 await Details.TagEditor.SetCatalogAsync(catalog, TimeZone);
-                if (IsOutOfDate(loading, projectChangesAtStart))
+                if (IsOutOfDate(projectChangesAtStart, token))
                 {
                     return;
                 }
@@ -382,8 +382,7 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     public void Dispose()
     {
         _timer.Dispose();
-        _loading?.Cancel();
-        _loading?.Dispose();
+        _newestLoad.Dispose();
         // Preview comes from the service container, which disposes it.
     }
 
@@ -660,8 +659,8 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     /// Whether a newer load has taken over, or a project changed since this load started.
     /// After a project change, the load that the change started shows the day instead.
     /// </summary>
-    private bool IsOutOfDate(CancellationTokenSource loading, int projectChangesAtStart) =>
-        loading.IsCancellationRequested || Volatile.Read(ref _projectChangeCount) != projectChangesAtStart;
+    private bool IsOutOfDate(int projectChangesAtStart, CancellationToken token) =>
+        token.IsCancellationRequested || Volatile.Read(ref _projectChangeCount) != projectChangesAtStart;
 
     private void ShowLanes(ActivityRecords records) => Lanes = TimelineLanes.Build(records, _tags, _catalog);
 
@@ -671,14 +670,4 @@ public sealed partial class TimelineViewModel : PageViewModel, IDisposable
     private DateTime Now() => _days.NowUtc;
 
     private DateOnly Today() => _days.Today;
-
-    /// <summary>
-    /// Cancels the previous load and starts a new one.
-    /// The old source isn't disposed, because its load may still be checking it.
-    /// </summary>
-    private CancellationTokenSource Restart()
-    {
-        _loading?.Cancel();
-        return _loading = new CancellationTokenSource();
-    }
 }

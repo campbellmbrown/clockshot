@@ -18,7 +18,7 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
 {
     private readonly ScreenshotImageLoader _images;
     private readonly ISettingsStore _settings;
-    private CancellationTokenSource? _loading;
+    private readonly NewestLoad _newestLoad = new();
 
     public ScreenshotPreviewViewModel(ScreenshotImageLoader images, ISettingsStore settings)
     {
@@ -140,11 +140,11 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
     /// </summary>
     public async Task ShowAsync(Screenshot screenshot, string takenText, string applicationName, string windowTitle)
     {
-        var loading = Restart();
+        var token = _newestLoad.Start();
         try
         {
-            var image = await _images.LoadAsync(screenshot, loading.Token);
-            if (loading.IsCancellationRequested)
+            var image = await _images.LoadAsync(screenshot, token);
+            if (token.IsCancellationRequested)
             {
                 return;
             }
@@ -166,7 +166,7 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
     /// </summary>
     public void ShowMessage(string message, string? applicationName = null, string? windowTitle = null)
     {
-        Restart();
+        _newestLoad.Cancel();
         Image = null;
         TakenText = null;
         ApplicationName = applicationName;
@@ -179,8 +179,7 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
     public void Dispose()
     {
         _settings.Changed -= OnSettingsChanged;
-        _loading?.Cancel();
-        _loading?.Dispose();
+        _newestLoad.Dispose();
     }
 
     [RelayCommand]
@@ -209,15 +208,5 @@ public sealed partial class ScreenshotPreviewViewModel : ViewModelBase, IDisposa
         OnPropertyChanged(nameof(IsPopup));
         OnPropertyChanged(nameof(IsBelowTimeline));
         OnPropertyChanged(nameof(IsInWindow));
-    }
-
-    /// <summary>
-    /// Cancels the previous load and starts a new one.
-    /// The old source is only cancelled, not disposed, because its load may still be checking it.
-    /// </summary>
-    private CancellationTokenSource Restart()
-    {
-        _loading?.Cancel();
-        return _loading = new CancellationTokenSource();
     }
 }
