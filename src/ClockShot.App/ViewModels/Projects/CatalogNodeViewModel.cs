@@ -15,6 +15,8 @@ public sealed partial class CatalogNodeViewModel(
 
     public string IconKind => CatalogIcons.For(Kind);
 
+    public long? Id => node.Id;
+
     public string Name => node.Name;
 
     public TimeSpan Total { get; } = total;
@@ -28,4 +30,6 @@ public sealed partial class CatalogNodeViewModel(
 
     [ObservableProperty]
     public partial bool IsExpanded { get; set; }
+
+    public bool IsProject => Kind == CatalogRowKind.Project;
 }

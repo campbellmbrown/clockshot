@@ -10,7 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace ClockShot.App.ViewModels.Projects;
 
 /// <summary>
-/// The project form, which the tag editor uses to add or edit a project.
+/// The project form, which the tag editor and the Projects tab use to add or edit a project.
 /// It has the project's name, its client and the project it sits inside.
 /// </summary>
 public sealed partial class ProjectDialogViewModel : DialogViewModel
@@ -84,8 +84,13 @@ public sealed partial class ProjectDialogViewModel : DialogViewModel
     /// <summary>
     /// A form for a new project.
     /// </summary>
-    public static ProjectDialogViewModel ForNew(ProjectRepository projects, ProjectCatalog catalog, string? name = null) =>
-        new(projects, catalog, editing: null, name, parent: null, client: null);
+    public static ProjectDialogViewModel ForNew(
+        ProjectRepository projects,
+        ProjectCatalog catalog,
+        string? name = null,
+        Project? parent = null,
+        Client? client = null) =>
+        new(projects, catalog, editing: null, name, parent, client);
 
     /// <summary>
     /// A form for changing an existing project.

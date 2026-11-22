@@ -58,7 +58,9 @@ public static class Icons
     public const string Project = "folder";
     public const string Task = "list-todo";
     public const string General = "tag";
+    public const string NewClient = "building-complex";
     public const string NewProject = "folder-plus";
+    public const string NewTask = "list-plus";
     public const string Tag = "tag";
     public const string RecentTags = "rotate-ccw-clock";
 }

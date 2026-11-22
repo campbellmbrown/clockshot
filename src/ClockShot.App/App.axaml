@@ -6,6 +6,8 @@
              xmlns:projectViews="using:ClockShot.App.Views.Projects"
              xmlns:tagging="using:ClockShot.App.ViewModels.Tagging"
              xmlns:taggingViews="using:ClockShot.App.Views.Tagging"
+             xmlns:dialogs="using:ClockShot.App.ViewModels.Dialogs"
+             xmlns:dialogViews="using:ClockShot.App.Views.Dialogs"
              xmlns:views="using:ClockShot.App.Views"
              xmlns:timelineViews="using:ClockShot.App.Views.Timeline"
              x:Class="ClockShot.App.App"
@@ -26,6 +28,9 @@
     </DataTemplate>
     <DataTemplate DataType="projects:ProjectDialogViewModel">
       <projectViews:ProjectDialogView />
+    </DataTemplate>
+    <DataTemplate DataType="dialogs:TextPromptViewModel">
+      <dialogViews:TextPromptView />
     </DataTemplate>
     <DataTemplate DataType="tagging:AwayPromptViewModel">
       <taggingViews:AwayPromptView />

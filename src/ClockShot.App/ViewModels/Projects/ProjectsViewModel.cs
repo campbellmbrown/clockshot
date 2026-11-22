@@ -1,5 +1,6 @@
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
+using ClockShot.App.ViewModels.Dialogs;
 using ClockShot.Core.Models;
 using ClockShot.Core.Projects;
 using ClockShot.Core.Settings;
@@ -8,16 +9,19 @@ using ClockShot.Core.Timeline;
 using ClockShot.Data.Projects;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ClockShot.App.ViewModels.Projects;
 
 /// <summary>
 /// The Projects tab: a searchable tree of clients, projects, sub-projects and tasks with time totals.
+/// It has the actions to add them.
 /// </summary>
 public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 {
     private readonly ProjectRepository _projects;
     private readonly ITimeEntryRepository _entries;
+    private readonly IDialogService _dialogs;
     private readonly DayClock _days;
     private readonly BackgroundWork _background;
     private readonly NewestLoad _newestLoad = new();
@@ -28,6 +32,7 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
         ProjectRepository projects,
         ITimeEntryRepository entries,
         Tagger tagger,
+        IDialogService dialogs,
         ISettingsStore settings,
         DayClock days,
         BackgroundWork background)
@@ -35,6 +40,7 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     {
         _projects = projects;
         _entries = entries;
+        _dialogs = dialogs;
         _days = days;
         _background = background;
         SelectedPeriod = DatePeriod.ThisWeek;
@@ -57,6 +63,16 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 
     [ObservableProperty]
     public partial IReadOnlyList<CatalogNodeViewModel> Nodes { get; private set; } = [];
+
+    [ObservableProperty]
+    public partial CatalogNodeViewModel? SelectedNode { get; set; }
+
+    /// <summary>
+    /// Why the last action didn't work, e.g. a name that's already taken.
+    /// Empty when fine.
+    /// </summary>
+    [ObservableProperty]
+    public partial string Message { get; private set; } = "";
 
     public bool IsEmpty => _catalog.Projects.Count == 0 && _catalog.Clients.Count == 0;
 
@@ -94,6 +110,78 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     }
 
     public void Dispose() => _newestLoad.Dispose();
+
+    // ---- Actions (toolbar) ----
+
+    [RelayCommand]
+    private async Task NewClientAsync()
+    {
+        var name = await AskForNameAsync(
+            title: "New client",
+            label: "Client name",
+            initialText: "",
+            confirmText: "Add client");
+        if (name is null)
+        {
+            return;
+        }
+
+        await TryAsync(() => _projects.AddClientAsync(name));
+    }
+
+    /// <summary>
+    /// A new project under the given client or "No client" group, or a sub-project of the given project.
+    /// </summary>
+    [RelayCommand]
+    private async Task NewProjectAsync(CatalogNodeViewModel? under)
+    {
+        var parent = under?.Kind == CatalogRowKind.Project ? _catalog.ProjectById(under.Id) : null;
+        var client = under?.Kind == CatalogRowKind.Client ? _catalog.ClientById(under.Id) : null;
+        await _dialogs.ShowAsync(ProjectDialogViewModel.ForNew(_projects, _catalog, parent: parent, client: client));
+    }
+
+    [RelayCommand(CanExecute = nameof(IsProject))]
+    private async Task NewTaskAsync(CatalogNodeViewModel? project)
+    {
+        if (project?.Id is not { } projectId)
+        {
+            return;
+        }
+
+        var name = await AskForNameAsync(
+            title: "New task",
+            label: $"Task in {project.Name}",
+            initialText: "",
+            confirmText: "Add task");
+        if (name is null)
+        {
+            return;
+        }
+
+        await TryAsync(() => _projects.AddTaskAsync(projectId, name));
+    }
+
+    private static bool IsProject(CatalogNodeViewModel? node) => node?.IsProject == true;
+
+    private async Task<string?> AskForNameAsync(string title, string label, string initialText, string confirmText)
+    {
+        var prompt = new TextPromptViewModel(title, label, initialText, confirmText);
+        await _dialogs.ShowAsync(prompt);
+        return prompt.Result;
+    }
+
+    private async Task TryAsync(Func<Task> action)
+    {
+        Message = "";
+        try
+        {
+            await action();
+        }
+        catch (DuplicateNameException ex)
+        {
+            Message = ex.Message;
+        }
+    }
 
     // ---- Tree ----
 

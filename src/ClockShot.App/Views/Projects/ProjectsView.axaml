@@ -36,7 +36,34 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
+      <StackPanel Orientation="Horizontal"
+                  Spacing="6"
+                  Margin="0,0,0,6">
+        <Button Command="{Binding NewClientCommand}" AutomationProperties.AutomationId="NewClientButton">
+          <controls:IconText Kind="{x:Static controls:Icons.NewClient}" Text="New client" />
+        </Button>
+        <Button Command="{Binding NewProjectCommand}"
+                CommandParameter="{Binding SelectedNode}"
+                ToolTip.Tip="Adds a project to the selected client, or a sub-project to the selected project"
+                AutomationProperties.AutomationId="NewProjectButton">
+          <controls:IconText Kind="{x:Static controls:Icons.NewProject}" Text="New project" />
+        </Button>
+        <Button Command="{Binding NewTaskCommand}"
+                CommandParameter="{Binding SelectedNode}"
+                ToolTip.Tip="Adds a task to the selected project"
+                AutomationProperties.AutomationId="NewTaskButton">
+          <controls:IconText Kind="{x:Static controls:Icons.NewTask}" Text="New task" />
+        </Button>
+      </StackPanel>
     </WrapPanel>
+
+    <TextBlock DockPanel.Dock="Top"
+               Text="{Binding Message}"
+               Foreground="{DynamicResource SystemFillColorCautionBrush}"
+               TextWrapping="Wrap"
+               Margin="0,0,0,8"
+               AutomationProperties.AutomationId="ProjectsMessage"
+               IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
     <Panel>
       <TextBlock Classes="secondary"
@@ -47,6 +74,7 @@
                  Text="No projects yet. Add one with New project, or from the tag editor when you tag time on the timeline." />
 
       <TreeView ItemsSource="{Binding Nodes}"
+                SelectedItem="{Binding SelectedNode}"
                 MaxWidth="760"
                 HorizontalAlignment="Left"
                 AutomationProperties.AutomationId="ProjectTree">

@@ -13,7 +13,8 @@ ClockShot is a work in progress, and there are no releases yet.
 It already records your activity and takes screenshots, and the Timeline tab shows them.
 You can tag time with a project, a task and a note, and edit, delete or undo tags.
 The Projects tab shows how much time you tagged to each project.
-You can't edit anything there yet.
+You can add clients, projects and tasks there.
+You can't rename, archive or delete them yet.
 The Timesheet tab is still being built.
 
 ## What it does
@@ -54,6 +55,9 @@ The Timesheet tab is still being built.
   Time tagged with a blank task shows on a General row under its project.
   The search box finds a client, project or task with every word typed in its name.
   It also shows what each match sits inside, and everything inside it.
+  Buttons above the tree add a client, a project or a task.
+  A new project starts with the selected client, or inside the selected project.
+  A new task goes under the selected project.
 - The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
