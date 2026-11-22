@@ -38,10 +38,10 @@ public sealed class TimesheetBuilderTests
         // Arrange
         TimeEntry[] entries =
         [
-            Entry(Monday, startHour: 9, hours: 1, WebsiteId, LoginPageId),
+            Entry(Monday, startHour: 9, hours: 1, WebsiteId, LoginPageId, note: "Form layout"),
             Entry(Monday, startHour: 10, hours: 0.5, WebsiteId),
             Entry(Monday.AddDays(1), startHour: 9, hours: 2, CheckoutId),
-            Entry(Monday.AddDays(2), startHour: 13, hours: 1, InternalId),
+            Entry(Monday.AddDays(2), startHour: 13, hours: 1, InternalId, note: "Standup"),
         ];
 
         // Act
@@ -52,6 +52,7 @@ public sealed class TimesheetBuilderTests
         var website = Assert.Single(report.Rows[0].Children);
         Assert.Equal(["Checkout", "General", "Login page"], website.Children.Select(c => c.Name));
         Assert.Equal(TimeSpan.FromHours(3.5), website.Total);
+        Assert.Equal("Form layout", website.Children[2].Notes);
         Assert.Equal(["Internal"], report.Rows[1].Children.Select(c => c.Name));
         Assert.Equal(TimeSpan.FromHours(4.5), report.Total);
     }
@@ -155,10 +156,29 @@ public sealed class TimesheetBuilderTests
         Assert.Equal(TimeSpan.FromMinutes(expected), rounded);
     }
 
-    private static TimeEntry Entry(DateOnly day, int startHour, double hours, long project, long? task = null)
+    [Fact]
+    public void NotesAreDistinctTrimmedAndSorted()
+    {
+        // Arrange
+        TimeEntry[] entries =
+        [
+            Entry(Monday, startHour: 9, hours: 1, InternalId, note: " Standup "),
+            Entry(Monday, startHour: 10, hours: 1, InternalId, note: "review"),
+            Entry(Monday, startHour: 11, hours: 1, InternalId, note: "standup"),
+        ];
+
+        // Act
+        var report = Build(entries, Monday, Monday);
+
+        // Assert
+        var general = Assert.Single(Assert.Single(report.Rows[0].Children).Children);
+        Assert.Equal("review; Standup", general.Notes);
+    }
+
+    private static TimeEntry Entry(DateOnly day, int startHour, double hours, long project, long? task = null, string? note = null)
     {
         var start = day.ToDateTime(new TimeOnly(startHour, minute: 0), DateTimeKind.Utc);
-        return new TimeEntry(Id: 0, new TimeRange(start, start.AddHours(hours)), project, task, Note: null);
+        return new TimeEntry(Id: 0, new TimeRange(start, start.AddHours(hours)), project, task, note);
     }
 
     private static TimesheetReport Build(IReadOnlyList<TimeEntry> entries, DateOnly first, DateOnly last, TimesheetSettings? settings = null) =>

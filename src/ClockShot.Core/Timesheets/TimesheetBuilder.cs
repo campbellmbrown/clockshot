@@ -18,6 +18,9 @@ public static class TimesheetBuilder
     // A longer range would be too wide to read.
     private const int MaxDayColumns = 31;
 
+    // A semicolon keeps a row's notes apart in one cell, and a CSV file doesn't need to quote it.
+    private const string NoteSeparator = "; ";
+
     /// <param name="days">The first and last day, both included.</param>
     public static TimesheetReport Build(
         IReadOnlyList<TimeEntry> entries,
@@ -72,7 +75,7 @@ public static class TimesheetBuilder
     }
 
     /// <summary>
-    /// Adds up each tag's exact time in each column.
+    /// Adds up each tag's exact time in each column, and collects its notes.
     /// </summary>
     private static Dictionary<(long ProjectId, long? TaskId), TagTime> TimeByTag(
         IReadOnlyList<TimeEntry> entries,
@@ -97,7 +100,7 @@ public static class TimesheetBuilder
                     times[tag] = time = new TagTime(columns.Count);
                 }
 
-                time.Add(column, part.Duration);
+                time.Add(column, part.Duration, entry.Note);
             }
         }
 
@@ -111,13 +114,22 @@ public static class TimesheetBuilder
         [.. Enumerable.Range(0, columnCount).Select(i => rows.Select(r => r.Cells[i]).Sum())];
 
     /// <summary>
-    /// One tag's exact time in each column.
+    /// One tag's exact time in each column, and its distinct notes.
     /// </summary>
     private sealed class TagTime(int columnCount)
     {
         public TimeSpan[] Cells { get; } = new TimeSpan[columnCount];
 
-        public void Add(int column, TimeSpan duration) => Cells[column] += duration;
+        public SortedSet<string> Notes { get; } = new(StringComparer.CurrentCultureIgnoreCase);
+
+        public void Add(int column, TimeSpan duration, string? note)
+        {
+            Cells[column] += duration;
+            if (!string.IsNullOrWhiteSpace(note))
+            {
+                Notes.Add(note.Trim());
+            }
+        }
     }
 
     /// <summary>
@@ -138,7 +150,7 @@ public static class TimesheetBuilder
             }
 
             var sums = SumPerColumn(children, children[0].Cells.Count);
-            return new TimesheetRow(node.Kind, node.Name, sums, sums.Sum(), children);
+            return new TimesheetRow(node.Kind, node.Name, sums, sums.Sum(), Notes: "", children);
         }
 
         private TimesheetRow? Row(CatalogNode node) =>
@@ -157,7 +169,7 @@ public static class TimesheetBuilder
                 return null;
             }
 
-            return new TimesheetRow(node.Kind, node.Name, cells, cells.Sum(), Children: []);
+            return new TimesheetRow(node.Kind, node.Name, cells, cells.Sum(), string.Join(NoteSeparator, time.Notes), Children: []);
         }
     }
 }
