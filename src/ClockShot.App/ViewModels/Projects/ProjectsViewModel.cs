@@ -1,5 +1,6 @@
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
+using ClockShot.Core.Models;
 using ClockShot.Core.Projects;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Tagging;
@@ -11,7 +12,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace ClockShot.App.ViewModels.Projects;
 
 /// <summary>
-/// The Projects tab: a tree of clients, projects, sub-projects and tasks with this week's time.
+/// The Projects tab: a searchable tree of clients, projects, sub-projects and tasks with time totals.
 /// </summary>
 public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 {
@@ -36,16 +37,32 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
         _entries = entries;
         _days = days;
         _background = background;
+        SelectedPeriod = DatePeriod.ThisWeek;
         settings.Changed += _ => OnUiThread(() => _background.Run(() => LoadAsync()));   // e.g. the day start hour
         projects.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
         tagger.Changed += () => OnUiThread(() => _background.Run(() => LoadAsync()));
         _background.Run(() => LoadAsync());
     }
 
+    /// <summary>
+    /// The periods the totals can cover.
+    /// </summary>
+    public IReadOnlyList<DatePeriod> Periods { get; } = [DatePeriod.ThisWeek, DatePeriod.ThisMonth, DatePeriod.AllTime];
+
+    [ObservableProperty]
+    public partial DatePeriod SelectedPeriod { get; set; }
+
+    [ObservableProperty]
+    public partial string? SearchText { get; set; }
+
     [ObservableProperty]
     public partial IReadOnlyList<CatalogNodeViewModel> Nodes { get; private set; } = [];
 
     public bool IsEmpty => _catalog.Projects.Count == 0 && _catalog.Clients.Count == 0;
+
+    partial void OnSelectedPeriodChanged(DatePeriod value) => _background.Run(() => LoadAsync());
+
+    partial void OnSearchTextChanged(string? value) => Rebuild();
 
     /// <summary>
     /// Loads the tree and its totals.
@@ -54,8 +71,7 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     public async Task LoadAsync()
     {
         var token = _newestLoad.Start();
-        var first = DayClock.StartOfWeek(_days.Today);
-        var range = _days.RangeOf(first, first.AddDays(6));
+        var range = SelectedPeriod.DaysFrom(_days.Today) is { } days ? _days.RangeOf(days.First, days.Last) : TimeRange.All;
 
         try
         {
@@ -82,28 +98,39 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     // ---- Tree ----
 
     /// <summary>
-    /// Rebuilds the tree from the catalog.
+    /// Rebuilds the tree from the catalog, applying the search.
     /// </summary>
     private void Rebuild()
     {
-        Nodes = [.. CatalogTree.Build(_catalog).Select(RowFor).OfType<CatalogNodeViewModel>()];
+        var words = SearchWords.Of(SearchText);
+        Nodes = [.. CatalogTree.Build(_catalog).Select(node => RowFor(node, words)).OfType<CatalogNodeViewModel>()];
         foreach (var node in Nodes)
         {
-            Expand(node);
+            Expand(node, all: !words.IsEmpty);
         }
     }
 
     /// <summary>
     /// The row with the rows under it that are shown, or null when it's hidden.
+    /// A row that matches the search shows every row under it.
+    /// Any other row shows only when a row under it matches.
     /// </summary>
-    private CatalogNodeViewModel? RowFor(CatalogNode node)
+    private CatalogNodeViewModel? RowFor(CatalogNode node, SearchWords words)
     {
         if (IsHidden(node))
         {
             return null;
         }
 
-        var children = node.Children.Select(RowFor).OfType<CatalogNodeViewModel>().ToList();
+        var matches = words.AreAllIn(node.Name);
+        var children = node.Children
+            .Select(child => RowFor(child, matches ? SearchWords.None : words))
+            .OfType<CatalogNodeViewModel>()
+            .ToList();
+        if (!matches && children.Count == 0)
+        {
+            return null;
+        }
 
         // "No client" isn't an item the user made.
         // It shows only when it holds projects.
@@ -124,13 +151,14 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 
     /// <summary>
     /// Clients start expanded.
+    /// While searching, every row starts expanded to show the matches.
     /// </summary>
-    private static void Expand(CatalogNodeViewModel node)
+    private static void Expand(CatalogNodeViewModel node, bool all)
     {
-        node.IsExpanded = node.Kind is CatalogRowKind.Client or CatalogRowKind.NoClient;
+        node.IsExpanded = all || node.Kind is CatalogRowKind.Client or CatalogRowKind.NoClient;
         foreach (var child in node.Children)
         {
-            Expand(child);
+            Expand(child, all);
         }
     }
 }

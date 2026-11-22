@@ -73,29 +73,6 @@ public sealed class DayClockTests
         Assert.Equal(new TimeRange(mondayFourAmLocal, mondayFourAmLocal.AddDays(2)), range);
     }
 
-    [Fact]
-    public void AWeekStartsOnMonday()
-    {
-        // Arrange
-        var sunday = Monday.AddDays(6);
-
-        // Act
-        var start = DayClock.StartOfWeek(sunday);
-
-        // Assert
-        Assert.Equal(Monday, start);
-    }
-
-    [Fact]
-    public void MondayStartsItsOwnWeek()
-    {
-        // Act
-        var start = DayClock.StartOfWeek(Monday);
-
-        // Assert
-        Assert.Equal(Monday, start);
-    }
-
     /// <summary>
     /// A clock in a made-up zone half an hour off the hour, so local and UTC dates differ in the evening.
     /// </summary>

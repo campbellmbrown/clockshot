@@ -20,6 +20,19 @@ public sealed class TimeRangeTests
     }
 
     [Fact]
+    public void AllCoversEveryRange()
+    {
+        // Arrange
+        var range = new TimeRange(At(9), At(10));
+
+        // Act
+        var overlap = TimeRange.All.Intersect(range);
+
+        // Assert
+        Assert.Equal(range, overlap);
+    }
+
+    [Fact]
     public void RejectsAnEndBeforeTheStart()
     {
         // Act

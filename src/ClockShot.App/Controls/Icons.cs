@@ -30,6 +30,7 @@ public static class Icons
     public const string Edit = "pencil";
     public const string Delete = "trash";
     public const string Undo = "undo-2";
+    public const string Search = "search";
 
     // ---- Days and zoom ----
     public const string PreviousDay = "chevron-left";

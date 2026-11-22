@@ -22,6 +22,13 @@ public readonly record struct TimeRange
         End = end;
     }
 
+    /// <summary>
+    /// From the earliest to the latest time .NET can hold, for when there's no limit.
+    /// </summary>
+    public static TimeRange All { get; } = new(
+        DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc),
+        DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc));
+
     public DateTime Start { get; }
     public DateTime End { get; }
     public TimeSpan Duration => End - Start;

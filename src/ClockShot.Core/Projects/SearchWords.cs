@@ -10,6 +10,11 @@ public sealed class SearchWords
 
     private SearchWords(string[] words) => _words = words;
 
+    /// <summary>
+    /// No words, which matches every name.
+    /// </summary>
+    public static SearchWords None { get; } = new([]);
+
     public bool IsEmpty => _words.Length == 0;
 
     public static SearchWords Of(string? text) => new((text ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries));

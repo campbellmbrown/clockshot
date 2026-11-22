@@ -30,6 +30,17 @@ public sealed class SearchWordsTests
         Assert.False(matches);
     }
 
+    [Fact]
+    public void NoneIsEmptyAndMatchesEverything()
+    {
+        // Act
+        var words = SearchWords.None;
+
+        // Assert
+        Assert.True(words.IsEmpty);
+        Assert.True(words.AreAllIn("Website"));
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

@@ -9,8 +9,6 @@ namespace ClockShot.Core.Timeline;
 /// </summary>
 public sealed class DayClock(TimeProvider time, ISettingsStore settings)
 {
-    private const int DaysInWeek = 7;
-
     public TimeZoneInfo Zone => time.LocalTimeZone;
 
     public DateTime NowUtc => time.GetUtcNow().UtcDateTime;
@@ -28,14 +26,4 @@ public sealed class DayClock(TimeProvider time, ISettingsStore settings)
     /// The time from the start of the first day to the end of the last day.
     /// </summary>
     public TimeRange RangeOf(DateOnly first, DateOnly last) => new(RangeOf(first).Start, RangeOf(last).End);
-
-    /// <summary>
-    /// The Monday of the day's week.
-    /// Weeks always start on Monday, whatever the user's locale.
-    /// </summary>
-    public static DateOnly StartOfWeek(DateOnly day)
-    {
-        var daysSinceMonday = ((int)day.DayOfWeek - (int)DayOfWeek.Monday + DaysInWeek) % DaysInWeek;
-        return day.AddDays(-daysSinceMonday);
-    }
 }

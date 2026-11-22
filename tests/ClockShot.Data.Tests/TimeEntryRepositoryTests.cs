@@ -75,6 +75,20 @@ public sealed class TimeEntryRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetFindsEveryEntryInAllTime()
+    {
+        // Arrange
+        var project = await AddTopLevelProjectAsync("Website");
+        await AddEntriesAsync(project.Id, Minutes(0, 30), Minutes(60, 90));
+
+        // Act
+        var found = await _entries.GetAsync(TimeRange.All, CancellationToken);
+
+        // Assert
+        Assert.Equal([Minutes(0, 30), Minutes(60, 90)], found.Select(e => e.Range));
+    }
+
+    [Fact]
     public async Task ApplySavesAddedUpdatedAndRemovedEntries()
     {
         // Arrange

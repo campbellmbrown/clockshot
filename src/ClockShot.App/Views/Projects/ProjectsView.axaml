@@ -2,9 +2,42 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:projects="using:ClockShot.App.ViewModels.Projects"
              xmlns:controls="using:ClockShot.App.Controls"
+             xmlns:timeline="using:ClockShot.Core.Timeline"
              x:Class="ClockShot.App.Views.Projects.ProjectsView"
              x:DataType="projects:ProjectsViewModel">
   <DockPanel Margin="12,8,12,12">
+    <!-- Toolbar -->
+    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+      <TextBox Width="280"
+               Text="{Binding SearchText}"
+               PlaceholderText="Search clients, projects and tasks"
+               Margin="0,0,12,6"
+               AutomationProperties.AutomationId="ProjectSearch">
+        <TextBox.InnerLeftContent>
+          <controls:Icon Kind="{x:Static controls:Icons.Search}"
+                         Margin="8,0,0,0"
+                         Opacity="0.7" />
+        </TextBox.InnerLeftContent>
+      </TextBox>
+      <StackPanel Orientation="Horizontal"
+                  Spacing="6"
+                  Margin="0,0,12,6">
+        <TextBlock Classes="secondary"
+                   Text="Time for"
+                   VerticalAlignment="Center" />
+        <ComboBox ItemsSource="{Binding Periods}"
+                  SelectedItem="{Binding SelectedPeriod}"
+                  Width="130"
+                  AutomationProperties.AutomationId="ProjectPeriod">
+          <ComboBox.ItemTemplate>
+            <DataTemplate DataType="timeline:DatePeriod">
+              <TextBlock Text="{Binding Label}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+    </WrapPanel>
+
     <Panel>
       <TextBlock Classes="secondary"
                  TextWrapping="Wrap"
