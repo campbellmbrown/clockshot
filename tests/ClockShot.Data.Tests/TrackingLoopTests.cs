@@ -33,6 +33,9 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 
     private static readonly CapturedImage Image = new(width: 1, height: 1, new byte[CapturedImage.BytesPerPixel]);
 
+    // Longer than the default away setting of 5 minutes.
+    private static readonly TimeSpan LongIdle = TimeSpan.FromMinutes(10);
+
     private readonly FakeTimeProvider _clock = new(StartTime);
     private readonly ISystemSampler _sampler = Substitute.For<ISystemSampler>();
     private readonly IWindowCapturer _capturer = Substitute.For<IWindowCapturer>();
@@ -268,6 +271,45 @@ public sealed class TrackingLoopTests : IAsyncDisposable
                 new SegmentsExtended(At(2)),
             ],
             changes);
+    }
+
+    [Fact]
+    public async Task ComingBackRaisesReturnedFromAway()
+    {
+        // Arrange
+        TimeRange? returned = null;
+        _loop.ReturnedFromAway += away => returned = away;
+        _idleTime = LongIdle;
+        await StartAsync();
+
+        // Act
+        _idleTime = TimeSpan.Zero;
+        await TickAsync();
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.Equal(new TimeRange(StartTime - LongIdle, At(1)), returned);
+    }
+
+    [Fact]
+    public async Task ResumingAfterAPauseIsNotComingBack()
+    {
+        // Arrange
+        var returned = false;
+        _loop.ReturnedFromAway += _ => returned = true;
+        _idleTime = LongIdle;
+        await StartAsync();
+        _loop.Pause();
+        await TickAsync();
+
+        // Act
+        _loop.Resume();
+        _idleTime = TimeSpan.Zero;
+        await TickAsync();
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.False(returned);
     }
 
     [Fact]

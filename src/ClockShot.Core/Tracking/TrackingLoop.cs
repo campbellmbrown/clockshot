@@ -1,3 +1,4 @@
+using ClockShot.Core.Models;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 
@@ -27,6 +28,7 @@ public sealed class TrackingLoop(
     // Pause and Resume run on the UI thread and must not read them.
     private readonly ActivityTracker _tracker = new(MaxSampleGap);
     private readonly ScreenshotScheduler _scheduler = new();
+    private readonly AwayDetector _awayDetector = new();
     private Task _pendingScreenshot = Task.CompletedTask;
     private string? _lastError;
 
@@ -44,6 +46,12 @@ public sealed class TrackingLoop(
     /// May be raised on any thread.
     /// </summary>
     public event Action? StatusChanged;
+
+    /// <summary>
+    /// Raised when the user comes back after being away, locked or asleep, with the time they were gone.
+    /// May be raised on any thread.
+    /// </summary>
+    public event Action<TimeRange>? ReturnedFromAway;
 
     public TrackingStatus Status => _status;
 
@@ -135,6 +143,8 @@ public sealed class TrackingLoop(
                     sink.Write(_tracker.Stop(now));
                 }
 
+                // Pausing on purpose isn't being away.
+                _awayDetector.Reset();
                 return;
             }
 
@@ -144,6 +154,10 @@ public sealed class TrackingLoop(
             var changes = _tracker.Process(sample, awayAfter);
             sink.Write(changes);
             PublishStatus();
+            if (_awayDetector.Observe(changes) is { } away)
+            {
+                ReturnedFromAway?.Invoke(away);
+            }
 
             // ShouldCapture comes first because it watches every sample for application switches.
             // Capturing happens now, while the window is still in front.
