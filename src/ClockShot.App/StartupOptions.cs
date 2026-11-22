@@ -1,3 +1,5 @@
+using ClockShot.Core;
+
 namespace ClockShot.App;
 
 /// <summary>
@@ -7,8 +9,16 @@ namespace ClockShot.App;
 /// The <c>--data-folder</c> option sets this folder.
 /// The app keeps all its data here instead of in <see cref="AppPaths.Default"/>.
 /// </param>
-public sealed record StartupOptions(string? DataFolder)
+/// <param name="StartedWithWindows">
+/// The <c>--startup</c> flag sets this.
+/// It means Windows started the app at sign-in because of the "Start with Windows" setting.
+/// </param>
+public sealed record StartupOptions(string? DataFolder, bool StartedWithWindows = false)
 {
+    public const string StartedWithWindowsFlag = "--startup";
+
+    public const string DataFolderOption = "--data-folder";
+
     public static StartupOptions None { get; } = new(DataFolder: null);
 
     /// <summary>
@@ -25,12 +35,34 @@ public sealed record StartupOptions(string? DataFolder)
         {
             options = option switch
             {
-                "--data-folder" => options with { DataFolder = Path.GetFullPath(TakeValue(unread, option)) },
+                StartedWithWindowsFlag => options with { StartedWithWindows = true },
+                DataFolderOption => options with { DataFolder = Path.GetFullPath(TakeValue(unread, option)) },
                 _ => throw new ArgumentException($"Unknown option {option}."),
             };
         }
 
         return options;
+    }
+
+    /// <summary>
+    /// The command Windows should run at sign-in, with <see cref="StartedWithWindowsFlag"/>.
+    /// When VS Code runs the app through the dotnet host, the command runs it through dotnet too.
+    /// It passes on a data folder other than the default, so a dev copy started at sign-in keeps its own data.
+    /// </summary>
+    /// <param name="processPath">The running executable, usually <see cref="Environment.ProcessPath"/>.</param>
+    /// <param name="baseDirectory">The app's folder, usually <see cref="AppContext.BaseDirectory"/>.</param>
+    /// <param name="paths">Where this copy keeps its data.</param>
+    public static string StartWithWindowsCommand(string? processPath, string baseDirectory, AppPaths paths)
+    {
+        var process = processPath ?? Path.Combine(baseDirectory, $"{AppInfo.Name}.exe");
+        var isDotnetHost = Path.GetFileNameWithoutExtension(process).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+        var app = isDotnetHost ? $"\"{process}\" \"{Path.Combine(baseDirectory, $"{AppInfo.Name}.dll")}\"" : $"\"{process}\"";
+
+        // Windows reads a backslash before a quote as an escaped quote, so a trailing one is doubled.
+        var folder = paths.Root.EndsWith('\\') ? paths.Root + '\\' : paths.Root;
+        var dataFolder = paths == AppPaths.Default ? "" : $" {DataFolderOption} \"{folder}\"";
+
+        return $"{app}{dataFolder} {StartedWithWindowsFlag}";
     }
 
     /// <summary>

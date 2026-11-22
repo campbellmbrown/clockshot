@@ -9,6 +9,7 @@ using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
 using ClockShot.App.Views;
 using ClockShot.Core.Screenshots;
+using ClockShot.Core.Settings;
 using ClockShot.Core.Tracking;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +44,15 @@ public sealed partial class App(StartupOptions options, SingleInstance? instance
         Avalonia.Logging.Logger.Sink = new AvaloniaLogSink(services.GetRequiredService<ILoggerFactory>().CreateLogger("Avalonia"));
 
         var window = MainWindow.Create(services);
-        desktop.MainWindow = window;
+
+        // A window that isn't the main window stays hidden until the tray icon shows it.
+        var general = services.GetRequiredService<ISettingsStore>().Current.General;
+        var startsInTray = options.StartedWithWindows && general.StartInTrayWithWindows;
+        if (!startsInTray)
+        {
+            desktop.MainWindow = window;
+        }
+
         desktop.Exit += (_, _) =>
             // Stops tracking and saves the open segments. Run off the UI thread so awaits inside can't deadlock on it.
             Task.Run(() => services.DisposeAsync().AsTask()).GetAwaiter().GetResult();

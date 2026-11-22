@@ -20,10 +20,10 @@ public sealed class StartupOptionsTests
         var dataFolder = Path.Combine(Path.GetTempPath(), "Data");
 
         // Act
-        var options = StartupOptions.Parse(["--data-folder", dataFolder]);
+        var options = StartupOptions.Parse(["--data-folder", dataFolder, "--startup"]);
 
         // Assert
-        Assert.Equal(new StartupOptions(dataFolder), options);
+        Assert.Equal(new StartupOptions(dataFolder, StartedWithWindows: true), options);
         Assert.Equal(new AppPaths(dataFolder), options.Paths);
     }
 
@@ -68,5 +68,76 @@ public sealed class StartupOptionsTests
         // Assert
         Assert.IsType<ArgumentException>(error);
         Assert.Equal("--data-folder needs a value.", error.Message);
+    }
+
+    [Fact]
+    public void StartsTheExecutableWithWindows()
+    {
+        // Arrange
+        var folder = Path.Combine(Path.GetTempPath(), "Apps");
+        var executable = Path.Combine(folder, "ClockShot.exe");
+
+        // Act
+        var command = StartupOptions.StartWithWindowsCommand(executable, folder, AppPaths.Default);
+
+        // Assert
+        Assert.Equal($"\"{executable}\" --startup", command);
+    }
+
+    [Fact]
+    public void StartsTheDllThroughDotnetWhenRunThatWay()
+    {
+        // Arrange
+        var dotnet = Path.Combine(Path.GetTempPath(), "dotnet", "dotnet.exe");
+        var folder = Path.Combine(Path.GetTempPath(), "Source");
+
+        // Act
+        var command = StartupOptions.StartWithWindowsCommand(dotnet, folder, AppPaths.Default);
+
+        // Assert
+        Assert.Equal($"\"{dotnet}\" \"{Path.Combine(folder, "ClockShot.dll")}\" --startup", command);
+    }
+
+    [Fact]
+    public void StartsTheExecutableInTheAppFolderWhenTheProcessPathIsUnknown()
+    {
+        // Arrange
+        var folder = Path.Combine(Path.GetTempPath(), "Apps");
+
+        // Act
+        var command = StartupOptions.StartWithWindowsCommand(processPath: null, folder, AppPaths.Default);
+
+        // Assert
+        Assert.Equal($"\"{Path.Combine(folder, "ClockShot.exe")}\" --startup", command);
+    }
+
+    [Fact]
+    public void KeepsADataFolderThatIsNotTheDefault()
+    {
+        // Arrange
+        var folder = Path.Combine(Path.GetTempPath(), "Apps");
+        var executable = Path.Combine(folder, "ClockShot.exe");
+        var dataFolder = Path.Combine(Path.GetTempPath(), "Data");
+
+        // Act
+        var command = StartupOptions.StartWithWindowsCommand(executable, folder, new AppPaths(dataFolder));
+
+        // Assert
+        Assert.Equal($"\"{executable}\" --data-folder \"{dataFolder}\" --startup", command);
+    }
+
+    [Fact]
+    public void DoublesATrailingBackslashSoItDoesNotEscapeTheQuote()
+    {
+        // Arrange
+        var folder = Path.Combine(Path.GetTempPath(), "Apps");
+        var executable = Path.Combine(folder, "ClockShot.exe");
+        var driveRoot = Path.GetPathRoot(Path.GetTempPath())!;
+
+        // Act
+        var command = StartupOptions.StartWithWindowsCommand(executable, folder, new AppPaths(driveRoot));
+
+        // Assert
+        Assert.Equal($"\"{executable}\" --data-folder \"{driveRoot}\\\" --startup", command);
     }
 }

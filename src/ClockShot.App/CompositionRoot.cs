@@ -7,6 +7,7 @@ using ClockShot.App.ViewModels.Projects;
 using ClockShot.App.ViewModels.Tagging;
 using ClockShot.App.ViewModels.Timeline;
 using ClockShot.App.ViewModels.Timesheets;
+using ClockShot.Core;
 using ClockShot.Core.Screenshots;
 using ClockShot.Core.Settings;
 using ClockShot.Core.Tagging;
@@ -74,6 +75,10 @@ internal static class CompositionRoot
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IFileSaveService, FileSaveService>();
         services.AddSingleton<BackgroundWork>();
+        services.AddSingleton<IStartupRegistration>(_ => new WindowsStartupRegistration(
+            AppInfo.Name,
+            StartupOptions.StartWithWindowsCommand(Environment.ProcessPath, AppContext.BaseDirectory, paths),
+            WindowsStartupRegistration.RunKeyPath));
         services.AddSingleton<AwayPrompter>();
         services.AddSingleton<DayClock>();
 

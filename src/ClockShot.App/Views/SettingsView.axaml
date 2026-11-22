@@ -44,6 +44,15 @@
         <TextBlock Classes="h2"
                    Text="General"
                    Margin="0,0,0,6" />
+        <CheckBox Content="Start with Windows"
+                  ToolTip.Tip="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Start {0} when you sign in to Windows.'}"
+                  IsChecked="{Binding StartWithWindows}"
+                  AutomationProperties.AutomationId="SettingStartWithWindows" />
+        <CheckBox Content="Tray only"
+                  ToolTip.Tip="When started with Windows, show only the tray icon, not the window."
+                  IsChecked="{Binding StartInTrayWithWindows}"
+                  IsEnabled="{Binding StartWithWindows}"
+                  Margin="24,0,0,0" />
         <CheckBox Content="Close to tray"
                   ToolTip.Tip="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Closing the window keeps {0} running in the tray.'}"
                   IsChecked="{Binding CloseToTray}" />

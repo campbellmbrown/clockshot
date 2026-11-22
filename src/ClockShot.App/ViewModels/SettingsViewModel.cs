@@ -22,25 +22,28 @@ namespace ClockShot.App.ViewModels;
 public sealed partial class SettingsViewModel : PageViewModel
 {
     private readonly ISettingsStore _settings;
+    private readonly IStartupRegistration _startup;
+    private readonly IActivityHistory _history;
     private readonly IScreenshotStore _screenshots;
     private readonly IShell _shell;
-    private readonly IActivityHistory _history;
     private readonly DataPaths _paths;
     private readonly BackgroundWork _background;
 
     public SettingsViewModel(
         ISettingsStore settings,
+        IStartupRegistration startup,
+        IActivityHistory history,
         IScreenshotStore screenshots,
         IShell shell,
-        IActivityHistory history,
         DataPaths paths,
         BackgroundWork background)
         : base("Settings", Icons.Settings)
     {
         _settings = settings;
+        _startup = startup;
+        _history = history;
         _screenshots = screenshots;
         _shell = shell;
-        _history = history;
         _paths = paths;
         _background = background;
         ExcludedApps = [.. settings.Current.Screenshots.ExcludedProcessNames];
@@ -80,6 +83,25 @@ public sealed partial class SettingsViewModel : PageViewModel
     }
 
     // ---- General ----
+
+    /// <summary>
+    /// It isn't kept in the settings file, so it's read from the system each time.
+    /// </summary>
+    public bool StartWithWindows
+    {
+        get => _startup.IsEnabled;
+        set
+        {
+            _startup.SetEnabled(value);
+            OnPropertyChanged();
+        }
+    }
+
+    public bool StartInTrayWithWindows
+    {
+        get => Current.General.StartInTrayWithWindows;
+        set => Update(s => s with { General = s.General with { StartInTrayWithWindows = value } });
+    }
 
     public bool CloseToTray
     {

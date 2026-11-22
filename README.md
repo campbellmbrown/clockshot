@@ -85,6 +85,8 @@ The Timesheet tab shows your tagged time by day or week, and copies or saves it 
 - The status bar shows today's active and tagged time.
 - You can pause it from the Tracking menu, the tray icon or the status bar.
 - Closing its window keeps it running in the system tray.
+- It can start when you sign in to Windows, and then show only its tray icon.
+  Both choices are on the Settings tab.
 - A day starts at midnight.
   If you work past midnight, you can start it later in Settings.
 
