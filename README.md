@@ -103,6 +103,7 @@ Started with `dotnet run`, it keeps its data in `%LOCALAPPDATA%\ClockShot-dev`, 
 
 ClockShot keeps its data in `%LOCALAPPDATA%\ClockShot`.
 To use another folder, start it with `--data-folder <path>`.
+File > Open data folder opens it, and the Settings tab shows where it is.
 
 - `clockshot.db` and the files whose names start with it hold what ClockShot has recorded.
   ClockShot saves to them at least every 15 seconds, so a crash loses very little.
@@ -110,6 +111,11 @@ To use another folder, start it with `--data-folder <path>`.
 - `screenshots\` holds the screenshots, in a folder for each day.
 - `logs\` holds a log file for each day, and keeps the newest 14.
   Help > Open log folder opens it.
+- `backups\` holds the copies of `clockshot.db` that Back up now on the Settings tab makes.
+  Each is named by the time it was made.
+  Screenshots and settings aren't backed up.
+  To restore a backup, exit ClockShot from File > Exit or the tray icon, then copy the backup over `clockshot.db`.
+  Then delete `clockshot.db-wal` and `clockshot.db-shm` if they're there, because they hold changes to the old database.
 
 To remove everything ClockShot has stored, exit it from File > Exit or the tray icon, then delete its data folder.
 

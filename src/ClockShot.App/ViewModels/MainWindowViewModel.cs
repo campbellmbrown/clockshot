@@ -30,8 +30,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IShell shell,
         IDialogService dialogs,
         ISettingsStore settings,
-        AppPaths paths,
-        Tagger tagger)
+        Tagger tagger,
+        AppPaths paths)
     {
         Timeline = timeline;
         Timesheet = timesheet;
@@ -103,6 +103,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(UndoText));
         UndoCommand.NotifyCanExecuteChanged();
     }
+
+    [RelayCommand]
+    private void OpenDataFolder() => _shell.OpenFolder(_paths.Root);
 
     [RelayCommand]
     private void OpenLogFolder() => _shell.OpenFolder(_paths.Logs);

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Data.Common;
 
 using ClockShot.App.Controls;
 using ClockShot.App.Services;
@@ -24,24 +25,27 @@ public sealed partial class SettingsViewModel : PageViewModel
     private readonly ISettingsStore _settings;
     private readonly IStartupRegistration _startup;
     private readonly IActivityHistory _history;
+    private readonly DatabaseBackup _backup;
     private readonly IScreenshotStore _screenshots;
     private readonly IShell _shell;
-    private readonly DataPaths _paths;
+    private readonly AppPaths _paths;
     private readonly BackgroundWork _background;
 
     public SettingsViewModel(
         ISettingsStore settings,
         IStartupRegistration startup,
         IActivityHistory history,
+        DatabaseBackup backup,
         IScreenshotStore screenshots,
         IShell shell,
-        DataPaths paths,
+        AppPaths paths,
         BackgroundWork background)
         : base("Settings", Icons.Settings)
     {
         _settings = settings;
         _startup = startup;
         _history = history;
+        _backup = backup;
         _screenshots = screenshots;
         _shell = shell;
         _paths = paths;
@@ -227,7 +231,7 @@ public sealed partial class SettingsViewModel : PageViewModel
     public partial string StorageText { get; private set; } = "";
 
     [RelayCommand]
-    private void OpenScreenshotFolder() => _shell.OpenFolder(_paths.Screenshots);
+    private void OpenScreenshotFolder() => _shell.OpenFolder(_paths.Data.Screenshots);
 
     // ---- Timesheet ----
 
@@ -237,6 +241,33 @@ public sealed partial class SettingsViewModel : PageViewModel
     {
         get => RoundingChoice.For(Current.Timesheet);
         set => Update(s => s with { Timesheet = value.ApplyTo(s.Timesheet) });
+    }
+
+    // ---- Data ----
+
+    public string DataFolder => _paths.Root;
+
+    /// <summary>
+    /// Where the last backup went, or why it failed.
+    /// It's empty until the first backup.
+    /// </summary>
+    [ObservableProperty]
+    public partial string BackupMessage { get; private set; } = "";
+
+    [RelayCommand]
+    private void OpenDataFolder() => _shell.OpenFolder(_paths.Root);
+
+    [RelayCommand]
+    private async Task BackUpNowAsync()
+    {
+        try
+        {
+            BackupMessage = $"Backed up to {await _backup.BackUpAsync()}";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or DbException)
+        {
+            BackupMessage = $"Couldn't back up: {ex.Message}";
+        }
     }
 
     // ---- Loading ----

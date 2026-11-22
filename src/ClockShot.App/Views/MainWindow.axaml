@@ -26,6 +26,10 @@
                   CommandParameter="{Binding Timesheet.SaveCsvCommand}"
                   AutomationProperties.AutomationId="ExportTimesheetMenuItem"
                   controls:MenuIcon.Kind="{x:Static controls:Icons.Export}" />
+        <MenuItem Header="Open _data folder"
+                  Command="{Binding OpenDataFolderCommand}"
+                  AutomationProperties.AutomationId="OpenDataFolderMenuItem"
+                  controls:MenuIcon.Kind="{x:Static controls:Icons.OpenFolder}" />
         <Separator />
         <MenuItem Header="E_xit"
                   Command="{Binding ExitCommand}"

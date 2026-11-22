@@ -48,6 +48,19 @@ public sealed class SqliteDatabase
     }
 
     /// <summary>
+    /// Copies the whole database to <paramref name="path"/> with SQLite's online backup.
+    /// The backup is safe while the database is in use.
+    /// </summary>
+    public void BackUpTo(string path)
+    {
+        using var source = Open();
+        var destinationSettings = new SqliteConnectionStringBuilder { DataSource = path, Pooling = false };
+        using var destination = new SqliteConnection(destinationSettings.ToString());
+        destination.Open();
+        source.BackupDatabase(destination);
+    }
+
+    /// <summary>
     /// Applies the embedded <c>Migrations/NNNN_Name.sql</c> scripts that haven't run yet, in order.
     /// The number of the last one applied is stored in <c>PRAGMA user_version</c>.
     /// </summary>

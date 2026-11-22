@@ -247,6 +247,38 @@
           </ComboBox>
         </Grid>
       </StackPanel>
+
+      <!-- Data -->
+      <StackPanel Classes="section">
+        <TextBlock Classes="h2"
+                   Text="Data"
+                   Margin="0,0,0,6" />
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              ToolTip.Tip="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='Everything {0} records is kept here, on this computer only.'}">
+          <TextBlock Text="Data folder" />
+          <StackPanel Grid.Column="1" Spacing="6">
+            <TextBlock Classes="secondary"
+                       Text="{Binding DataFolder}"
+                       TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Command="{Binding OpenDataFolderCommand}">
+                <controls:IconText Kind="{x:Static controls:Icons.OpenFolder}" Text="Open data folder" />
+              </Button>
+              <Button Command="{Binding BackUpNowCommand}"
+                      AutomationProperties.AutomationId="SettingBackUp"
+                      ToolTip.Tip="Copies the database (projects, tags and tracking, not screenshots) into the backups folder.">
+                <controls:IconText Kind="{x:Static controls:Icons.BackUp}" Text="Back up now" />
+              </Button>
+            </StackPanel>
+            <TextBlock Classes="secondary"
+                       Text="{Binding BackupMessage}"
+                       TextWrapping="Wrap"
+                       AutomationProperties.AutomationId="SettingBackupMessage"
+                       IsVisible="{Binding BackupMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        </Grid>
+      </StackPanel>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

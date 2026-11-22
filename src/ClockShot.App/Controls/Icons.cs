@@ -14,6 +14,7 @@ public static class Icons
     public const string About = "info";
     public const string KeyboardShortcuts = "keyboard";
     public const string OpenFolder = "folder-open";
+    public const string BackUp = "database-backup";
 
     // ---- Pages ----
     public const string Timeline = "chart-gantt";

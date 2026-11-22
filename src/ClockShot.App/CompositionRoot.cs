@@ -79,6 +79,7 @@ internal static class CompositionRoot
             AppInfo.Name,
             StartupOptions.StartWithWindowsCommand(Environment.ProcessPath, AppContext.BaseDirectory, paths),
             WindowsStartupRegistration.RunKeyPath));
+        services.AddSingleton<DatabaseBackup>();
         services.AddSingleton<AwayPrompter>();
         services.AddSingleton<DayClock>();
 
