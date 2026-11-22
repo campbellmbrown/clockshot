@@ -109,6 +109,36 @@ public sealed class ProjectRepository(SqliteDatabase database)
         }));
     }
 
+    public Task SetArchivedAsync(CatalogItem item, bool archived)
+    {
+        var sql = item.Kind switch
+        {
+            CatalogItemKind.Client => "UPDATE client SET is_archived = @Archived WHERE id = @Id",
+            CatalogItemKind.Project => "UPDATE project SET is_archived = @Archived WHERE id = @Id",
+            CatalogItemKind.Task => "UPDATE task SET is_archived = @Archived WHERE id = @Id",
+            _ => throw UnknownKind(item),
+        };
+        return WriteRowsAsync(connection => connection.Execute(sql, new { Archived = archived, item.Id }));
+    }
+
+    /// <summary>
+    /// Deletes the item if it has no tagged time and contains nothing except unused tasks.
+    /// Returns false, changing nothing, when something depends on it.
+    /// </summary>
+    public async Task<bool> DeleteIfUnusedAsync(CatalogItem item)
+    {
+        var isUsed = false;
+        await WriteRowsAsync(connection =>
+        {
+            using var transaction = connection.BeginTransaction();
+            isUsed = IsUsed(connection, item, transaction);
+            var deleted = isUsed ? 0 : Delete(connection, item, transaction);
+            transaction.Commit();
+            return deleted;
+        }).ConfigureAwait(false);
+        return !isUsed;
+    }
+
     /// <summary>
     /// Chooses a tag's colour.
     /// A null <paramref name="taskId"/> means the project's General bucket.
@@ -127,6 +157,40 @@ public sealed class ProjectRepository(SqliteDatabase database)
         transaction.Commit();
         return changed;
     });
+
+    private static bool IsUsed(SqliteConnection connection, CatalogItem item, SqliteTransaction transaction)
+    {
+        var sql = item.Kind switch
+        {
+            CatalogItemKind.Client => "SELECT EXISTS (SELECT 1 FROM project WHERE client_id = @Id)",
+            CatalogItemKind.Project => """
+                SELECT EXISTS (SELECT 1 FROM time_entry WHERE project_id = @Id)
+                    OR EXISTS (SELECT 1 FROM project WHERE parent_id = @Id)
+                """,
+            CatalogItemKind.Task => "SELECT EXISTS (SELECT 1 FROM time_entry WHERE task_id = @Id)",
+            _ => throw UnknownKind(item),
+        };
+        return connection.ExecuteScalar<bool>(sql, new { item.Id }, transaction);
+    }
+
+    /// <summary>
+    /// Deletes the item, and a project's unused tasks with it.
+    /// </summary>
+    /// <returns>The number of rows deleted.</returns>
+    private static int Delete(SqliteConnection connection, CatalogItem item, SqliteTransaction transaction)
+    {
+        var deletedTasks = item.Kind == CatalogItemKind.Project
+            ? connection.Execute("DELETE FROM task WHERE project_id = @Id", new { item.Id }, transaction)
+            : 0;
+        var sql = item.Kind switch
+        {
+            CatalogItemKind.Client => "DELETE FROM client WHERE id = @Id",
+            CatalogItemKind.Project => "DELETE FROM project WHERE id = @Id",
+            CatalogItemKind.Task => "DELETE FROM task WHERE id = @Id",
+            _ => throw UnknownKind(item),
+        };
+        return deletedTasks + connection.Execute(sql, new { item.Id }, transaction);
+    }
 
     private static ArgumentOutOfRangeException UnknownKind(CatalogItem item) =>
         new(nameof(item), item.Kind, "Unknown catalog item kind.");

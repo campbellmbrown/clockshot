@@ -36,6 +36,10 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
+      <CheckBox Content="Show archived"
+                IsChecked="{Binding ShowArchived}"
+                Margin="0,0,12,6"
+                AutomationProperties.AutomationId="ShowArchived" />
       <StackPanel Orientation="Horizontal"
                   Spacing="6"
                   Margin="0,0,0,6">
@@ -79,16 +83,21 @@
                 HorizontalAlignment="Left"
                 AutomationProperties.AutomationId="ProjectTree">
         <TreeView.Styles>
+          <!-- Archived rows (shown only with "Show archived") are dimmed. -->
+          <Style Selector="Grid.archived">
+            <Setter Property="Opacity" Value="0.5" />
+          </Style>
           <Style Selector="TreeViewItem" x:DataType="projects:CatalogNodeViewModel">
             <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
           </Style>
         </TreeView.Styles>
         <TreeView.ItemTemplate>
           <TreeDataTemplate DataType="projects:CatalogNodeViewModel" ItemsSource="{Binding Children}">
-            <Grid ColumnDefinitions="Auto,*,Auto"
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto"
                   ColumnSpacing="8"
                   MinWidth="520"
-                  Background="Transparent">
+                  Background="Transparent"
+                  Classes.archived="{Binding IsArchived}">
               <Grid.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="New project here"
@@ -111,14 +120,31 @@
                             CommandParameter="{Binding}"
                             IsVisible="{Binding IsRenamable}"
                             controls:MenuIcon.Kind="{x:Static controls:Icons.Edit}" />
+                  <MenuItem Header="{Binding ArchiveText}"
+                            Command="{Binding $parent[UserControl].((projects:ProjectsViewModel)DataContext).ToggleArchivedCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding IsEditable}"
+                            controls:MenuIcon.Kind="{x:Static controls:Icons.Archive}" />
+                  <MenuItem Header="Delete"
+                            Command="{Binding $parent[UserControl].((projects:ProjectsViewModel)DataContext).DeleteCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding IsEditable}"
+                            controls:MenuIcon.Kind="{x:Static controls:Icons.Delete}" />
                 </ContextMenu>
               </Grid.ContextMenu>
               <controls:Icon Kind="{Binding IconKind}" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1"
+              <Border Grid.Column="1"
+                      Width="10"
+                      Height="10"
+                      CornerRadius="2"
+                      Background="{Binding ColorHex, Converter={x:Static controls:ThemeBrushes.FromHex}}"
+                      VerticalAlignment="Center"
+                      IsVisible="{Binding HasColor}" />
+              <TextBlock Grid.Column="2"
                          Text="{Binding Name}"
                          VerticalAlignment="Center"
                          TextTrimming="CharacterEllipsis" />
-              <TextBlock Grid.Column="2"
+              <TextBlock Grid.Column="3"
                          Classes="secondary"
                          Text="{Binding TotalText}"
                          VerticalAlignment="Center" />

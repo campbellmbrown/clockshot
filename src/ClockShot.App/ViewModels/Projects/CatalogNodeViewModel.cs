@@ -9,7 +9,7 @@ namespace ClockShot.App.ViewModels.Projects;
 /// One row of the Projects tree.
 /// </summary>
 public sealed partial class CatalogNodeViewModel(
-    CatalogNode node, TimeSpan total, IReadOnlyList<CatalogNodeViewModel> children) : ObservableObject
+    CatalogNode node, string? colorHex, TimeSpan total, IReadOnlyList<CatalogNodeViewModel> children) : ObservableObject
 {
     public CatalogRowKind Kind => node.Kind;
 
@@ -19,12 +19,21 @@ public sealed partial class CatalogNodeViewModel(
 
     public string Name => node.Name;
 
+    /// <summary>
+    /// The tag's "#RRGGBB" colour for task and General rows, or null for other rows.
+    /// </summary>
+    public string? ColorHex { get; } = colorHex;
+
+    public bool HasColor => ColorHex is not null;
+
     public TimeSpan Total { get; } = total;
 
     /// <summary>
     /// The total as text, such as "4 h 25 min", or empty when there's no time.
     /// </summary>
     public string TotalText => Total > TimeSpan.Zero ? DurationText.Format(Total) : "";
+
+    public bool IsArchived => node.IsArchived;
 
     public IReadOnlyList<CatalogNodeViewModel> Children { get; } = children;
 
@@ -49,6 +58,8 @@ public sealed partial class CatalogNodeViewModel(
     /// New projects can go under a client, the "No client" group, or a project as sub-projects.
     /// </summary>
     public bool CanHoldProjects => Kind is CatalogRowKind.Client or CatalogRowKind.NoClient or CatalogRowKind.Project;
+
+    public string ArchiveText => IsArchived ? "Unarchive" : "Archive";
 
     public CatalogItem? Item => node.Item;
 }

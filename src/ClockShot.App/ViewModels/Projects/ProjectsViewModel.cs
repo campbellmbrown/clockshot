@@ -15,7 +15,7 @@ namespace ClockShot.App.ViewModels.Projects;
 
 /// <summary>
 /// The Projects tab: a searchable tree of clients, projects, sub-projects and tasks with time totals.
-/// It has the actions to add and rename them.
+/// It has the actions to add, rename, archive and delete them.
 /// </summary>
 public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 {
@@ -62,6 +62,9 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     public partial string? SearchText { get; set; }
 
     [ObservableProperty]
+    public partial bool ShowArchived { get; set; }
+
+    [ObservableProperty]
     public partial IReadOnlyList<CatalogNodeViewModel> Nodes { get; private set; } = [];
 
     [ObservableProperty]
@@ -79,6 +82,8 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     partial void OnSelectedPeriodChanged(DatePeriod value) => _background.Run(() => LoadAsync());
 
     partial void OnSearchTextChanged(string? value) => Rebuild();
+
+    partial void OnShowArchivedChanged(bool value) => Rebuild();
 
     /// <summary>
     /// Loads the tree and its totals.
@@ -200,6 +205,32 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
         await TryAsync(() => _projects.RenameAsync(item, name));
     }
 
+    /// <summary>
+    /// Archived items are hidden from the tag picker but kept in reports.
+    /// Unarchive brings them back.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(IsEditable))]
+    private async Task ToggleArchivedAsync(CatalogNodeViewModel? node)
+    {
+        if (node?.Item is { } item)
+        {
+            await _projects.SetArchivedAsync(item, !node.IsArchived);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsEditable))]
+    private async Task DeleteAsync(CatalogNodeViewModel? node)
+    {
+        if (node?.Item is not { } item)
+        {
+            return;
+        }
+
+        Message = await _projects.DeleteIfUnusedAsync(item)
+            ? ""
+            : $"\"{node.Name}\" can't be deleted because it has tagged time or contains other projects. Archive it instead to hide it.";
+    }
+
     private static bool IsEditable(CatalogNodeViewModel? node) => node?.IsEditable == true;
 
     private static bool IsProject(CatalogNodeViewModel? node) => node?.IsProject == true;
@@ -227,7 +258,7 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     // ---- Tree ----
 
     /// <summary>
-    /// Rebuilds the tree from the catalog, applying the search.
+    /// Rebuilds the tree from the catalog, applying the search and the archived filter.
     /// </summary>
     private void Rebuild()
     {
@@ -268,15 +299,21 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
             return null;
         }
 
-        return new CatalogNodeViewModel(node, _totals.For(node), children);
+        return new CatalogNodeViewModel(node, ColorOf(node), _totals.For(node), children);
     }
 
     /// <summary>
-    /// Archived rows are hidden.
+    /// Archived rows show only when asked for.
     /// General rows show only when they have time.
     /// </summary>
     private bool IsHidden(CatalogNode node) =>
-        node.IsArchived || (node.Kind == CatalogRowKind.General && _totals.For(node) == TimeSpan.Zero);
+        (node.IsArchived && !ShowArchived) || (node.Kind == CatalogRowKind.General && _totals.For(node) == TimeSpan.Zero);
+
+    /// <summary>
+    /// Task and General rows are tags.
+    /// They show the tag's colour.
+    /// </summary>
+    private string? ColorOf(CatalogNode node) => node.Tag is { } tag ? _catalog.ColorOf(tag.ProjectId, tag.TaskId) : null;
 
     /// <summary>
     /// Clients start expanded.
