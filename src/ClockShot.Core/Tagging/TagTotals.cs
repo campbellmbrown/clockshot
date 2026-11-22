@@ -1,4 +1,5 @@
 using ClockShot.Core.Models;
+using ClockShot.Core.Projects;
 
 namespace ClockShot.Core.Tagging;
 
@@ -35,9 +36,8 @@ public sealed class TagTotals
     public TimeSpan ForTask(long projectId, long? taskId) => _byTag.GetValueOrDefault((projectId, taskId));
 
     /// <summary>
-    /// Time tagged directly to the project, with any task or none.
-    /// Time in its sub-projects isn't counted.
+    /// The time in a row of the client, project and task tree, including every row under it.
     /// </summary>
-    public TimeSpan ForProjectOnly(long projectId) =>
-        _byTag.Where(t => t.Key.ProjectId == projectId).Select(t => t.Value).Sum();
+    public TimeSpan For(CatalogNode node) =>
+        node.Tag is { } tag ? ForTask(tag.ProjectId, tag.TaskId) : node.Children.Select(For).Sum();
 }

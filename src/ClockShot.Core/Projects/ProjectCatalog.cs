@@ -15,6 +15,16 @@ public sealed class ProjectCatalog
     /// </summary>
     public const string Separator = " > ";
 
+    /// <summary>
+    /// The label of the group of projects that have no client.
+    /// </summary>
+    public const string NoClientLabel = "No client";
+
+    /// <summary>
+    /// The label of a project's time that has no task, which is stored as a null task.
+    /// </summary>
+    public const string GeneralLabel = "General";
+
     // Stops the walk up the parents if bad data ever makes a project its own ancestor.
     // It's far deeper than anyone nests projects.
     private const int MaxProjectDepth = 100;
