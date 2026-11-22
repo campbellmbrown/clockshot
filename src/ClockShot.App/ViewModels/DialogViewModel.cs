@@ -18,6 +18,11 @@ public abstract partial class DialogViewModel(string title, bool canResize = fal
     public event Action? CloseRequested;
 
     /// <summary>
+    /// Raised after the dialog's window has closed, whether by a button, Escape or the window's close button.
+    /// </summary>
+    public event Action? Closed;
+
+    /// <summary>
     /// The window title, also shown as the heading.
     /// </summary>
     public string Title { get; } = title;
@@ -43,13 +48,18 @@ public abstract partial class DialogViewModel(string title, bool canResize = fal
     /// <summary>
     /// The text of the button that only closes the dialog.
     /// </summary>
-    public string CloseText => ConfirmCommand is null ? "Close" : "Cancel";
+    public virtual string CloseText => ConfirmCommand is null ? "Close" : "Cancel";
 
     /// <summary>
     /// True when Enter closes the dialog.
     /// By default that's when there's nothing to confirm.
     /// </summary>
-    public bool ClosesOnEnter => ConfirmCommand is null;
+    public virtual bool ClosesOnEnter => ConfirmCommand is null;
+
+    /// <summary>
+    /// Called by the dialog service when the window has closed.
+    /// </summary>
+    public void NotifyClosed() => Closed?.Invoke();
 
     [RelayCommand]
     private void Close() => CloseRequested?.Invoke();

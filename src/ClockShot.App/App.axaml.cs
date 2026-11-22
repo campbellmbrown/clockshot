@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 
 using ClockShot.App.Logging;
+using ClockShot.App.Services;
 using ClockShot.App.ViewModels;
 using ClockShot.App.Views;
 using ClockShot.Core.Screenshots;
@@ -49,6 +50,7 @@ public sealed partial class App(StartupOptions options, SingleInstance? instance
 
         services.GetRequiredService<TrackingLoop>().Start();
         services.GetRequiredService<ScreenshotCleanup>().Start();
+        services.GetRequiredService<AwayPrompter>().Start();
 
         var tray = services.GetRequiredService<TrayIconViewModel>();
         tray.ShowWindowRequested += () => BringToFront(window);

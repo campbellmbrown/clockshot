@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tagging="using:ClockShot.App.ViewModels.Tagging"
+             xmlns:views="using:ClockShot.App.Views.Tagging"
+             x:Class="ClockShot.App.Views.Tagging.AwayPromptView"
+             x:DataType="tagging:AwayPromptViewModel">
+  <StackPanel Spacing="14" Width="420">
+    <TextBlock Text="{Binding Message}"
+               TextWrapping="Wrap"
+               AutomationProperties.AutomationId="AwayPromptMessage" />
+    <views:TagEditorView DataContext="{Binding Editor}" />
+  </StackPanel>
+</UserControl>

@@ -42,6 +42,8 @@ The Projects and Timesheet tabs are still being built.
   Buttons for the six most recently used project and task pairs fill in the editor in one click.
   Dragging a tag's edge makes it longer or shorter, and trims any tag it now overlaps.
   Tagged time shows on the Tags lane, in a colour picked from its project and task, or one you choose.
+- When you come back after being away for 10 minutes or more, it asks what you were doing, so you can tag that time.
+  Settings can change how long that is, or turn the question off.
 - The dividers under the timeline and beside the details panel can be dragged, and their sizes are remembered.
   Double-clicking the details divider hides or shows the panel.
 - The status bar shows today's active and tagged time.

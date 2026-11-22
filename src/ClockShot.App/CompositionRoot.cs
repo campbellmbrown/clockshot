@@ -70,6 +70,7 @@ internal static class CompositionRoot
         services.AddSingleton<MainWindowHost>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<BackgroundWork>();
+        services.AddSingleton<AwayPrompter>();
         services.AddSingleton<DayClock>();
 
         // View models
@@ -80,6 +81,7 @@ internal static class CompositionRoot
         services.AddTransient<ScreenshotPreviewViewModel>();
         services.AddTransient<SelectionDetailsViewModel>();
         services.AddTransient<TagEditorViewModel>();
+        services.AddSingleton<Func<TagEditorViewModel>>(sp => sp.GetRequiredService<TagEditorViewModel>);
         services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<SettingsViewModel>();
 

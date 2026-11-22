@@ -12,6 +12,9 @@ public static class SettingLimits
     // A longer limit than two hours would count most breaks as work.
     public static IntRange AwayAfterMinutes { get; } = new(1, 120);
 
+    // Up to a whole working day of eight hours.
+    public static IntRange AwayPromptAfterMinutes { get; } = new(1, 480);
+
     // Faster than every 10 seconds fills the disk. Slower than hourly leaves hours without a picture.
     public static IntRange ScreenshotIntervalSeconds { get; } = new(10, 3600);
 

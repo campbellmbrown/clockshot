@@ -100,6 +100,18 @@ public sealed partial class SettingsViewModel : PageViewModel
         set => UpdateNumber(value, (s, v) => s with { Tracking = s.Tracking with { AwayAfterMinutes = v } });
     }
 
+    public bool AwayPromptEnabled
+    {
+        get => Current.Tracking.AwayPromptEnabled;
+        set => Update(s => s with { Tracking = s.Tracking with { AwayPromptEnabled = value } });
+    }
+
+    public decimal? AwayPromptAfterMinutes
+    {
+        get => Current.Tracking.AwayPromptAfterMinutes;
+        set => UpdateNumber(value, (s, v) => s with { Tracking = s.Tracking with { AwayPromptAfterMinutes = v } });
+    }
+
     // ---- Screenshots ----
 
     public bool ScreenshotsEnabled

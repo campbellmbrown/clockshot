@@ -11,4 +11,10 @@ public interface IDialogService
     /// Shows the dialog over the main window, blocking it, and completes when the dialog closes.
     /// </summary>
     Task ShowAsync(DialogViewModel dialog);
+
+    /// <summary>
+    /// Shows the dialog on top of other windows without blocking anything.
+    /// It suits a prompt that appears while the user is working in another app.
+    /// </summary>
+    void ShowWithoutBlocking(DialogViewModel dialog);
 }

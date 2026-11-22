@@ -23,6 +23,21 @@ public sealed class DialogViewModelTests
     }
 
     [Fact]
+    public void NotifyClosedRaisesClosed()
+    {
+        // Arrange
+        var dialog = new AboutViewModel();
+        var isClosed = false;
+        dialog.Closed += () => isClosed = true;
+
+        // Act
+        dialog.NotifyClosed();
+
+        // Assert
+        Assert.True(isClosed);
+    }
+
+    [Fact]
     public void ADialogWithNothingToConfirmClosesOnEnter()
     {
         // Act

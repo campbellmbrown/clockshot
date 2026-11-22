@@ -18,4 +18,9 @@ public sealed class MainWindowHost
         get => _window ?? throw new InvalidOperationException("The main window hasn't been created yet.");
         set => _window = value;
     }
+
+    /// <summary>
+    /// The main window if it's showing, or null when it's hidden in the tray.
+    /// </summary>
+    public Window? VisibleWindow => _window is { IsVisible: true } window ? window : null;
 }

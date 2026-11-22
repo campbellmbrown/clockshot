@@ -96,7 +96,7 @@ public sealed class AppSettingsTests
         var settings = new AppSettings
         {
             General = new GeneralSettings { DayStartHour = 24 },
-            Tracking = new TrackingSettings { AwayAfterMinutes = 0 },
+            Tracking = new TrackingSettings { AwayAfterMinutes = 0, AwayPromptAfterMinutes = -5 },
             Screenshots = new ScreenshotSettings
             {
                 IntervalSeconds = 1,
@@ -113,6 +113,7 @@ public sealed class AppSettingsTests
         // Assert
         Assert.Equal(SettingLimits.DayStartHour.Max, normalized.General.DayStartHour);
         Assert.Equal(SettingLimits.AwayAfterMinutes.Min, normalized.Tracking.AwayAfterMinutes);
+        Assert.Equal(SettingLimits.AwayPromptAfterMinutes.Min, normalized.Tracking.AwayPromptAfterMinutes);
         Assert.Equal(SettingLimits.ScreenshotIntervalSeconds.Min, normalized.Screenshots.IntervalSeconds);
         Assert.Equal(SettingLimits.ScreenshotMinimumGapSeconds.Min, normalized.Screenshots.MinimumGapSeconds);
         Assert.Equal(SettingLimits.ScreenshotMaxWidthPixels.Max, normalized.Screenshots.MaxWidthPixels);

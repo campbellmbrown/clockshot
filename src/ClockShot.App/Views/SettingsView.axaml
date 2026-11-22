@@ -73,6 +73,20 @@
                          Maximum="{Binding Max, Source={x:Static settings:SettingLimits.AwayAfterMinutes}}"
                          AutomationProperties.AutomationId="SettingAwayAfter" />
         </Grid>
+        <CheckBox Content="Ask when back"
+                  ToolTip.Tip="When you come back from being away, ask what you were doing."
+                  IsChecked="{Binding AwayPromptEnabled}"
+                  AutomationProperties.AutomationId="SettingAwayPrompt" />
+        <Grid Classes="setting"
+              ColumnDefinitions="280,*"
+              IsEnabled="{Binding AwayPromptEnabled}"
+              ToolTip.Tip="Only ask after being away at least this many minutes.">
+          <TextBlock Text="Minimum away (minutes)" Margin="24,0,16,0" />
+          <NumericUpDown Grid.Column="1"
+                         Value="{Binding AwayPromptAfterMinutes}"
+                         Minimum="{Binding Min, Source={x:Static settings:SettingLimits.AwayPromptAfterMinutes}}"
+                         Maximum="{Binding Max, Source={x:Static settings:SettingLimits.AwayPromptAfterMinutes}}" />
+        </Grid>
       </StackPanel>
 
       <!-- Screenshots -->

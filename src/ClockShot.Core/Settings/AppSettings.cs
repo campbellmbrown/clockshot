@@ -30,6 +30,7 @@ public sealed record AppSettings
             Tracking = tracking with
             {
                 AwayAfterMinutes = SettingLimits.AwayAfterMinutes.Clamp(tracking.AwayAfterMinutes),
+                AwayPromptAfterMinutes = SettingLimits.AwayPromptAfterMinutes.Clamp(tracking.AwayPromptAfterMinutes),
             },
             Screenshots = screenshots with
             {
