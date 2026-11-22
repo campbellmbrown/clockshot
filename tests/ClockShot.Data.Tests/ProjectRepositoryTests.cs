@@ -120,6 +120,64 @@ public sealed class ProjectRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task ProjectsCanBeRenamed()
+    {
+        // Arrange
+        var project = await AddTopLevelProjectAsync("Old name");
+
+        // Act
+        await _projects.RenameAsync(new CatalogItem(CatalogItemKind.Project, project.Id), "New name");
+
+        // Assert
+        var saved = (await _projects.LoadCatalogAsync(CancellationToken)).ProjectById(project.Id)!;
+        Assert.Equal("New name", saved.Name);
+    }
+
+    [Fact]
+    public async Task ClientsCanBeRenamed()
+    {
+        // Arrange
+        var client = await _projects.AddClientAsync("Old name");
+
+        // Act
+        await _projects.RenameAsync(new CatalogItem(CatalogItemKind.Client, client.Id), "New name");
+
+        // Assert
+        var saved = (await _projects.LoadCatalogAsync(CancellationToken)).Clients.Single();
+        Assert.Equal("New name", saved.Name);
+    }
+
+    [Fact]
+    public async Task TasksCanBeRenamed()
+    {
+        // Arrange
+        var project = await AddTopLevelProjectAsync("Website");
+        var task = await _projects.AddTaskAsync(project.Id, "Old name");
+
+        // Act
+        await _projects.RenameAsync(new CatalogItem(CatalogItemKind.Task, task.Id), "New name");
+
+        // Assert
+        var saved = (await _projects.LoadCatalogAsync(CancellationToken)).Tasks.Single();
+        Assert.Equal("New name", saved.Name);
+    }
+
+    [Fact]
+    public async Task RenamingToATakenNameIsRefused()
+    {
+        // Arrange
+        await _projects.AddClientAsync("Client A");
+        var clientB = await _projects.AddClientAsync("Client B");
+
+        // Act
+        var exception = await Record.ExceptionAsync(
+            () => _projects.RenameAsync(new CatalogItem(CatalogItemKind.Client, clientB.Id), "client a"));
+
+        // Assert
+        Assert.IsType<DuplicateNameException>(exception);
+    }
+
+    [Fact]
     public async Task TagColoursAreSavedPerProjectAndTask()
     {
         // Arrange

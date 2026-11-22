@@ -87,7 +87,32 @@
           <TreeDataTemplate DataType="projects:CatalogNodeViewModel" ItemsSource="{Binding Children}">
             <Grid ColumnDefinitions="Auto,*,Auto"
                   ColumnSpacing="8"
-                  MinWidth="520">
+                  MinWidth="520"
+                  Background="Transparent">
+              <Grid.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="New project here"
+                            Command="{Binding $parent[UserControl].((projects:ProjectsViewModel)DataContext).NewProjectCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding CanHoldProjects}"
+                            controls:MenuIcon.Kind="{x:Static controls:Icons.NewProject}" />
+                  <MenuItem Header="New task"
+                            Command="{Binding $parent[UserControl].((projects:ProjectsViewModel)DataContext).NewTaskCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding IsProject}"
+                            controls:MenuIcon.Kind="{x:Static controls:Icons.NewTask}" />
+                  <MenuItem Header="Edit project..."
+                            Command="{Binding $parent[UserControl].((projects:ProjectsViewModel)DataContext).EditProjectCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding IsProject}"
+                            controls:MenuIcon.Kind="{x:Static controls:Icons.Edit}" />
+                  <MenuItem Header="Rename..."
+                            Command="{Binding $parent[UserControl].((projects:ProjectsViewModel)DataContext).RenameCommand}"
+                            CommandParameter="{Binding}"
+                            IsVisible="{Binding IsRenamable}"
+                            controls:MenuIcon.Kind="{x:Static controls:Icons.Edit}" />
+                </ContextMenu>
+              </Grid.ContextMenu>
               <controls:Icon Kind="{Binding IconKind}" VerticalAlignment="Center" />
               <TextBlock Grid.Column="1"
                          Text="{Binding Name}"

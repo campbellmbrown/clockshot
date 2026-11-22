@@ -83,6 +83,21 @@ public sealed class CatalogTreeTests
     }
 
     [Fact]
+    public void ClientProjectAndTaskRowsNameTheirItem()
+    {
+        // Act
+        var tree = CatalogTree.Build(Catalog);
+
+        // Assert
+        var website = Row(tree[0], "Website");
+        Assert.Equal(new CatalogItem(CatalogItemKind.Client, ClientAId), tree[0].Item);
+        Assert.Equal(new CatalogItem(CatalogItemKind.Project, WebsiteId), website.Item);
+        Assert.Equal(new CatalogItem(CatalogItemKind.Task, LoginPageId), Row(website, "Login page").Item);
+        Assert.Null(Row(website, "General").Item);
+        Assert.Null(tree[2].Item);
+    }
+
+    [Fact]
     public void AnEmptyCatalogHasOnlyAnEmptyNoClientGroup()
     {
         // Act

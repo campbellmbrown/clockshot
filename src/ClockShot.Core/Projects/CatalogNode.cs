@@ -11,4 +11,16 @@ public sealed record CatalogNode(
     string Name,
     bool IsArchived,
     (long ProjectId, long? TaskId)? Tag,
-    IReadOnlyList<CatalogNode> Children);
+    IReadOnlyList<CatalogNode> Children)
+{
+    /// <summary>
+    /// The client, project or task the row stands for, or null for the "No client" and General rows.
+    /// </summary>
+    public CatalogItem? Item => (Kind, Id) switch
+    {
+        (CatalogRowKind.Client, { } id) => new CatalogItem(CatalogItemKind.Client, id),
+        (CatalogRowKind.Project, { } id) => new CatalogItem(CatalogItemKind.Project, id),
+        (CatalogRowKind.Task, { } id) => new CatalogItem(CatalogItemKind.Task, id),
+        _ => null,
+    };
+}

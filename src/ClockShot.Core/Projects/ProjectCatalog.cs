@@ -54,6 +54,8 @@ public sealed class ProjectCatalog
 
     public IReadOnlyCollection<Project> Projects => _projects.Values;
 
+    public IReadOnlyCollection<ProjectTask> Tasks => _tasks.Values;
+
     /// <summary>
     /// A tag's label built from names, for a task that's typed but not created yet.
     /// A blank task name means the project's General bucket.

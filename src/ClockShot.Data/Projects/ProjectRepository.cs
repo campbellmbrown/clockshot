@@ -77,6 +77,20 @@ public sealed class ProjectRepository(SqliteDatabase database)
         return new ProjectTask(id, projectId, name, IsArchived: false);
     }
 
+    /// <exception cref="DuplicateNameException">The new name is taken.</exception>
+    public Task RenameAsync(CatalogItem item, string newName)
+    {
+        newName = newName.Trim();
+        var sql = item.Kind switch
+        {
+            CatalogItemKind.Client => "UPDATE client SET name = @Name WHERE id = @Id",
+            CatalogItemKind.Project => "UPDATE project SET name = @Name WHERE id = @Id",
+            CatalogItemKind.Task => "UPDATE task SET name = @Name WHERE id = @Id",
+            _ => throw UnknownKind(item),
+        };
+        return WriteRowsAsync(RefuseDuplicateNames(newName, connection => connection.Execute(sql, new { Name = newName, item.Id })));
+    }
+
     /// <summary>
     /// Saves a project's name and place (client and parent).
     /// Moving it under another project gives it that project's client.
@@ -113,6 +127,9 @@ public sealed class ProjectRepository(SqliteDatabase database)
         transaction.Commit();
         return changed;
     });
+
+    private static ArgumentOutOfRangeException UnknownKind(CatalogItem item) =>
+        new(nameof(item), item.Kind, "Unknown catalog item kind.");
 
     /// <summary>
     /// The client stored on a project.

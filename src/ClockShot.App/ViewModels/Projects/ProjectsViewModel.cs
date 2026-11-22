@@ -15,7 +15,7 @@ namespace ClockShot.App.ViewModels.Projects;
 
 /// <summary>
 /// The Projects tab: a searchable tree of clients, projects, sub-projects and tasks with time totals.
-/// It has the actions to add them.
+/// It has the actions to add and rename them.
 /// </summary>
 public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 {
@@ -111,7 +111,7 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 
     public void Dispose() => _newestLoad.Dispose();
 
-    // ---- Actions (toolbar) ----
+    // ---- Actions (context menu and toolbar) ----
 
     [RelayCommand]
     private async Task NewClientAsync()
@@ -160,6 +160,47 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 
         await TryAsync(() => _projects.AddTaskAsync(projectId, name));
     }
+
+    /// <summary>
+    /// Opens the project form, to change its name, client or parent.
+    /// The same form as New project.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(IsProject))]
+    private async Task EditProjectAsync(CatalogNodeViewModel? node)
+    {
+        if (node?.Id is not { } id || _catalog.ProjectById(id) is not { } project)
+        {
+            return;
+        }
+
+        await _dialogs.ShowAsync(ProjectDialogViewModel.ForEdit(_projects, _catalog, project));
+    }
+
+    /// <summary>
+    /// Renames a client or task (projects use <see cref="EditProjectCommand"/>).
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(IsEditable))]
+    private async Task RenameAsync(CatalogNodeViewModel? node)
+    {
+        if (node?.Item is not { } item)
+        {
+            return;
+        }
+
+        var name = await AskForNameAsync(
+            title: $"Rename {node.Name}",
+            label: "New name",
+            initialText: node.Name,
+            confirmText: "Rename");
+        if (name is null || name == node.Name)
+        {
+            return;
+        }
+
+        await TryAsync(() => _projects.RenameAsync(item, name));
+    }
+
+    private static bool IsEditable(CatalogNodeViewModel? node) => node?.IsEditable == true;
 
     private static bool IsProject(CatalogNodeViewModel? node) => node?.IsProject == true;
 

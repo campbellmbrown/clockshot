@@ -31,5 +31,24 @@ public sealed partial class CatalogNodeViewModel(
     [ObservableProperty]
     public partial bool IsExpanded { get; set; }
 
+    /// <summary>
+    /// Clients, projects and tasks can be renamed, archived and deleted.
+    /// The "No client" and General rows can't.
+    /// </summary>
+    public bool IsEditable => Kind is CatalogRowKind.Client or CatalogRowKind.Project or CatalogRowKind.Task;
+
     public bool IsProject => Kind == CatalogRowKind.Project;
+
+    /// <summary>
+    /// Clients and tasks are renamed with a simple prompt.
+    /// Projects use the project form instead.
+    /// </summary>
+    public bool IsRenamable => Kind is CatalogRowKind.Client or CatalogRowKind.Task;
+
+    /// <summary>
+    /// New projects can go under a client, the "No client" group, or a project as sub-projects.
+    /// </summary>
+    public bool CanHoldProjects => Kind is CatalogRowKind.Client or CatalogRowKind.NoClient or CatalogRowKind.Project;
+
+    public CatalogItem? Item => node.Item;
 }
