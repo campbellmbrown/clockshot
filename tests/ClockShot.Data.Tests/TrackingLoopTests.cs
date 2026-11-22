@@ -23,6 +23,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 {
     private static readonly DateTime StartTime = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
     private const nint AnotherHandle = 99;
+    private const string PasswordManager = "PasswordManager.exe";
 
     private static readonly ForegroundWindow Editor = new(
         Handle: 1,
@@ -55,6 +56,7 @@ public sealed class TrackingLoopTests : IAsyncDisposable
         _sampler.Read(Arg.Any<DateTime>())
             .Returns(call => new TrackingSample(call.Arg<DateTime>(), _window, _idleTime, IsLocked: false));
         _capturer.Capture(Arg.Any<nint>()).Returns(Image);
+        _capturer.ProcessNamesOnTopOf(Arg.Any<nint>()).Returns(Array.Empty<string>());
         _sink
             .When(sink => sink.Write(Arg.Any<IReadOnlyList<TrackingChange>>()))
             .Do(call => _writes.Writer.TryWrite(call.Arg<IReadOnlyList<TrackingChange>>()));
@@ -341,6 +343,41 @@ public sealed class TrackingLoopTests : IAsyncDisposable
 
         // Assert
         Assert.Equal([At(1)], _savedTimes);
+    }
+
+    [Fact]
+    public async Task WaitsUntilNoExcludedWindowIsOnTop()
+    {
+        // Arrange
+        _settings.Save(new AppSettings { Screenshots = new ScreenshotSettings { ExcludedProcessNames = [PasswordManager] } });
+        // The first check finds the excluded app on top, and later checks find nothing.
+        _capturer.ProcessNamesOnTopOf(Arg.Any<nint>()).Returns([PasswordManager], Array.Empty<string>());
+        await StartAsync();
+
+        // Act
+        await TickAsync();
+        await _loop.DisposeAsync();
+
+        // Assert
+        _capturer.Received(1).Capture(Arg.Any<nint>());
+        _capturer.Received(1).Capture(Editor.Handle);
+        Assert.Equal([At(1)], _savedTimes);
+    }
+
+    [Fact]
+    public async Task CapturesUnderAWindowThatIsNotExcluded()
+    {
+        // Arrange
+        _settings.Save(new AppSettings { Screenshots = new ScreenshotSettings { ExcludedProcessNames = [PasswordManager] } });
+        // The first check finds another app on top, and later checks find nothing.
+        _capturer.ProcessNamesOnTopOf(Arg.Any<nint>()).Returns(["Notes.exe"], Array.Empty<string>());
+        await StartAsync();
+
+        // Act
+        await _loop.DisposeAsync();
+
+        // Assert
+        Assert.Equal([StartTime], _savedTimes);
     }
 
     [Fact]

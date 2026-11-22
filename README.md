@@ -19,8 +19,8 @@ The Projects and Timesheet tabs are still being built.
 - It records which app and window you're using, and notices when you're away or the screen is locked.
 - While you're active, it takes a screenshot of the window you're using every minute and soon after you switch apps.
   You can list apps it never captures, such as a password manager.
-  A screenshot copies the part of the screen where the window is.
-  It also shows any window on top, even one from an excluded app.
+  A screenshot copies the part of the screen where the window is, so it also shows any window on top.
+  While a window from an excluded app covers part of it, ClockShot waits until that window is closed, minimised or moved off it.
 - It keeps screenshots for 30 days, then deletes them.
 - On the Timeline tab, hovering over a time shows the screenshot from then.
   It appears beside the pointer, below the timeline or in a separate window, and Ctrl+P switches between them.

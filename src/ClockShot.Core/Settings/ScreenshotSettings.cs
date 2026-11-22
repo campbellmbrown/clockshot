@@ -45,4 +45,15 @@ public sealed record ScreenshotSettings
     /// Where the screenshot appears when hovering the timeline.
     /// </summary>
     public ScreenshotPreviewMode PreviewMode { get; init; } = ScreenshotPreviewMode.PopupByCursor;
+
+    /// <summary>
+    /// True when the process is in <see cref="ExcludedProcessNames"/>, by its name with or without the extension.
+    /// </summary>
+    public bool IsExcluded(string processName)
+    {
+        var nameWithoutExtension = Path.GetFileNameWithoutExtension(processName);
+        return ExcludedProcessNames.Any(excluded =>
+            string.Equals(excluded, processName, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(excluded, nameWithoutExtension, StringComparison.OrdinalIgnoreCase));
+    }
 }

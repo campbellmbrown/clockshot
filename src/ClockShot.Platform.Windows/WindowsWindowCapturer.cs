@@ -17,9 +17,12 @@ public sealed class WindowsWindowCapturer : IWindowCapturer
     // Getting a drawing context for no window gives the whole screen.
     private const nint WholeScreen = 0;
 
+    // Stops the walk if windows keep changing order, which Microsoft warns can loop forever.
+    private const int MaxWindowsInFront = 1000;
+
     public CapturedImage? Capture(nint windowHandle)
     {
-        if (windowHandle == 0 || IsIconic(windowHandle) || !IsWindowVisible(windowHandle) || IsCloaked(windowHandle))
+        if (windowHandle == 0 || !IsShown(windowHandle))
         {
             return null;
         }
@@ -38,6 +41,20 @@ public sealed class WindowsWindowCapturer : IWindowCapturer
         return CopyFromScreen(bounds);
     }
 
+    public IReadOnlyList<string> ProcessNamesOnTopOf(nint windowHandle)
+    {
+        if (FrameBounds(windowHandle) is not { } frame)
+        {
+            return [];
+        }
+
+        // A see-through window counts as well, because Windows can't say how much of it shows.
+        return [.. WindowsInFrontOf(windowHandle)
+            .Where(IsShown)
+            .Where(window => FrameBounds(window) is { } bounds && Overlaps(bounds, frame))
+            .Select(window => WindowOwner.ProcessName(WindowOwner.ExecutablePath(window)))];
+    }
+
     /// <summary>
     /// The part of the window inside the rectangle that holds every screen.
     /// The result has no width or height when the window is outside it.
@@ -49,6 +66,14 @@ public sealed class WindowsWindowCapturer : IWindowCapturer
         Right = Math.Min(window.Right, screens.Right),
         Bottom = Math.Min(window.Bottom, screens.Bottom),
     };
+
+    /// <summary>
+    /// True when the rectangles share at least one pixel.
+    /// </summary>
+    private static bool Overlaps(Rect first, Rect second) =>
+        first.Left < second.Right && second.Left < first.Right && first.Top < second.Bottom && second.Top < first.Bottom;
+
+    private static bool IsShown(nint window) => IsWindowVisible(window) && !IsIconic(window) && !IsCloaked(window);
 
     /// <summary>
     /// True when the window counts as visible but isn't shown, such as one on another virtual desktop.
@@ -79,6 +104,16 @@ public sealed class WindowsWindowCapturer : IWindowCapturer
             Right = left + GetSystemMetrics(SmCxVirtualScreen),
             Bottom = top + GetSystemMetrics(SmCyVirtualScreen),
         };
+    }
+
+    private static IEnumerable<nint> WindowsInFrontOf(nint window)
+    {
+        var inFront = GetWindow(window, GwHwndPrev);
+        for (var walked = 0; inFront != 0 && walked < MaxWindowsInFront; walked++)
+        {
+            yield return inFront;
+            inFront = GetWindow(inFront, GwHwndPrev);
+        }
     }
 
     private static CapturedImage? CopyFromScreen(Rect bounds)

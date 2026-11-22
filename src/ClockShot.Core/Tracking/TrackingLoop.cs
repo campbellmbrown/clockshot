@@ -31,6 +31,7 @@ public sealed class TrackingLoop(
     private readonly AwayDetector _awayDetector = new();
     private Task _pendingScreenshot = Task.CompletedTask;
     private string? _lastError;
+    private string? _excludedOnTop;
 
     private readonly CancellationTokenSource _stopping = new();
     private Task? _loop;
@@ -164,6 +165,7 @@ public sealed class TrackingLoop(
             if (_scheduler.ShouldCapture(sample, _tracker.CurrentState, current.Screenshots)
                 && _pendingScreenshot.IsCompleted
                 && sample.Window is { } window
+                && !HasExcludedWindowOnTop(window, current.Screenshots)
                 && capturer.Capture(window.Handle) is { } image)
             {
                 // Only a capture that worked counts, so one that failed is tried again at the next sample.
@@ -183,6 +185,27 @@ public sealed class TrackingLoop(
 
             _lastError = ex.Message;
         }
+    }
+
+    /// <summary>
+    /// A capture copies the screen, so it would include an excluded app's window on top, such as a password pop-up.
+    /// It logs when skipping starts and stops, so the log explains a gap in the screenshots.
+    /// </summary>
+    private bool HasExcludedWindowOnTop(ForegroundWindow window, ScreenshotSettings settings)
+    {
+        var wasSkipping = _excludedOnTop is not null;
+        _excludedOnTop = capturer.ProcessNamesOnTopOf(window.Handle).FirstOrDefault(settings.IsExcluded);
+
+        if (_excludedOnTop is not null && !wasSkipping)
+        {
+            logger.LogInformation("Skipping screenshots while {ProcessName} has a window on top", _excludedOnTop);
+        }
+        else if (_excludedOnTop is null && wasSkipping)
+        {
+            logger.LogInformation("No excluded window is on top any more. Screenshots carry on.");
+        }
+
+        return _excludedOnTop is not null;
     }
 
     /// <summary>

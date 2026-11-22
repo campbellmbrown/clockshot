@@ -7,4 +7,9 @@ public interface IWindowCapturer
     /// Returns null when the window can't be captured, such as when it's minimised.
     /// </summary>
     CapturedImage? Capture(nint windowHandle);
+
+    /// <summary>
+    /// The process names of shown windows in front of the window that overlap it, which a capture would include.
+    /// </summary>
+    IReadOnlyList<string> ProcessNamesOnTopOf(nint windowHandle);
 }

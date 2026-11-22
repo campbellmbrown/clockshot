@@ -25,6 +25,12 @@ internal static unsafe partial class NativeMethods
     public static partial nint FindWindowEx(nint parent, nint childAfter, string? className, string? windowName);
 
     [LibraryImport("user32.dll")]
+    public static partial nint GetWindow(nint window, uint relation);
+
+    // Asks GetWindow for the window just in front.
+    public const uint GwHwndPrev = 3;
+
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool IsIconic(nint window);
 

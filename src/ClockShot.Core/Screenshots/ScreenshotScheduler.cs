@@ -36,7 +36,7 @@ public sealed class ScreenshotScheduler
 
         _lastWindow = window;
 
-        if (!settings.Enabled || state != ComputerState.Active || window is null || IsExcluded(window, settings))
+        if (!settings.Enabled || state != ComputerState.Active || window is null || settings.IsExcluded(window.ProcessName))
         {
             return false;
         }
@@ -64,7 +64,7 @@ public sealed class ScreenshotScheduler
     }
 
     /// <summary>
-    /// Call after a screenshot was taken.
+    /// Call after a screenshot was taken, or deliberately skipped as a duplicate.
     /// </summary>
     public void MarkCaptured(DateTime nowUtc)
     {
@@ -72,16 +72,5 @@ public sealed class ScreenshotScheduler
 
         // Any app switch so far is in this screenshot, so it needs no capture of its own.
         _appSwitchUtc = null;
-    }
-
-    /// <summary>
-    /// True when the window's process is excluded, by its name with or without the extension.
-    /// </summary>
-    private static bool IsExcluded(ForegroundWindow window, ScreenshotSettings settings)
-    {
-        var nameWithoutExtension = Path.GetFileNameWithoutExtension(window.ProcessName);
-        return settings.ExcludedProcessNames.Any(excluded =>
-            string.Equals(excluded, window.ProcessName, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(excluded, nameWithoutExtension, StringComparison.OrdinalIgnoreCase));
     }
 }
