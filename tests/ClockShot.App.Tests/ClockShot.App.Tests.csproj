@@ -11,6 +11,7 @@
     <!-- Shared with the Data tests, so both make test databases the same way. -->
     <Compile Include="..\ClockShot.Data.Tests\MemoryDatabase.cs" Link="MemoryDatabase.cs" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
     <PackageReference Include="xunit.v3" />

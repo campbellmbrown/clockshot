@@ -107,7 +107,16 @@ public sealed partial class ProjectDialogViewModel : DialogViewModel
             catalog.ProjectById(project.ParentId),
             catalog.ClientOf(project));
 
-    partial void OnClientTextChanged(string? value) => RefreshParentOptions();
+    // An error such as a taken name may no longer apply once the form changes.
+    partial void OnNameChanged(string value) => Error = "";
+
+    partial void OnClientTextChanged(string? value)
+    {
+        Error = "";
+        RefreshParentOptions();
+    }
+
+    partial void OnSelectedParentChanged(ParentOptionViewModel? value) => Error = "";
 
     [RelayCommand(CanExecute = nameof(HasName))]
     private async Task SaveAsync()

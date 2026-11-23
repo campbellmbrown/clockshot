@@ -45,6 +45,13 @@ public sealed class Tagger(ITimeEntryRepository entries)
     public async Task RetagAsync(TimeEntry entry, long projectId, long? taskId, string? note, string undoDescription)
     {
         var updated = entry with { ProjectId = projectId, TaskId = taskId, Note = CleanNote(note) };
+
+        // Saving it unchanged would take the undo slot from the user's last real change.
+        if (updated == entry)
+        {
+            return;
+        }
+
         await ApplyAsync(new TimeEntryChanges(Added: [], Updated: [(entry, updated)], Removed: []), undoDescription);
     }
 

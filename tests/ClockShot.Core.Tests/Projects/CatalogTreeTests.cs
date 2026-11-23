@@ -83,6 +83,21 @@ public sealed class CatalogTreeTests
     }
 
     [Fact]
+    public void ProjectTaskAndGeneralRowsNameTheirProject()
+    {
+        // Act
+        var tree = CatalogTree.Build(Catalog);
+
+        // Assert
+        var website = Row(tree[0], "Website");
+        Assert.Equal(WebsiteId, website.ProjectId);
+        Assert.Equal(WebsiteId, Row(website, "Login page").ProjectId);
+        Assert.Equal(WebsiteId, Row(website, "General").ProjectId);
+        Assert.Null(tree[0].ProjectId);
+        Assert.Null(tree[2].ProjectId);
+    }
+
+    [Fact]
     public void ClientProjectAndTaskRowsNameTheirItem()
     {
         // Act

@@ -136,11 +136,12 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
 
     /// <summary>
     /// A new project under the given client or "No client" group, or a sub-project of the given project.
+    /// A task or General row stands for the project it's under.
     /// </summary>
     [RelayCommand]
     private async Task NewProjectAsync(CatalogNodeViewModel? under)
     {
-        var parent = under?.Kind == CatalogRowKind.Project ? _catalog.ProjectById(under.Id) : null;
+        var parent = _catalog.ProjectById(under?.ProjectId);
         var client = under?.Kind == CatalogRowKind.Client ? _catalog.ClientById(under.Id) : null;
         await _dialogs.ShowAsync(ProjectDialogViewModel.ForNew(_projects, _catalog, parent: parent, client: client));
     }
@@ -212,6 +213,8 @@ public sealed partial class ProjectsViewModel : PageViewModel, IDisposable
     [RelayCommand(CanExecute = nameof(IsEditable))]
     private async Task ToggleArchivedAsync(CatalogNodeViewModel? node)
     {
+        // Archiving is what a refused delete suggests, so its message no longer applies.
+        Message = "";
         if (node?.Item is { } item)
         {
             await _projects.SetArchivedAsync(item, !node.IsArchived);

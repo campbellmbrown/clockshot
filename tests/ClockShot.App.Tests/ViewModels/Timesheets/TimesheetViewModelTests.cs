@@ -11,6 +11,7 @@ using ClockShot.Data.Settings;
 using ClockShot.Data.Tests;
 
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 
@@ -21,6 +22,7 @@ public sealed class TimesheetViewModelTests : IDisposable
     private readonly MemoryDatabase _database = new();
     private readonly ProjectRepository _projects;
     private readonly JsonSettingsStore _settings = new(new MockFileSystem(), new DataPaths("data"), NullLogger<JsonSettingsStore>.Instance);
+    private readonly FakeTimeProvider _clock = new(new DateTimeOffset(2026, 11, 10, 12, 0, 0, TimeSpan.Zero));
     private readonly DayClock _days;
     private readonly IFileSaveService _files = Substitute.For<IFileSaveService>();
 
@@ -30,7 +32,7 @@ public sealed class TimesheetViewModelTests : IDisposable
     public TimesheetViewModelTests()
     {
         _projects = new ProjectRepository(_database.Database);
-        _days = new DayClock(TimeProvider.System, _settings);
+        _days = new DayClock(_clock, _settings);
     }
 
     [Fact]
@@ -82,6 +84,26 @@ public sealed class TimesheetViewModelTests : IDisposable
 
         // Assert
         Assert.Equal("", timesheet.SaveError);
+    }
+
+    [Fact]
+    public void ShowingTheTabOnALaterDayMovesThePeriodToThatDay()
+    {
+        // Arrange
+        _entries.GetAsync(Arg.Any<TimeRange>(), Arg.Any<CancellationToken>())
+            .Returns(new TaskCompletionSource<IReadOnlyList<TimeEntry>>().Task);
+        using var timesheet = Timesheet();
+        timesheet.SelectedPeriod = DatePeriod.Today;
+        _clock.Advance(TimeSpan.FromDays(1));
+
+        // Act
+        timesheet.OnShown();
+
+        // Assert
+        var nextDay = new DateTime(2026, 11, 11, 0, 0, 0, DateTimeKind.Unspecified);
+        Assert.Equal(nextDay, timesheet.FromDate);
+        Assert.Equal(nextDay, timesheet.ToDate);
+        Assert.Equal(DatePeriod.Today, timesheet.SelectedPeriod);
     }
 
     public void Dispose() => _database.Dispose();

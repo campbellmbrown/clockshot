@@ -62,4 +62,6 @@ public sealed partial class CatalogNodeViewModel(
     public string ArchiveText => IsArchived ? "Unarchive" : "Archive";
 
     public CatalogItem? Item => node.Item;
+
+    public long? ProjectId => node.ProjectId;
 }

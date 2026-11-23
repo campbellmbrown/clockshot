@@ -153,6 +153,24 @@ public sealed class TaggerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RetagWithNothingChangedKeepsTheUndoAndAnnouncesNothing()
+    {
+        // Arrange
+        await TagAsync(Minutes(0, 60), _projectA);
+        var entry = await SingleEntryAsync();
+        var undoBefore = _tagger.UndoDescription;
+        var changes = 0;
+        _tagger.Changed += () => changes++;
+
+        // Act
+        await _tagger.RetagAsync(entry, entry.ProjectId, entry.TaskId, entry.Note, undoDescription: "retag");
+
+        // Assert
+        Assert.Equal(undoBefore, _tagger.UndoDescription);
+        Assert.Equal(0, changes);
+    }
+
+    [Fact]
     public async Task ResizeMovesTheEdge()
     {
         // Arrange

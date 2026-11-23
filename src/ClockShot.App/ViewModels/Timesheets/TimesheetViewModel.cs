@@ -95,15 +95,31 @@ public sealed partial class TimesheetViewModel : PageViewModel, IDisposable
     [ObservableProperty]
     public partial DateTime? ToDate { get; set; }
 
-    partial void OnSelectedPeriodChanged(DatePeriod? value)
+    /// <summary>
+    /// The app often runs for days, so a period such as This week moves on when the tab is shown on a later day.
+    /// </summary>
+    public override void OnShown() => ShowPeriodDates();
+
+    partial void OnSelectedPeriodChanged(DatePeriod? value) => ShowPeriodDates();
+
+    /// <summary>
+    /// Shows the chosen period's days as of today, and loads them if they changed.
+    /// </summary>
+    private void ShowPeriodDates()
     {
-        if (value?.DaysFrom(_days.Today) is not { } days)
+        if (SelectedPeriod?.DaysFrom(_days.Today) is not { } days)
         {
             return;
         }
 
-        var (from, to) = days;
-        SetDates(from.ToDateTime(TimeOnly.MinValue), to.ToDateTime(TimeOnly.MinValue));
+        var from = days.First.ToDateTime(TimeOnly.MinValue);
+        var to = days.Last.ToDateTime(TimeOnly.MinValue);
+        if (from == FromDate && to == ToDate)
+        {
+            return;
+        }
+
+        SetDates(from, to);
         _background.Run(() => LoadAsync());
     }
 

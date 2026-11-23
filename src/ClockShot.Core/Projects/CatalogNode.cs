@@ -23,4 +23,10 @@ public sealed record CatalogNode(
         (CatalogRowKind.Task, { } id) => new CatalogItem(CatalogItemKind.Task, id),
         _ => null,
     };
+
+    /// <summary>
+    /// The id of the row's project, or of the project a task or General row is under.
+    /// It's null for client and "No client" rows.
+    /// </summary>
+    public long? ProjectId => Kind == CatalogRowKind.Project ? Id : Tag?.ProjectId;
 }
