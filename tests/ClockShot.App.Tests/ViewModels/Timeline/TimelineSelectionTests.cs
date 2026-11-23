@@ -16,6 +16,7 @@ public sealed class TimelineSelectionTests
 {
     private static readonly DateTime NineAm = new(2026, 11, 10, 9, 0, 0, DateTimeKind.Utc);
     private static readonly TimeRange Hour = new(NineAm, NineAm.AddHours(1));
+    private static readonly TimeRange SecondHalf = new(NineAm.AddMinutes(30), NineAm.AddHours(1));
     private static readonly TimeEntry Tag = new(Id: 1, Hour, ProjectId: 10, TaskId: null, Note: null);
 
     private readonly SelectionDetailsViewModel _details;
@@ -139,6 +140,35 @@ public sealed class TimelineSelectionTests
         // Assert
         Assert.Equal(LaneKind.Tags, _selection.Lane);
         Assert.Equal(Tag, _details.TagEditor.Editing);
+    }
+
+    [Fact]
+    public void RefreshingAfterTaggingFindsATagJoinedWithItsNeighbour()
+    {
+        // Arrange
+        _selection.SelectTime(SecondHalf);
+        _selection.ExpectTag();
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(Tag)))]);
+
+        // Assert
+        Assert.Equal(Hour, _selection.Range);
+        Assert.Equal(Tag, _details.TagEditor.Editing);
+    }
+
+    [Fact]
+    public void RefreshingKeepsTimeInsideATagThatWasNotJustTagged()
+    {
+        // Arrange
+        _selection.SelectTime(SecondHalf);
+
+        // Act
+        _selection.Refresh([Lane(LaneKind.Tags, Block(new TagBlock(Tag)))]);
+
+        // Assert
+        Assert.Equal(SecondHalf, _selection.Range);
+        Assert.Null(_selection.Lane);
     }
 
     [Fact]
@@ -325,6 +355,59 @@ public sealed class TimelineSelectionTests
 
         // Assert
         Assert.False(_selection.HasSelection);
+    }
+
+    [Fact]
+    public void ANewDragThatSelectedNoTimeIsStillAClick()
+    {
+        // Arrange
+        _selection.StartDrag(anchor: Hour.Start);
+
+        // Act
+        _selection.DragTo(Hour.Start);
+
+        // Assert
+        Assert.True(_selection.IsStillAClick);
+    }
+
+    [Fact]
+    public void ANewDragThatSelectedTimeIsNotAClick()
+    {
+        // Arrange
+        _selection.StartDrag(anchor: Hour.End);
+
+        // Act
+        _selection.DragTo(Hour.Start);
+
+        // Assert
+        Assert.False(_selection.IsStillAClick);
+    }
+
+    [Fact]
+    public void ANewDragBackToTheAnchorIsNotAClick()
+    {
+        // Arrange
+        _selection.StartDrag(anchor: Hour.End);
+        _selection.DragTo(Hour.Start);
+
+        // Act
+        _selection.DragTo(Hour.End);
+
+        // Assert
+        Assert.False(_selection.IsStillAClick);
+    }
+
+    [Fact]
+    public void DraggingAnEdgeIsNotAClick()
+    {
+        // Arrange
+        _selection.SelectTime(Hour);
+
+        // Act
+        _selection.GrabEdge(anchor: Hour.Start, tagBlock: null);
+
+        // Assert
+        Assert.False(_selection.IsStillAClick);
     }
 
     [Fact]

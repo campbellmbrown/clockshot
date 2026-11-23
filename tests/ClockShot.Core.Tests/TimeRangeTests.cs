@@ -59,6 +59,36 @@ public sealed class TimeRangeTests
     }
 
     [Fact]
+    public void ContainsARangeInsideIt()
+    {
+        // Arrange
+        var range = new TimeRange(At(9), At(10));
+
+        // Act
+        var containsItself = range.Contains(range);
+        var containsInner = range.Contains(new TimeRange(At(9, 15), At(9, 45)));
+
+        // Assert
+        Assert.True(containsItself);
+        Assert.True(containsInner);
+    }
+
+    [Fact]
+    public void DoesNotContainARangeThatStartsOrEndsOutsideIt()
+    {
+        // Arrange
+        var range = new TimeRange(At(9), At(10));
+
+        // Act
+        var startsBefore = range.Contains(new TimeRange(At(8, 59), At(9, 30)));
+        var endsAfter = range.Contains(new TimeRange(At(9, 30), At(10, 1)));
+
+        // Assert
+        Assert.False(startsBefore);
+        Assert.False(endsAfter);
+    }
+
+    [Fact]
     public void RangesThatShareTimeOverlap()
     {
         // Act

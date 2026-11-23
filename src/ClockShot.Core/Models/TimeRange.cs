@@ -37,6 +37,8 @@ public readonly record struct TimeRange
 
     public bool Contains(DateTime time) => time >= Start && time < End;
 
+    public bool Contains(TimeRange other) => other.Start >= Start && other.End <= End;
+
     public TimeRange? Intersect(TimeRange other)
     {
         var start = TimeMath.Max(Start, other.Start);

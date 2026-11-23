@@ -12,6 +12,7 @@ namespace ClockShot.App.ViewModels.Timeline;
 public sealed partial class TimelineSelection(SelectionDetailsViewModel details) : ViewModelBase
 {
     private SelectionDrag? _drag;
+    private bool _hasSelectedTime;
 
     /// <summary>
     /// Raised when the selection or the snap preview changes, so the timeline redraws.
@@ -39,6 +40,12 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
     public partial DateTime? SnapPreviewUtc { get; private set; }
 
     public bool IsDragging => _drag is not null;
+
+    /// <summary>
+    /// True while a new selection drag hasn't selected any time, such as when both ends snap to the same edge.
+    /// Ending it then counts as a click, so a slightly wobbly click still selects the block under it.
+    /// </summary>
+    public bool IsStillAClick => _drag is { ResizedTag: null } && !_hasSelectedTime;
 
     /// <summary>
     /// A block is selected when its lane and start match, so the block being recorded stays selected as it grows.
@@ -88,7 +95,9 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
     /// <summary>
     /// Shows the selection again after the lanes reload.
     /// A block on the same lane that starts at the same time is the same block, even if it has grown.
-    /// Otherwise it's a tag that now covers exactly that time, or else the same stretch of time stays selected.
+    /// Otherwise it's a tag that now covers exactly that time.
+    /// When a tag is selected or was just made, a tag that contains the time counts too, such as one joined with a neighbour.
+    /// If there's no such tag, the same stretch of time stays selected.
     /// </summary>
     public void Refresh(IReadOnlyList<TimelineLane> lanes)
     {
@@ -115,7 +124,8 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
             lanes.FirstOrDefault(l => l.Kind == kind)?.Blocks.FirstOrDefault(b => b.Range.Start == range.Start);
 
         TimelineBlock? BlockIn(LaneKind kind) =>
-            lanes.FirstOrDefault(l => l.Kind == kind)?.Blocks.FirstOrDefault(b => b.Range == range);
+            lanes.FirstOrDefault(l => l.Kind == kind)?.Blocks.FirstOrDefault(
+                b => Lane == kind ? b.Range.Contains(range) : b.Range == range);
     }
 
     public void ShowSnapPreview(DateTime? edge) => SnapPreviewUtc = edge;
@@ -123,7 +133,11 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
     /// <summary>
     /// Starts a new selection from the anchor, after the pointer moved far enough while pressed.
     /// </summary>
-    public void StartDrag(DateTime anchor) => _drag = new SelectionDrag(anchor, ResizedTag: null);
+    public void StartDrag(DateTime anchor)
+    {
+        _drag = new SelectionDrag(anchor, ResizedTag: null);
+        _hasSelectedTime = false;
+    }
 
     /// <summary>
     /// Starts dragging an edge of the selection, or of a tag, with the anchor as the end that stays put.
@@ -138,6 +152,7 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
 
         var resizedTag = Lane == LaneKind.Tags ? details.TagEditor.Editing : null;
         _drag = new SelectionDrag(anchor, resizedTag);
+        _hasSelectedTime = true;
     }
 
     /// <summary>
@@ -153,6 +168,7 @@ public sealed partial class TimelineSelection(SelectionDetailsViewModel details)
         if (_drag.ResizedTag is null)
         {
             SelectTime(range);
+            _hasSelectedTime = true;
         }
         else
         {

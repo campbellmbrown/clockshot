@@ -326,14 +326,17 @@ public sealed class TimelineControl : Control
             return;
         }
 
+        if (gesture == Gesture.Drag)
+        {
+            // A drag that never selected any time was a click that wobbled, so it still selects what was clicked.
+            var wasClick = timeline.Selection.IsStillAClick;
+            timeline.EndDrag();
+            gesture = wasClick ? Gesture.PendingClick : Gesture.None;
+        }
+
         if (gesture == Gesture.PendingClick)
         {
             timeline.ClickAt(TimeAt(timeline, _pressPoint), KindOf(timeline, _pressLane));
-        }
-
-        if (gesture == Gesture.Drag)
-        {
-            timeline.EndDrag();
         }
     }
 

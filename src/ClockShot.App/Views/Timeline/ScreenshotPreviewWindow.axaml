@@ -4,6 +4,7 @@
         xmlns:views="using:ClockShot.App.Views.Timeline"
         xmlns:controls="using:ClockShot.App.Controls"
         xmlns:core="using:ClockShot.Core"
+        xmlns:input="using:ClockShot.App.Input"
         x:Class="ClockShot.App.Views.Timeline.ScreenshotPreviewWindow"
         x:DataType="timeline:ScreenshotPreviewViewModel"
         Title="{Binding Source={x:Static core:AppInfo.Name}, StringFormat='{}{0} - screenshot preview'}"
@@ -14,5 +15,10 @@
         MinHeight="240"
         ShowInTaskbar="False">
   <!-- This window is the separate window preview mode. It follows the hover and keeps the last screenshot shown. -->
+  <!-- The main window's preview shortcuts also work while this window has focus. -->
+  <Window.KeyBindings>
+    <KeyBinding Gesture="{x:Static input:Shortcuts.SwitchPreview}" Command="{Binding CycleModeCommand}" />
+    <KeyBinding Gesture="{x:Static input:Shortcuts.PausePreview}" Command="{Binding TogglePauseCommand}" />
+  </Window.KeyBindings>
   <views:ScreenshotPreviewView Margin="12" />
 </Window>
